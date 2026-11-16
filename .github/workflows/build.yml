@@ -35,6 +35,8 @@ env:
   SING_BOX_SHA256: 699a1b510aa4396b2176d32d1181920399ebf1e267835da6f3b598d0f7c24968
   XRAY_VERSION: 26.11.9
   XRAY_SHA256: b651f7e1d9966ee2c1b1ee1bf8b52c72771824d3065dce96bbc8bcc19ed95f82
+  MIHOMO_VERSION: 1.19.34
+  MIHOMO_SHA256: 223fab877e5795ce780ba39902e5f0b1113c1256ae244a7160f1165e017e9ccc
 
 concurrency:
   group: build-${{ github.ref }}
@@ -75,7 +77,7 @@ jobs:
       - name: Build
         run: go run ./cmd/build -prev "$RUNNER_TEMP/prev"
 
-      - name: Install sing-box and Xray
+      - name: Install sing-box, Xray and mihomo
         run: |
           mkdir -p "$RUNNER_TEMP/bin" && cd "$RUNNER_TEMP"
           curl -fsSL -o sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
@@ -84,6 +86,9 @@ jobs:
           curl -fsSL -o xr.zip "https://github.com/XTLS/Xray-core/releases/download/v${XRAY_VERSION}/Xray-linux-64.zip"
           echo "${XRAY_SHA256}  xr.zip" | sha256sum -c -
           unzip -q xr.zip xray -d bin
+          curl -fsSL -o mihomo.gz "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz"
+          echo "${MIHOMO_SHA256}  mihomo.gz" | sha256sum -c -
+          gunzip -c mihomo.gz > bin/mihomo && chmod +x bin/mihomo
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       # Validate before publishing, so a broken output never reaches users.
@@ -119,13 +124,35 @@ jobs:
           # Fails with "list not found" if a tag referenced by the routing is missing.
           XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray-routing.json
 
+      - name: Compile and check mihomo rule-sets
+        run: |
+          mkdir -p out/mrs
+          for f in out/clash/*.txt; do
+            n=$(basename "${f%.txt}")
+            case "$n" in geoip-*) b=ipcidr ;; *) b=domain ;; esac
+            mihomo convert-ruleset "$b" text "$f" "out/mrs/$n.mrs"
+          done
+          # Every provider clash.yaml references must exist.
+          for t in $(grep -oE 'url: .*/[^/]+\.mrs' dist/clash.yaml | sed -E 's#.*/##'); do
+            [ -f "out/mrs/$t" ] || { echo "::error::clash.yaml references missing $t"; exit 1; }
+          done
+          # Round-trip: decode .mrs back to text and look for known entries.
+          dump() { mihomo convert-ruleset "$1" mrs "out/mrs/$2.mrs" "$RUNNER_TEMP/$2.dump"; }
+          has()  { dump domain "$1"; grep -qxF -- "$2" "$RUNNER_TEMP/$1.dump" || { echo "::error::$1.mrs should contain $2"; exit 1; }; }
+          has geosite-ir "+.ir"
+          has geosite-ads "+.yektanet.com"
+          # mihomo re-aggregates IP sets, so check containment rather than an exact line.
+          dump ipcidr geoip-ir
+          python3 -c 'import ipaddress,sys; a=ipaddress.ip_address("2.144.0.1"); sys.exit(0 if any(a in ipaddress.ip_network(l.strip()) for l in open(sys.argv[1]) if l.strip()) else 1)' "$RUNNER_TEMP/geoip-ir.dump" \
+            || { echo "::error::geoip-ir.mrs should cover 2.144.0.1"; exit 1; }
+
       # Everything users download, flat, under the same names the configs reference.
       - name: Assemble release files
         id: assemble
         run: |
           rel="$RUNNER_TEMP/release"
           mkdir -p "$rel"
-          cp dist/* out/geosite.dat out/geoip.dat out/srs/*.srs "$rel/"
+          cp dist/* out/geosite.dat out/geoip.dat out/srs/*.srs out/mrs/*.mrs "$rel/"
           size=$(du -sm "$rel" | cut -f1)
           echo "release files: $(ls "$rel" | wc -l), ${size} MB"
           # jsDelivr refuses to serve GitHub packages above its size limit (50 MB at the time of writing).

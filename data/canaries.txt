@@ -1,0 +1,47 @@
+# Known answers checked against the built lists before anything is published.
+# A mismatch fails the build, so a bad upstream update cannot silently block a
+# major site or send it the wrong way. Format: <domain or IP> <block|direct|proxy>
+# Domains are not resolved (like no-resolve rules), so IP-only behavior such as
+# GEOIP is tested with IP entries.
+
+# Never blocked: major foreign sites go through the proxy
+google.com          proxy
+www.google.com      proxy
+youtube.com         proxy
+github.com          proxy
+wikipedia.org       proxy
+telegram.org        proxy
+cloudflare.com      proxy
+apple.com           proxy
+
+# Sites that block Iranian IPs: always through the proxy
+accounts.google.com proxy
+
+# Iranian sites and services: direct
+digikala.com        direct
+www.digikala.com    direct
+aparat.com          direct
+divar.ir            direct
+shaparak.ir         direct
+example.ir          direct
+snapp.ir            direct
+
+# Iranian IP ranges and CDNs: direct
+2.144.0.1           direct
+185.143.232.1       direct
+
+# Local names and private ranges: direct
+localhost           direct
+router.lan          direct
+printer.local       direct
+192.168.1.1         direct
+10.0.0.1            direct
+
+# Iran's DNS block page: blocked (before the private-range rule)
+10.10.34.36         block
+
+# Ads, trackers and malware: blocked
+doubleclick.net     block
+yektanet.com        block
+tapsell.ir          block
+metrix.ir           block

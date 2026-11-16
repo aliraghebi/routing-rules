@@ -86,17 +86,18 @@ func main() {
 	dist := flag.String("dist", "dist", "output directory")
 	cache := flag.String("cache", ".cache", "HTTP + last-known-good cache directory")
 	allowPath := flag.String("allowlist", "data/allowlist.txt", "domains never to REJECT")
+	canaryPath := flag.String("canaries", "data/canaries.txt", "known answers checked before publishing")
 	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
 	docs := flag.String("docs", "docs", "docs root (docs/<lang>/) for the generated URL and sources pages and the checker's lists")
 	flag.Parse()
 	log.SetFlags(0)
-	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs); err != nil {
+	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs, *canaryPath); err != nil {
 		log.Printf("::error::%v", err)
 		os.Exit(1)
 	}
 }
 
-func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
+func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string) error {
 	raw, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return err
@@ -271,6 +272,11 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 	if len(stale) > 0 {
 		log.Printf("::warning::using last-known-good data for: %s", strings.Join(stale, ", "))
 	}
+	sets := map[string]catRules{}
+	for name, b := range byCat {
+		sets[name] = catRules{b.cat, b.domains, b.cidrs}
+	}
+	fatal = append(fatal, checkCanaries(canaryPath, cfg.Categories, sets)...)
 	if len(fatal) > 0 {
 		return fmt.Errorf("build refused, nothing written:\n  %s", strings.Join(fatal, "\n  "))
 	}
@@ -286,10 +292,6 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 		if b := byCat[c.Name]; b != nil {
 			files[c.Name+".list"] = b.body
 		}
-	}
-	sets := map[string]catRules{}
-	for name, b := range byCat {
-		sets[name] = catRules{b.cat, b.domains, b.cidrs}
 	}
 	g := buildGeo(cfg.Categories, sets)
 	for _, t := range g.sites {
@@ -433,6 +435,73 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 
 // dnsBlocklist marks optional categories that also make sense as DNS blocklists.
 var dnsBlocklist = map[string]bool{"ads-lite": true, "tracking": true, "nsfw": true, "social": true}
+
+// ruleOrder lists the merged lists in the default configs' rule order:
+// block page, private, REJECT lists, PROXY lists, the .ir TLDs, DIRECT lists.
+func ruleOrder(cats []Category, sets map[string]catRules) []merge.Ruleset {
+	verdict := map[string]string{"reject": "block", "proxy": "proxy", "direct": "direct"}
+	add := func(out []merge.Ruleset, c Category) []merge.Ruleset {
+		if r, ok := sets[c.Name]; ok {
+			out = append(out, merge.Ruleset{Name: c.Name, Action: verdict[c.Action], Domains: r.domains, CIDRs: r.cidrs})
+		}
+		return out
+	}
+	var out []merge.Ruleset
+	for _, name := range []string{"ir-injected", "private"} {
+		for _, c := range cats {
+			if c.Name == name {
+				out = add(out, c)
+			}
+		}
+	}
+	for _, phase := range []string{"reject", "proxy", "direct"} {
+		if phase == "direct" { // DOMAIN-SUFFIX,ir / .ایران come before the DIRECT lists
+			out = append(out, merge.Ruleset{Name: "ir TLD", Action: "direct", Domains: []parse.Domain{
+				{Kind: parse.Suffix, Name: "ir"}, {Kind: parse.Suffix, Name: "xn--mgba3a4f16a"}}})
+		}
+		for _, c := range cats {
+			if c.Action == phase && c.Name != "ir-injected" && c.Name != "private" {
+				out = add(out, c)
+			}
+		}
+	}
+	return out
+}
+
+// checkCanaries evaluates the known answers in path against the merged lists
+// and returns one message per mismatch.
+func checkCanaries(path string, cats []Category, sets map[string]catRules) []string {
+	b, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return []string{err.Error()}
+	}
+	order := ruleOrder(cats, sets)
+	var bad []string
+	n := 0
+	for i, line := range strings.Split(string(b), "\n") {
+		line, _, _ = strings.Cut(line, "#")
+		f := strings.Fields(line)
+		if len(f) == 0 {
+			continue
+		}
+		if len(f) != 2 || (f[1] != "block" && f[1] != "direct" && f[1] != "proxy") {
+			bad = append(bad, fmt.Sprintf("%s:%d: want \"<domain or IP> <block|direct|proxy>\"", path, i+1))
+			continue
+		}
+		n++
+		if got, list := merge.Verdict(order, f[0]); got != f[1] {
+			if list == "" {
+				list = "no list, default rule"
+			}
+			bad = append(bad, fmt.Sprintf("canary %s: want %s, got %s (%s)", f[0], f[1], got, list))
+		}
+	}
+	log.Printf("canaries: %d checked, %d failed", n, len(bad))
+	return bad
+}
 
 type catRules struct {
 	cat     Category

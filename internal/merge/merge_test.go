@@ -99,3 +99,23 @@ func TestComplement(t *testing.T) {
 		t.Fatalf("complement of everything: %v", none)
 	}
 }
+
+func TestVerdict(t *testing.T) {
+	order := []Ruleset{
+		{Name: "ir-injected", Action: "reject", CIDRs: P("10.10.34.0/24")},
+		{Name: "private", Action: "direct", Domains: []parse.Domain{D(S, "lan")}, CIDRs: P("10.0.0.0/8")},
+		{Name: "ads", Action: "reject", Domains: []parse.Domain{D(S, "ads.ir"), D(E, "track.example.com")}},
+		{Name: "ir-domains", Action: "direct", Domains: []parse.Domain{D(S, "ir")}},
+	}
+	cases := map[string]string{
+		"10.10.34.36": "reject ir-injected", "10.1.2.3": "direct private", "router.lan": "direct private",
+		"x.ads.ir": "reject ads", "track.example.com": "reject ads", "sub.track.example.com": "proxy ",
+		"digikala.ir": "direct ir-domains", "google.com": "proxy ", "Example.IR.": "direct ir-domains",
+	}
+	for q, want := range cases {
+		a, l := Verdict(order, q)
+		if got := a + " " + l; got != want {
+			t.Errorf("%s: got %q want %q", q, got, want)
+		}
+	}
+}

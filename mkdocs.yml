@@ -1,9 +1,8 @@
-site_name: vpn-routing
-site_description: Daily-built routing rules for Iran — Shadowrocket, sing-box, v2ray/Xray
+site_name: VPN Routing Config Files & Lists
+site_description: A collection of cross-platform proxy routing rules and configurations. Supports direct routing for Iranian domains and IP ranges, and blocks ads, trackers, phishing, malware, and other malicious traffic across multiple proxy clients.
 site_url: https://aliraghebi.github.io/vpn-routing/
 repo_url: https://github.com/aliraghebi/vpn-routing
 repo_name: aliraghebi/vpn-routing
-edit_uri: edit/main/docs/
 docs_dir: docs
 strict: true
 

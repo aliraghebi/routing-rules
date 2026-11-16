@@ -1,0 +1,30 @@
+name: An Iranian site goes through the proxy
+description: An Iranian site or service is missing from the direct lists.
+title: "Missing Iranian site: "
+labels: ["missing-direct"]
+body:
+  - type: input
+    id: domain
+    attributes:
+      label: Domain
+      description: The main domain of the site or service.
+      placeholder: example.com
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Site or service name
+      placeholder: Example Shop
+  - type: textarea
+    id: why
+    attributes:
+      label: Why should it go direct?
+      description: For example, it is hosted in Iran, blocks foreign IPs, or is a bank or government service.
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Other domains it uses
+      description: CDN or API domains, one per line, if you know them.

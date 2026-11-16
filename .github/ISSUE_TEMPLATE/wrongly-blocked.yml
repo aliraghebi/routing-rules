@@ -1,0 +1,37 @@
+name: A site or app is wrongly blocked
+description: Something stopped working because a domain is in a block list.
+title: "Wrongly blocked: "
+labels: ["false-positive"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the domain first with [Check a domain](https://aliraghebi.github.io/vpn-routing/check/) to see which list blocks it.
+  - type: input
+    id: domain
+    attributes:
+      label: Domain
+      description: The exact domain that is blocked (not a full URL).
+      placeholder: cdn.example.com
+    validations:
+      required: true
+  - type: input
+    id: list
+    attributes:
+      label: Which list blocks it?
+      description: From the domain checker, e.g. ads, malware, tracking.
+      placeholder: ads
+  - type: textarea
+    id: impact
+    attributes:
+      label: What breaks?
+      description: The site, app or feature that stops working.
+    validations:
+      required: true
+  - type: dropdown
+    id: client
+    attributes:
+      label: Client
+      options: [Shadowrocket, Surge or Loon, Karing, v2rayN or v2rayNG, sing-box app, Clash or mihomo app, Xray, AdGuard Home or Pi-hole, Other]
+    validations:
+      required: true

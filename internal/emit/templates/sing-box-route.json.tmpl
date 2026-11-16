@@ -1,0 +1,30 @@
+{
+  "route": {
+    "rules": [
+      { "action": "sniff" },
+      { "protocol": "dns", "action": "hijack-dns" },
+      { "ip_is_private": true, "outbound": "direct" },
+      {
+        "rule_set": [{{range $i, $t := .Reject}}{{if $i}}, {{end}}"{{$t}}"{{end}}],
+        "action": "reject"
+      },
+{{- if .Proxy}}
+      { "rule_set": [{{range $i, $t := .Proxy}}{{if $i}}, {{end}}"{{$t}}"{{end}}], "outbound": "proxy" },
+{{- end}}
+      { "rule_set": [{{range $i, $t := .Direct}}{{if $i}}, {{end}}"{{$t}}"{{end}}], "outbound": "direct" }
+    ],
+    "rule_set": [
+{{- range $i, $t := .All}}{{if $i}},{{end}}
+      {
+        "tag": "{{$t}}",
+        "type": "remote",
+        "format": "binary",
+        "url": "{{$.ReleaseURL}}/{{$t}}.srs",
+        "download_detour": "proxy"
+      }
+{{- end}}
+    ],
+    "final": "proxy",
+    "auto_detect_interface": true
+  }
+}

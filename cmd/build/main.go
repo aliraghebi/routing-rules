@@ -87,15 +87,16 @@ func main() {
 	dist := flag.String("dist", "dist", "output directory")
 	cache := flag.String("cache", ".cache", "HTTP + last-known-good cache directory")
 	allowPath := flag.String("allowlist", "allowlist.txt", "domains never to REJECT")
+	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
 	flag.Parse()
 	log.SetFlags(0)
-	if err := run(*cfgPath, *dist, *cache, *allowPath); err != nil {
+	if err := run(*cfgPath, *dist, *cache, *allowPath, *out); err != nil {
 		log.Printf("::error::%v", err)
 		os.Exit(1)
 	}
 }
 
-func run(cfgPath, dist, cacheDir, allowPath string) error {
+func run(cfgPath, dist, cacheDir, allowPath, outDir string) error {
 	raw, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return err
@@ -307,7 +308,145 @@ func run(cfgPath, dist, cacheDir, allowPath string) error {
 	if err != nil {
 		return err
 	}
-	return writeIfChanged(filepath.Join(dist, "shadowrocket.conf"), conf)
+	if err := writeIfChanged(filepath.Join(dist, "shadowrocket.conf"), conf); err != nil {
+		return err
+	}
+	sets := map[string]catRules{}
+	for name, b := range byCat {
+		sets[name] = catRules{b.cat, b.domains, b.cidrs}
+	}
+	return writeGeo(cfg.Categories, sets, dist, outDir, strings.TrimRight(st.RepoURL, "/")+"/releases/latest/download")
+}
+
+type catRules struct {
+	cat     Category
+	domains []parse.Domain
+	cidrs   []netip.Prefix
+}
+
+// geoTag maps a category to its v2ray/sing-box tag (Chocolate4U naming).
+func geoTag(cat string) string {
+	switch cat {
+	case "ir-domains", "ir-cidr":
+		return "ir"
+	case "tor-exit":
+		return "tor"
+	}
+	return cat
+}
+
+// writeGeo emits v2ray geosite.dat/geoip.dat into outDir (release assets) and
+// sing-box source rule-sets plus example routing configs into dist/.
+func writeGeo(cats []Category, sets map[string]catRules, dist, outDir, releaseURL string) error {
+	var sites, ips []emit.Tag
+	var rd emit.RouteData
+	rd.ReleaseURL = releaseURL
+	for _, c := range cats {
+		r, ok := sets[c.Name]
+		if !ok {
+			continue
+		}
+		tag := geoTag(c.Name)
+		if len(r.domains) > 0 {
+			d := r.domains
+			if tag == "ir" { // the Shadowrocket config adds these TLDs inline instead
+				d = merge.Domains(append(slices.Clone(d), parse.Domain{Kind: parse.Suffix, Name: "ir"}, parse.Domain{Kind: parse.Suffix, Name: "xn--mgba3a4f16a"}))
+			}
+			sites = append(sites, emit.Tag{Name: tag, Domains: d})
+			switch c.Action {
+			case "reject":
+				rd.Reject = append(rd.Reject, "geosite-"+tag)
+				rd.RejectSite = append(rd.RejectSite, tag)
+			case "proxy":
+				rd.Proxy = append(rd.Proxy, "geosite-"+tag)
+				rd.ProxySite = append(rd.ProxySite, tag)
+			case "direct":
+				rd.Direct = append(rd.Direct, "geosite-"+tag)
+			}
+		}
+		if len(r.cidrs) > 0 {
+			ips = append(ips, emit.Tag{Name: tag, CIDRs: r.cidrs})
+			switch c.Action {
+			case "reject":
+				rd.Reject = append(rd.Reject, "geoip-"+tag)
+				rd.RejectIP = append(rd.RejectIP, tag)
+			case "proxy":
+				rd.Proxy = append(rd.Proxy, "geoip-"+tag)
+			case "direct":
+				rd.Direct = append(rd.Direct, "geoip-"+tag)
+			}
+		}
+	}
+	// route.json only declares the rule-sets its rules reference.
+	rd.All = slices.Concat(rd.Reject, rd.Proxy, rd.Direct)
+	ips = append(ips, emit.Tag{Name: "private", CIDRs: emit.Private})
+	byName := func(a, b emit.Tag) int { return strings.Compare(a.Name, b.Name) }
+	slices.SortFunc(sites, byName)
+	slices.SortFunc(ips, byName)
+
+	if err := os.MkdirAll(outDir, 0o755); err != nil {
+		return err
+	}
+	if err := writeIfChanged(filepath.Join(outDir, "geosite.dat"), emit.GeoSiteDat(sites)); err != nil {
+		return err
+	}
+	if err := writeIfChanged(filepath.Join(outDir, "geoip.dat"), emit.GeoIPDat(ips)); err != nil {
+		return err
+	}
+
+	sbDir := filepath.Join(dist, "sing-box")
+	want := map[string][]byte{}
+	for _, t := range sites {
+		b, err := emit.SingBoxDomains(t.Domains)
+		if err != nil {
+			return err
+		}
+		want["geosite-"+t.Name+".json"] = b
+	}
+	for _, t := range ips {
+		b, err := emit.SingBoxCIDRs(t.CIDRs)
+		if err != nil {
+			return err
+		}
+		want["geoip-"+t.Name+".json"] = b
+	}
+	route, err := emit.SingBoxRoute(rd)
+	if err != nil {
+		return err
+	}
+	want["route.json"] = route
+	if err := syncDir(sbDir, want); err != nil {
+		return err
+	}
+	xr, err := emit.XrayRouting(rd)
+	if err != nil {
+		return err
+	}
+	return syncDir(filepath.Join(dist, "xray"), map[string][]byte{"routing.json": xr})
+}
+
+// syncDir makes dir contain exactly the given files (stale ones are removed).
+func syncDir(dir string, files map[string][]byte) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	ents, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, e := range ents {
+		if _, ok := files[e.Name()]; !ok && !e.IsDir() {
+			if err := os.Remove(filepath.Join(dir, e.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	for name, b := range files {
+		if err := writeIfChanged(filepath.Join(dir, name), b); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // confData uses BASE_URL from the environment, else settings.base_url, so a

@@ -1,0 +1,18 @@
+{
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      { "type": "field", "ip": ["geoip:private"], "outboundTag": "direct" },
+      { "type": "field", "domain": [{{range $i, $t := .RejectSite}}{{if $i}}, {{end}}"geosite:{{$t}}"{{end}}], "outboundTag": "block" },
+{{- if .RejectIP}}
+      { "type": "field", "ip": [{{range $i, $t := .RejectIP}}{{if $i}}, {{end}}"geoip:{{$t}}"{{end}}], "outboundTag": "block" },
+{{- end}}
+{{- if .ProxySite}}
+      { "type": "field", "domain": [{{range $i, $t := .ProxySite}}{{if $i}}, {{end}}"geosite:{{$t}}"{{end}}], "outboundTag": "proxy" },
+{{- end}}
+      { "type": "field", "domain": ["geosite:ir"], "outboundTag": "direct" },
+      { "type": "field", "ip": ["geoip:ir"], "outboundTag": "direct" },
+      { "type": "field", "network": "tcp,udp", "outboundTag": "proxy" }
+    ]
+  }
+}

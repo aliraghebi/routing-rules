@@ -7,9 +7,9 @@
 
 Download one file. Pick the one whose rule-sets your device can reach.
 
-[:material-download: karing-jsdelivr.json](dl/karing-jsdelivr.json){ .md-button .md-button--primary download="karing-jsdelivr.json" } [:material-download: karing.json](dl/karing.json){ .md-button download="karing.json" }
+[:material-download: Download (jsDelivr)](dl/karing-jsdelivr.json){ .md-button .md-button--primary download="karing.json" } [:material-download: Download (GitHub)](dl/karing.json){ .md-button download="karing.json" }
 
-The first file loads its rule-sets from jsDelivr, the second from GitHub. If the buttons don't work, download from GitHub Releases: [karing-jsdelivr.json](https://github.com/aliraghebi/vpn-routing/releases/latest/download/karing-jsdelivr.json) · [karing.json](https://github.com/aliraghebi/vpn-routing/releases/latest/download/karing.json).
+Both save as `karing.json`; they differ only in where the file downloads its rule-sets from. Pick jsDelivr if raw.githubusercontent.com is filtered for you. If the buttons don't work, download from GitHub Releases: [jsDelivr version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/karing-jsdelivr.json) · [GitHub version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/karing.json).
 
 ## Import it
 

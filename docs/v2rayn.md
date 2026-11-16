@@ -3,7 +3,7 @@
 `v2rayn-routing.json` is a set of custom routing rules in the JSON format v2rayN and v2rayNG import. It uses
 this project's `geosite:` / `geoip:` tags.
 
-[:material-download: v2rayn-routing.json](dl/v2rayn-routing.json){ .md-button .md-button--primary download="v2rayn-routing.json" }
+[:material-download: Download v2rayn-routing.json](dl/v2rayn-routing.json){ .md-button .md-button--primary download="v2rayn-routing.json" }
 
 To import by URL instead, use one of these:
 

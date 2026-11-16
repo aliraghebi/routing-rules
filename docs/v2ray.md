@@ -57,7 +57,7 @@ To download the files instead, use GitHub Releases:
 
 `xray-routing.json` follows the same order as the Shadowrocket config:
 
-[:material-download: xray-routing.json](dl/xray-routing.json){ .md-button .md-button--primary download="xray-routing.json" }
+[:material-download: Download xray-routing.json](dl/xray-routing.json){ .md-button .md-button--primary download="xray-routing.json" }
 
 
 ```json

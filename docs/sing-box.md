@@ -51,7 +51,7 @@ Every `.srs` file also exists as `.json` for `"format": "source"`.
 
 | Domains (`geosite-…`) | IP ranges (`geoip-…`) |
 |------------------------|------------------------|
-| `ads`, `malware`, `phishing`, `cryptominers`, `sanctioned`, `ir`, `social`, `nsfw`, `tracking` | `ir`, `malware`, `phishing`, `private`, `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor`, `netflix` |
+| `ads`, `trackers`, `malware`, `phishing`, `cryptominers`, `sanctioned`, `ir`, `social`, `nsfw` | `ir`, `malware`, `phishing`, `private`, `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor`, `netflix` |
 
 `geosite-ir` already includes the `.ir` and `.ایران` TLDs.
 

@@ -2,7 +2,7 @@
 
 A collection of cross-platform proxy routing rules and configurations. Supports direct routing for Iranian domains and IP ranges, and blocks ads, trackers, phishing, malware, and other malicious traffic across multiple proxy clients.
 
-- **Block** ads (including Iranian ad networks), malware, phishing and cryptominers.
+- **Block** ads and trackers (including Iranian ad networks and device telemetry), malware, phishing and cryptominers.
 - **Proxy** sites that refuse Iranian IPs (sanctioned).
 - **Send Iranian sites and IP ranges direct**, so domestic services stay fast and don't see a foreign IP.
 - **Proxy everything else.**
@@ -46,11 +46,17 @@ your VPN and what goes direct.
 
 ## What the rules do, in order
 
-1. Malware, phishing, cryptominer and ad domains/IPs → **block**
+1. Malware, phishing, cryptominer, ad and tracker domains/IPs → **block**
 2. Sanctioned sites (that block Iranian IPs) → **proxy**
 3. `.ir` domains and Iranian sites → **direct**
 4. Iranian IP ranges → **direct**
 5. Everything else → **proxy**
 
-Optional lists that are not in the default configs: social media, adult content, tracking and telemetry (currently Windows), and IP ranges for
+!!! note "If an app feature stops working"
+    The tracker list blocks device and OS telemetry (Apple, Samsung, Xiaomi, Huawei, Vivo, Amazon, LG,
+    Roku, Windows/Office, TikTok) and Iranian analytics services. Rarely, a vendor feature depends on one
+    of these domains. Add a rule for that domain above the block rules in your app, or
+    [open an issue](https://github.com/aliraghebi/vpn-routing/issues) so it can be allowlisted for everyone.
+
+Optional lists that are not in the default configs: social media, adult content, and IP ranges for
 Cloudflare, CloudFront, Fastly, G-Core, Telegram, Tor exit nodes and Netflix.

@@ -23,7 +23,7 @@ Karing downloads the rule-sets itself and refreshes them, so you don't need to r
 
 | Group | Action | Rule-sets |
 |-------|--------|-----------|
-| 🚫 Block | `block` | `geosite-malware`, `geoip-malware`, `geosite-phishing`, `geoip-phishing`, `geosite-cryptominers`, `geosite-ads` |
+| 🚫 Block | `block` | `geosite-malware`, `geoip-malware`, `geosite-phishing`, `geoip-phishing`, `geosite-cryptominers`, `geosite-ads`, `geosite-trackers` |
 | ✅ Direct | `direct` | `geosite-ir`, `geoip-ir`, `geoip-private` |
 
 Everything else goes through the proxy you select in Karing. `geosite-ir` already includes the `.ir` and

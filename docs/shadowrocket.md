@@ -21,7 +21,7 @@ don't need to re-import. To refresh, swipe left on the config in the **Config** 
 
 | # | Rule | Action |
 |---|------|--------|
-| 1 | `malware.list`, `phishing.list`, `cryptominers.list`, `ads.list` | REJECT |
+| 1 | `malware.list`, `phishing.list`, `cryptominers.list`, `ads.list`, `trackers.list` | REJECT |
 | 2 | `sanctioned.list` | PROXY |
 | 3 | `DOMAIN-SUFFIX,ir`, `ir-domains.list` | DIRECT |
 | 4 | `ir-cidr.list` | DIRECT |

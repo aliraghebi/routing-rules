@@ -4,7 +4,7 @@ Routing rules for VPN/proxy clients in Iran, rebuilt daily by GitHub Actions fro
 Inspired by [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules) and
 [Chocolate4U/Iran-sing-box-rules](https://github.com/Chocolate4U/Iran-sing-box-rules).
 
-- Blocks ads (including Iranian ad networks), malware, phishing and cryptominers.
+- Blocks ads and trackers (including Iranian ad networks and device telemetry), malware, phishing and cryptominers.
 - Proxies sites that refuse Iranian IPs.
 - Sends Iranian domains and IP ranges direct; everything else goes through the proxy.
 

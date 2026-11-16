@@ -171,11 +171,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Tag and title are the UTC build time, e.g. 202611161306 (seconds added on a same-minute clash).
-          tag=$(date -u +%Y%m%d%H%M)
-          if gh release view "$tag" >/dev/null 2>&1; then tag=$(date -u +%Y%m%d%H%M%S); fi
-          gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$tag" \
-            --notes "- Updated on $(date -u '+%A %Y-%m-%d %H:%M:%S UTC') from ${GITHUB_SHA::7}
+          # Tag: sortable UTC build time, e.g. 202611161306 (seconds added on a same-minute
+          # clash). Title: the same moment, readable, e.g. "2026-11-16 13:06 UTC".
+          now=$(date -u +%s)
+          tag=$(date -u -d "@$now" +%Y%m%d%H%M)
+          if gh release view "$tag" >/dev/null 2>&1; then tag=$(date -u -d "@$now" +%Y%m%d%H%M%S); fi
+          gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$(date -u -d "@$now" '+%Y-%m-%d %H:%M UTC')" \
+            --notes "- Updated on $(date -u -d "@$now" '+%A %Y-%m-%d %H:%M:%S UTC') from ${GITHUB_SHA::7}
           - Always download from https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/<file>"
           gh release upload "$tag" "$REL"/*
           gh release edit "$tag" --draft=false --latest

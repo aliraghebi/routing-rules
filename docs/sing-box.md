@@ -8,7 +8,7 @@ Works with sing-box 1.11+ and apps built on it. Rule-sets are named like
 
 `sing-box-route.json` is a complete `route` block, in the same order as the Shadowrocket config:
 
-[:material-download: Download (jsDelivr)](dl/sing-box-route-jsdelivr.json){ .md-button .md-button--primary download="sing-box-route.json" } [:material-download: Download (GitHub)](dl/sing-box-route.json){ .md-button download="sing-box-route.json" }
+[:material-download: Download from jsDelivr](dl/sing-box-route-jsdelivr.json){ .md-button .md-button--primary download="sing-box-route.json" } [:material-download: Download from GitHub](dl/sing-box-route.json){ .md-button download="sing-box-route.json" }
 
 Both save as `sing-box-route.json`; they differ only in where the file downloads its rule-sets from. Pick jsDelivr if raw.githubusercontent.com is filtered for you. If the buttons don't work, download from GitHub Releases: [jsDelivr version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route-jsdelivr.json) · [GitHub version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route.json).
 

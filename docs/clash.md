@@ -8,7 +8,7 @@ Clash Meta for Android and similar apps. The rule-sets here use mihomo's compact
 
 `clash.yaml` contains `rule-providers` and `rules` in the same order as the Shadowrocket config:
 
-[:material-download: Download (jsDelivr)](dl/clash-jsdelivr.yaml){ .md-button .md-button--primary download="clash.yaml" } [:material-download: Download (GitHub)](dl/clash.yaml){ .md-button download="clash.yaml" }
+[:material-download: Download from jsDelivr](dl/clash-jsdelivr.yaml){ .md-button .md-button--primary download="clash.yaml" } [:material-download: Download from GitHub](dl/clash.yaml){ .md-button download="clash.yaml" }
 
 Both save as `clash.yaml`; they differ only in where the file downloads its rule-sets from. Pick jsDelivr if raw.githubusercontent.com is filtered for you. If the buttons don't work, download from GitHub Releases: [jsDelivr version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash-jsdelivr.yaml) · [GitHub version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash.yaml).
 

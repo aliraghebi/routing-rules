@@ -201,7 +201,7 @@ them.
 | `nsfw` | Adult content |
 | `tracking` | Device and OS telemetry: Apple, Samsung, Xiaomi, Huawei, Vivo, Amazon, LG, Roku, Windows/Office, TikTok. Can break some vendor features. |
 | `ads-lite` | ~5k-rule alternative to `ads` (Iranian ad networks and trackers, Peter Lowe, v2fly) for memory-limited devices |
-| `arvancloud`, `parspack`, `derak` | Iranian CDN IP ranges (already part of `ir-cidr`) |
+| `arvancloud`, `parspack`, `derak` | Iranian CDN IP ranges, including their servers abroad (Iranian ranges are already in `ir-cidr`) |
 | `cloudflare`, `cloudfront`, `fastly`, `gcore` | CDN IP ranges |
 | `telegram`, `tor-exit`, `netflix` | Service IP ranges (`tor-exit` is the `tor` tag in geo files and rule-sets) |
 

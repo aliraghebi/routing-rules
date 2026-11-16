@@ -203,7 +203,7 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/<file>
 | `nsfw` | محتوای بزرگسالان |
 | `tracking` | تله‌متری دستگاه و سیستم‌عامل: Apple، Samsung، Xiaomi، Huawei، Vivo، Amazon، LG، Roku، Windows/Office، TikTok. ممکن است برخی قابلیت‌های سازنده را از کار بیندازد. |
 | `ads-lite` | جایگزین حدود ۵ هزار قانونی برای `ads` (شبکه‌های تبلیغاتی و ردیاب‌های ایرانی، Peter Lowe، v2fly) برای دستگاه‌هایی با حافظه کم |
-| `arvancloud`، `parspack`، `derak` | بازه‌های IP شبکه‌های CDN ایرانی (که در `ir-cidr` هم هستند) |
+| `arvancloud`، `parspack`، `derak` | بازه‌های IP شبکه‌های CDN ایرانی، همراه با سرورهای خارج از کشور (بازه‌های ایرانی در `ir-cidr` هستند) |
 | `cloudflare`، `cloudfront`، `fastly`، `gcore` | بازه‌های IP شبکه‌های CDN |
 | `telegram`، `tor-exit`، `netflix` | بازه‌های IP سرویس‌ها (`tor-exit` در فایل‌های geo و rule-setها برچسب `tor` دارد) |
 

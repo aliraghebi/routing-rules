@@ -39,7 +39,7 @@ categories:
   - {name: nsfw,         action: none,   enabled: true}
   - {name: tracking,     action: none,   enabled: true}
   - {name: ads-lite,     action: none,   enabled: true}  # small ads list for memory-limited devices
-  - {name: arvancloud,   action: none,   enabled: true}  # Iranian CDNs, also included in ir-cidr
+  - {name: arvancloud,   action: none,   enabled: true}  # Iranian CDNs, including their servers abroad (not in ir-cidr)
   - {name: parspack,     action: none,   enabled: true}
   - {name: derak,        action: none,   enabled: true}
   - {name: cloudflare,   action: none,   enabled: true}
@@ -72,51 +72,12 @@ sources:
     # category-ads-ir is skipped: ad networks belong in ads.list, not DIRECT.
 
   # ---------- Iran IPs ----------
-  - name: ipdeny-ir-v4
-    url: https://www.ipdeny.com/ipblocks/data/aggregated/ir-aggregated.zone
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: ipdeny.com (free use; see ipdeny.com/usagelimits.php)
-  - name: ipdeny-ir-v6
-    url: https://www.ipdeny.com/ipv6/ipaddresses/aggregated/ir-aggregated.zone
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: ipdeny.com (free use; see ipdeny.com/usagelimits.php)
   - name: ripestat-ir
     url: https://stat.ripe.net/data/country-resource-list/data.json?resource=IR
     format: json
     category: ir-cidr
     enabled: true
     license: RIPEstat Data API terms (RIPE NCC)
-  - name: arvancloud
-    url: https://www.arvancloud.ir/en/ips.txt
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: Published by ArvanCloud, no license stated
-    # /en/dev/ips is a JS-rendered page with no CIDRs in the HTML; ips.txt is the raw feed.
-  - name: parspack
-    url: https://parspack.com/cdnips.txt
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: Published by ParsPack, no license stated
-  - name: derak-v4
-    url: https://api.derak.cloud/public/ipv4
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: Published by Derak Cloud, no license stated
-    # Includes Derak edge nodes hosted abroad (Hetzner, DigitalOcean, Vultr); they serve
-    # Iranian sites, so they go DIRECT like the other Iranian CDNs.
-  - name: derak-v6
-    url: https://api.derak.cloud/public/ipv6
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: Published by Derak Cloud, no license stated
   - name: v2fly-private
     url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/private
     format: v2fly
@@ -138,18 +99,6 @@ sources:
     category: ir-injected
     enabled: true
     license: This repository (values from Chocolate4U/Iran-v2ray-rules)
-  - name: ipverse-ir-v4
-    url: https://raw.githubusercontent.com/ipverse/country-ip-blocks/master/country/ir/ipv4-aggregated.txt
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: CC0-1.0 (ipverse/country-ip-blocks)
-  - name: ipverse-ir-v6
-    url: https://raw.githubusercontent.com/ipverse/country-ip-blocks/master/country/ir/ipv6-aggregated.txt
-    format: cidr
-    category: ir-cidr
-    enabled: true
-    license: CC0-1.0 (ipverse/country-ip-blocks)
   - name: dbip-lite-ir
     url: https://download.db-ip.com/free/dbip-country-lite-{YYYY-MM}.csv.gz
     format: dbip-csv
@@ -160,13 +109,17 @@ sources:
     # Monthly file: {YYYY-MM} is the current UTC month, falling back to the previous month.
     # Geolocation-based (where ranges are used), unlike the registry-based sources above.
 
-  # ---------- Iranian CDN lists (optional; the same ranges are in ir-cidr) ----------
+  # ---------- Iranian CDN lists (optional) ----------
+  # Not sources of ir-cidr: the feeds include edge servers abroad (Vultr, Hetzner,
+  # DigitalOcean, CDN77) that must not go DIRECT. Their Iranian ranges are already
+  # in ripestat-ir / dbip-lite-ir.
   - name: arvancloud-list
     url: https://www.arvancloud.ir/en/ips.txt
     format: cidr
     category: arvancloud
     enabled: true
     license: Published by ArvanCloud, no license stated
+    # /en/dev/ips is a JS-rendered page with no CIDRs in the HTML; ips.txt is the raw feed.
   - name: parspack-list
     url: https://parspack.com/cdnips.txt
     format: cidr
@@ -201,12 +154,6 @@ sources:
     category: ads-lite
     enabled: true
     license: AGPL-3.0 (MasterKia/PersianBlocker)
-  - name: lite-v2fly-category-ads-ir
-    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ads-ir
-    format: v2fly
-    category: ads-lite
-    enabled: true
-    license: MIT (v2fly/domain-list-community)
   - name: lite-local-ir-ads
     url: file:///data/ir-ads.txt
     format: domains
@@ -237,13 +184,6 @@ sources:
     enabled: true
     override_direct: true
     license: AGPL-3.0 (MasterKia/PersianBlocker)
-  - name: v2fly-category-ads-ir
-    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ads-ir
-    format: v2fly
-    category: ads
-    enabled: true
-    override_direct: true
-    license: MIT (v2fly/domain-list-community)
   - name: local-ir-ads
     url: file:///data/ir-ads.txt
     format: domains

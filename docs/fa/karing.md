@@ -27,7 +27,7 @@ Karing خودش rule-setها را دانلود و به‌روز می‌کند، 
 | گروه | عمل | rule-setها |
 |------|-----|-----------|
 | 🚫 Block | `block` | `geoip-ir-injected` (آدرس‌های صفحه مسدودسازی DNS)، `geosite-malware`، `geoip-malware`، `geosite-phishing`، `geoip-phishing`، `geosite-cryptominers`، `geosite-ads` |
-| ✅ Direct | `direct` | `geosite-ir`، `geoip-ir`، `geoip-private` |
+| ✅ Direct | `direct` | `geosite-private`، `geoip-private` (نام‌های محلی و بازه‌های خصوصی)، `geosite-ir`، `geoip-ir` |
 
 بقیه ترافیک از پراکسی‌ای که در Karing انتخاب کرده‌اید عبور می‌کند. `geosite-ir` دامنه‌های `.ir` و
 `.ایران` را هم شامل می‌شود، پس قانون جداگانه‌ای برای `.ir` لازم نیست.

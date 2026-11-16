@@ -35,12 +35,13 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/v2rayn-rout
 | # | تطبیق | خروجی |
 |---|-------|-------|
 | ۱ | `geoip:ir-injected` (آدرس‌های صفحه مسدودسازی DNS ایران) | block |
-| ۲ | `geoip:private` | direct |
-| ۳ | `geosite:malware`، `geosite:phishing`، `geosite:cryptominers`، `geosite:ads` | block |
-| ۴ | `geoip:malware`، `geoip:phishing` | block |
-| ۵ | `geosite:sanctioned` | proxy |
-| ۶ | `geosite:ir` | direct |
-| ۷ | `geoip:ir` | direct |
-| ۸ | بقیه | proxy |
+| ۲ | `geosite:private` (نام‌های محلی: `.lan`، `.local`، `localhost`، صفحه روترها) | direct |
+| ۳ | `geoip:private` | direct |
+| ۴ | `geosite:malware`، `geosite:phishing`، `geosite:cryptominers`، `geosite:ads` | block |
+| ۵ | `geoip:malware`، `geoip:phishing` | block |
+| ۶ | `geosite:sanctioned` | proxy |
+| ۷ | `geosite:ir` | direct |
+| ۸ | `geoip:ir` | direct |
+| ۹ | بقیه | proxy |
 
 برچسب‌های خروجی همان `proxy`، `direct` و `block` استاندارد هر دو برنامه هستند.

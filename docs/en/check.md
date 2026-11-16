@@ -15,8 +15,8 @@ Everything runs in your browser using the published lists.
 <div id="vr-check-result" class="vr-check__result" aria-live="polite"></div>
 
 !!! note "How it decides"
-    The rules are checked in the same order as the default configs: Iran's DNS block-page addresses,
-    malware, phishing, cryptominers and ads are blocked; sanctioned sites go through the proxy; `.ir`
+    The rules are checked in the same order as the default configs: Iran's DNS block-page addresses
+    are blocked; local names and private ranges go direct; malware, phishing, cryptominers and ads are blocked; sanctioned sites go through the proxy; `.ir`
     domains, Iranian sites and Iranian IP ranges go direct; everything else goes through the proxy.
     The first visit downloads the lists (a few MB), so the first check takes a moment.
 

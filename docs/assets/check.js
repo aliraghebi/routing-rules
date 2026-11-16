@@ -146,8 +146,9 @@
       var host = new URL(s.indexOf("://") >= 0 ? s : "http://" + s).hostname.replace(/\.$/, "");
       var ip2 = parseIP(host.replace(/^\[|\]$/g, ""));
       if (ip2) return { ip: ip2, text: host };
-      // A hostname needs at least two labels of letters, digits, hyphens or underscores.
-      if (!/^([a-z0-9_-]+\.)+[a-z0-9-]+$/.test(host)) return null;
+      // Labels of letters, digits, hyphens or underscores; single-label names
+      // ("localhost", "router") are allowed for the private list.
+      if (!/^([a-z0-9_-]+\.)*[a-z0-9-]+$/.test(host)) return null;
       return { host: host, text: host };
     } catch (e) {
       return null;

@@ -26,7 +26,7 @@ Karing downloads the rule-sets itself and refreshes them, so you don't need to r
 | Group | Action | Rule-sets |
 |-------|--------|-----------|
 | 🚫 Block | `block` | `geoip-ir-injected` (DNS block-page addresses), `geosite-malware`, `geoip-malware`, `geosite-phishing`, `geoip-phishing`, `geosite-cryptominers`, `geosite-ads` |
-| ✅ Direct | `direct` | `geosite-ir`, `geoip-ir`, `geoip-private` |
+| ✅ Direct | `direct` | `geosite-private`, `geoip-private` (local names and private ranges), `geosite-ir`, `geoip-ir` |
 
 Everything else goes through the proxy you select in Karing. `geosite-ir` already includes the `.ir` and
 `.ایران` TLDs, so you don't need a separate `.ir` rule.

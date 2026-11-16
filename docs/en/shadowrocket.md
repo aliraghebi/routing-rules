@@ -25,12 +25,14 @@ don't need to re-import. To refresh now, long-press the config in the **Config**
 
 | # | Rule | Action |
 |---|------|--------|
-| 1 | `ir-injected.list` (Iran's DNS block-page addresses), `malware.list`, `phishing.list`, `cryptominers.list`, `ads.list` | REJECT |
-| 2 | `sanctioned.list` | PROXY |
-| 3 | `DOMAIN-SUFFIX,ir`, `ir-domains.list` | DIRECT |
-| 4 | `ir-cidr.list` | DIRECT |
-| 5 | `GEOIP,IR` | DIRECT |
-| 6 | `FINAL` | PROXY |
+| 1 | `ir-injected.list` (Iran's DNS block-page addresses) | REJECT |
+| 2 | `private.list` (local names such as `.lan`, `.local`, `localhost`, router pages; private IP ranges) | DIRECT |
+| 3 | `malware.list`, `phishing.list`, `cryptominers.list`, `ads.list` | REJECT |
+| 4 | `sanctioned.list` | PROXY |
+| 5 | `DOMAIN-SUFFIX,ir`, `ir-domains.list` | DIRECT |
+| 6 | `ir-cidr.list` | DIRECT |
+| 7 | `GEOIP,IR` | DIRECT |
+| 8 | `FINAL` | PROXY |
 
 ## Add an optional list
 

@@ -67,7 +67,7 @@ sing-box نسخه ۱.۱۱ به بعد نیاز دارد. نام rule-setها م�
 
 | دامنه‌ها (`geosite-…`) | بازه‌های IP (`geoip-…`) |
 |------------------------|------------------------|
-| `ads`، `malware`، `phishing`، `cryptominers`، `sanctioned`، `ir`، `social`، `nsfw`، `tracking` | `ir`، `malware`، `phishing`، `private`، `cloudflare`، `cloudfront`، `fastly`، `gcore`، `telegram`، `tor`، `netflix` |
+| `ads`، `malware`، `phishing`، `cryptominers`، `sanctioned`، `ir`، `private`، `social`، `nsfw`، `tracking` | `ir`، `malware`، `phishing`، `private`، `cloudflare`، `cloudfront`، `fastly`، `gcore`، `telegram`، `tor`، `netflix` |
 
 `geosite-ir` دامنه‌های `.ir` و `.ایران` را هم شامل می‌شود.
 

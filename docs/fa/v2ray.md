@@ -27,7 +27,7 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
 
 | `geosite:` | `geoip:` |
 |------------|----------|
-| `ads`، `malware`، `phishing`، `cryptominers`، `sanctioned`، `ir`، `social`، `nsfw`، `tracking` | `ir`، `malware`، `phishing`، `private`، `cloudflare`، `cloudfront`، `fastly`، `gcore`، `telegram`، `tor`، `netflix` |
+| `ads`، `malware`، `phishing`، `cryptominers`، `sanctioned`، `ir`، `private`، `social`، `nsfw`، `tracking` | `ir`، `malware`، `phishing`، `private`، `cloudflare`، `cloudfront`، `fastly`، `gcore`، `telegram`، `tor`، `netflix` |
 
 !!! warning "این فایل‌ها فقط برچسب‌های بالا را دارند"
     اگر فایل‌های geo پیش‌فرض برنامه را با این‌ها جایگزین کنید، قوانینی که از برچسب‌های دیگر استفاده می‌کنند
@@ -51,6 +51,7 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
     "domainStrategy": "IPIfNonMatch",
     "rules": [
       { "type": "field", "ip": ["geoip:ir-injected"], "outboundTag": "block" },
+      { "type": "field", "domain": ["geosite:private"], "outboundTag": "direct" },
       { "type": "field", "ip": ["geoip:private"], "outboundTag": "direct" },
       { "type": "field", "domain": ["geosite:malware", "geosite:phishing", "geosite:cryptominers", "geosite:ads"], "outboundTag": "block" },
       { "type": "field", "ip": ["geoip:ir-injected", "geoip:malware", "geoip:phishing"], "outboundTag": "block" },

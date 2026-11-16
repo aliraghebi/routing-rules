@@ -25,12 +25,14 @@ icon: material/rocket-launch-outline
 
 | # | قانون | عمل |
 |---|-------|-----|
-| ۱ | `ir-injected.list` (آدرس‌های صفحه مسدودسازی DNS ایران)، `malware.list`، `phishing.list`، `cryptominers.list`، `ads.list` | REJECT |
-| ۲ | `sanctioned.list` | PROXY |
-| ۳ | `DOMAIN-SUFFIX,ir`، `ir-domains.list` | DIRECT |
-| ۴ | `ir-cidr.list` | DIRECT |
-| ۵ | `GEOIP,IR` | DIRECT |
-| ۶ | `FINAL` | PROXY |
+| ۱ | `ir-injected.list` (آدرس‌های صفحه مسدودسازی DNS ایران) | REJECT |
+| ۲ | `private.list` (نام‌های محلی مانند `.lan`، `.local`، `localhost`، صفحه روترها؛ بازه‌های IP خصوصی) | DIRECT |
+| ۳ | `malware.list`، `phishing.list`، `cryptominers.list`، `ads.list` | REJECT |
+| ۴ | `sanctioned.list` | PROXY |
+| ۵ | `DOMAIN-SUFFIX,ir`، `ir-domains.list` | DIRECT |
+| ۶ | `ir-cidr.list` | DIRECT |
+| ۷ | `GEOIP,IR` | DIRECT |
+| ۸ | `FINAL` | PROXY |
 
 ## افزودن فهرست اختیاری
 

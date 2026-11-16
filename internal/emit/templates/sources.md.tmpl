@@ -12,12 +12,14 @@ because they could not be verified or are too large for mobile clients.
 **Health** is the result of the latest build: *healthy* sources were fetched in that build; *stale* ones
 failed and the last good copy was used instead; *failing* ones had no copy to fall back on. **Last fetched**
 is the last successful download, and **Last changed** is when the source's rules last differed, which shows
-whether an upstream is still maintained. Dates are UTC.
+whether an upstream is still maintained. Dates are UTC. **Rules** counts the rules in the final list that came
+from the source, and **Unique** those no other source in the category has: a source with few unique rules
+adds little and could be dropped.
 
-| Source | Category | Format | Health | Last fetched | Last changed | License |
-|--------|----------|--------|--------|--------------|--------------|---------|
+| Source | Category | Format | Health | Last fetched | Last changed | Rules | Unique | License |
+|--------|----------|--------|--------|--------------|--------------|------:|-------:|---------|
 {{- range .}}
-| [{{.Name}}]({{.URL}}) | {{.Category}} | {{.Format}} | {{.Health}} | {{.Fetched}} | {{.Changed}} | {{.License}} |
+| [{{.Name}}]({{.URL}}) | {{.Category}} | {{.Format}} | {{.Health}} | {{.Fetched}} | {{.Changed}} | {{.Rules}} | {{.Unique}} | {{.License}} |
 {{- end}}
 
 IP geolocation data for `ir-cidr` includes [IP Geolocation by DB-IP](https://db-ip.com) (CC BY 4.0).

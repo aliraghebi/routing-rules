@@ -2,7 +2,7 @@ name: build
 
 on:
   schedule:
-    - cron: "30 23 * * *" # daily at 03:00 Iran time (UTC+3:30); off the hour, which GitHub may delay
+    - cron: "00 03 * * *"
   workflow_dispatch:
   # PRs (e.g. Renovate updates) run the build and every check, but never publish.
   pull_request:
@@ -13,6 +13,7 @@ on:
       - "internal/**"
       - "sources.yaml"
       - "data/**"
+      - "scripts/**"
       - "go.mod"
       - "go.sum"
       - "docs/**"
@@ -79,110 +80,30 @@ jobs:
       - name: Build
         run: go run ./cmd/build
 
+      - name: Cache sing-box, Xray and mihomo
+        id: tools
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/bin
+          key: tools-${{ runner.os }}-sing-box-${{ env.SING_BOX_VERSION }}-xray-${{ env.XRAY_VERSION }}-mihomo-${{ env.MIHOMO_VERSION }}
+
       - name: Install sing-box, Xray and mihomo
+        if: steps.tools.outputs.cache-hit != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/bin" && cd "$RUNNER_TEMP"
-          # Download a release asset and check it against GitHub's published digest.
-          get() {
-            local repo=$1 tag=$2 asset=$3 want
-            want=$(gh api "repos/$repo/releases/tags/$tag" --jq ".assets[] | select(.name == \"$asset\") | .digest")
-            [ -n "$want" ] || { echo "::error::no published digest for $repo $tag $asset"; exit 1; }
-            curl -fsSL -o "$asset" "https://github.com/$repo/releases/download/$tag/$asset"
-            echo "${want#sha256:}  $asset" | sha256sum -c -
-          }
-          get SagerNet/sing-box "v$SING_BOX_VERSION" "sing-box-$SING_BOX_VERSION-linux-amd64.tar.gz"
-          tar xzf "sing-box-$SING_BOX_VERSION-linux-amd64.tar.gz" --strip-components=1 -C bin "sing-box-$SING_BOX_VERSION-linux-amd64/sing-box"
-          get XTLS/Xray-core "v$XRAY_VERSION" Xray-linux-64.zip
-          unzip -q Xray-linux-64.zip xray -d bin
-          get MetaCubeX/mihomo "v$MIHOMO_VERSION" "mihomo-linux-amd64-v$MIHOMO_VERSION.gz"
-          gunzip -c "mihomo-linux-amd64-v$MIHOMO_VERSION.gz" > bin/mihomo && chmod +x bin/mihomo
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+        run: scripts/install-tools.sh "$RUNNER_TEMP/bin"
 
-      # Validate before publishing, so a broken output never reaches users.
-      - name: Compile and check sing-box rule-sets
-        run: |
-          mkdir -p out/srs
-          for f in dist/geo*.json; do
-            sing-box rule-set compile --output "out/srs/$(basename "${f%.json}").srs" "$f"
-          done
-          # Format version 1 ("SRS" + 0x01): older cores such as Karing's reject version 2.
-          for f in out/srs/*.srs; do
-            [ "$(head -c 4 "$f" | od -An -tx1 | tr -d ' \n')" = "53525301" ] || { echo "::error::$f is not rule-set format version 1"; exit 1; }
-          done
-          # "rule-set match" logs "match rules.[N]: ..." to stderr for each matching rule.
-          matches() { local out; out=$(sing-box rule-set match -f binary "out/srs/$1.srs" "$2" 2>&1); [[ $out == *"match rules"* ]]; }
-          must()    { matches "$1" "$2" || { echo "::error::$1 should match $2"; exit 1; }; }
-          mustnot() { ! matches "$1" "$2" || { echo "::error::$1 should not match $2"; exit 1; }; }
-          must geosite-ir digikala.com
-          must geosite-ir www.digikala.com
-          must geosite-ir example.ir
-          must geosite-ads yektanet.com
-          must geosite-ads cdn.yektanet.com
-          must geoip-ir 2.144.0.1
-          mustnot geosite-ir google.com
-          mustnot geosite-ads digikala.com
-          mustnot geosite-ads xyektanet.com   # suffix rules match on a label boundary only
-          mustnot geosite-ir example.irx
-          echo '{"outbounds":[{"type":"direct","tag":"direct"},{"type":"direct","tag":"proxy"}]}' > "$RUNNER_TEMP/sb-outbounds.json"
-          sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box-route.json
-          sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box-route.json -c dist/sing-box-dns.json
+      - run: echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
-      - name: Check v2ray geo files with Xray
-        run: |
-          cat > "$RUNNER_TEMP/outbounds.json" <<'JSON'
-          { "outbounds": [
-              { "tag": "proxy", "protocol": "freedom" },
-              { "tag": "direct", "protocol": "freedom" },
-              { "tag": "block", "protocol": "blackhole" } ] }
-          JSON
-          # Fails with "list not found" if a tag referenced by the routing is missing.
-          XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray-routing.json
-          XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray-routing.json -c dist/xray-dns.json
+      - name: Compile rule-sets
+        run: scripts/compile.sh
 
-      - name: Compile and check mihomo rule-sets
-        run: |
-          mkdir -p out/mrs
-          for f in out/clash/*.txt; do
-            n=$(basename "${f%.txt}")
-            case "$n" in geoip-*) b=ipcidr ;; *) b=domain ;; esac
-            mihomo convert-ruleset "$b" text "$f" "out/mrs/$n.mrs"
-          done
-          # Every provider clash.yaml references must exist.
-          for t in $(grep -oE 'url: .*/[^/]+\.mrs' dist/clash.yaml | sed -E 's#.*/##'); do
-            [ -f "out/mrs/$t" ] || { echo "::error::clash.yaml references missing $t"; exit 1; }
-          done
-          # Round-trip: decode .mrs back to text and look for known entries.
-          dump() { mihomo convert-ruleset "$1" mrs "out/mrs/$2.mrs" "$RUNNER_TEMP/$2.dump"; }
-          has()  { dump domain "$1"; grep -qxF -- "$2" "$RUNNER_TEMP/$1.dump" || { echo "::error::$1.mrs should contain $2"; exit 1; }; }
-          has geosite-ir "+.ir"
-          has geosite-ads "+.yektanet.com"
-          # mihomo re-aggregates IP sets, so check containment rather than an exact line.
-          dump ipcidr geoip-ir
-          python3 -c 'import ipaddress,sys; a=ipaddress.ip_address("2.144.0.1"); sys.exit(0 if any(a in ipaddress.ip_network(l.strip()) for l in open(sys.argv[1]) if l.strip()) else 1)' "$RUNNER_TEMP/geoip-ir.dump" \
-            || { echo "::error::geoip-ir.mrs should cover 2.144.0.1"; exit 1; }
+      - name: Check configs with sing-box, Xray and mihomo
+        run: scripts/check-configs.sh
 
-      - name: Check mihomo config
-        run: |
-          # clash.yaml + clash-dns.yaml + a stand-in PROXY group must form a valid config.
-          d="$RUNNER_TEMP/mihomo"; mkdir -p "$d"
-          { cat dist/clash.yaml; echo; cat dist/clash-dns.yaml; echo
-            echo 'proxy-groups:'; echo '  - {name: PROXY, type: select, proxies: [DIRECT]}'; } > "$d/config.yaml"
-          timeout 120 mihomo -t -d "$d" -f "$d/config.yaml"
+      - name: Check known answers in the compiled files
+        run: go run ./cmd/verify
 
-      - name: Check PAC file
-        run: |
-          node -e '
-            const src = require("fs").readFileSync("dist/proxy.pac", "utf8");
-            global.isPlainHostName = h => !h.includes(".");
-            eval(src);
-            const want = { "digikala.com": "DIRECT", "www.digikala.com": "DIRECT", "example.ir": "DIRECT", "192.168.1.1": "DIRECT" };
-            for (const [h, w] of Object.entries(want)) if (FindProxyForURL("https://" + h + "/", h) !== w) { console.error("::error::PAC " + h); process.exit(1); }
-            if (FindProxyForURL("https://google.com/", "google.com") === "DIRECT") { console.error("::error::PAC google.com must use the proxy"); process.exit(1); }
-          '
-
-      # Everything users download, flat, under the same names the configs reference.
       - name: Assemble release files
         id: assemble
         run: |
@@ -215,54 +136,8 @@ jobs:
         if: steps.assemble.outputs.changed == 'true' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          # Tag: sortable UTC build time, e.g. 202611161306 (seconds added on a same-minute
-          # clash). Title: the same moment, readable, e.g. "2026-11-16 13:06 UTC".
-          now=$(date -u +%s)
-          tag=$(date -u -d "@$now" +%Y%m%d%H%M)
-          if gh release view "$tag" >/dev/null 2>&1; then tag=$(date -u -d "@$now" +%Y%m%d%H%M%S); fi
-          # Per-list changes vs the previous release (rules added / removed).
-          changes="$RUNNER_TEMP/changes.md"
-          if ls "$RUNNER_TEMP/prev/"*.list >/dev/null 2>&1; then
-            { echo "| List | Rules | Added | Removed |"; echo "|------|------:|------:|--------:|"; } > "$changes"
-            rows=0
-            for f in "$REL"/*.list; do
-              n=$(basename "$f")
-              grep -v '^#' "$f" | LC_ALL=C sort > "$RUNNER_TEMP/new.txt"
-              { grep -v '^#' "$RUNNER_TEMP/prev/$n" 2>/dev/null || true; } | LC_ALL=C sort > "$RUNNER_TEMP/old.txt"
-              add=$(( $(LC_ALL=C comm -13 "$RUNNER_TEMP/old.txt" "$RUNNER_TEMP/new.txt" | wc -l) ))
-              del=$(( $(LC_ALL=C comm -23 "$RUNNER_TEMP/old.txt" "$RUNNER_TEMP/new.txt" | wc -l) ))
-              if [ "$add" -gt 0 ] || [ "$del" -gt 0 ]; then
-                echo "| \`${n%.list}\` | $(( $(wc -l < "$RUNNER_TEMP/new.txt") )) | +$add | −$del |" >> "$changes"
-                rows=$((rows + 1))
-              fi
-            done
-            [ "$rows" -gt 0 ] || echo "Only non-list files changed (configs, formats or geo files)." > "$changes"
-          else
-            echo "First release in this format; no previous lists to compare." > "$changes"
-          fi
-          # Notes are Markdown: <file> must sit in a code span or GitHub drops it as an HTML tag.
-          updated=$(date -u -d "@$now" '+%A %Y-%m-%d %H:%M:%S UTC')
-          notes=$(cat <<EOF
-          - Updated on ${updated} from ${GITHUB_SHA::7}
-          - Always download from \`https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/<file>\` to get latest version.
+        run: scripts/publish.sh "$RUNNER_TEMP/prev"
 
-          ### Changes
-
-          $(cat "$changes")
-          EOF
-          )
-          gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$(date -u -d "@$now" '+%Y-%m-%d %H:%M UTC')" --notes "$notes"
-          gh release upload "$tag" "$REL"/*
-          gh release edit "$tag" --draft=false --latest
-          # Keep the 7 newest releases (also removes drafts left by failed runs).
-          gh release list --limit 200 --json tagName,createdAt \
-            --jq 'sort_by(.createdAt) | reverse | .[7:] | .[].tagName' |
-          while read -r old; do
-            gh release delete "$old" --yes --cleanup-tag || echo "::warning::could not delete release $old"
-          done
-
-      # docs/en/urls.md, docs/en/sources.md and docs/en/dl/ were generated by the build step above.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

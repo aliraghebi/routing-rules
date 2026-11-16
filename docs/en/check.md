@@ -17,7 +17,7 @@ Everything runs in your browser using the published lists.
 !!! note "How it decides"
     The rules are checked in the same order as the default configs: Iran's DNS block-page addresses
     are blocked; local names and private ranges go direct; malware, phishing, cryptominers and ads are blocked; sanctioned sites go through the proxy; `.ir`
-    domains, Iranian sites and Iranian IP ranges go direct; everything else goes through the proxy.
+    domains, Iranian sites and Iranian IP ranges go direct; everything else goes through the tunnel.
     The first visit downloads the lists (a few MB), so the first check takes a moment.
 
 You can link to a result: `https://aliraghebi.github.io/routing-rules/check/?q=example.com`.

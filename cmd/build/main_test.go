@@ -1,6 +1,12 @@
 package main
 
-import "testing"
+import (
+	"maps"
+	"net/netip"
+	"testing"
+
+	"github.com/aliraghebi/routing-rules/internal/parse"
+)
 
 func TestSourceLink(t *testing.T) {
 	repo := "https://github.com/o/r/"
@@ -14,5 +20,25 @@ func TestSourceLink(t *testing.T) {
 	}
 	if got := sourceLink("", "file:///data/x.txt"); got != "file:///data/x.txt" {
 		t.Errorf("empty repo: got %q", got)
+	}
+}
+
+func TestProvenanceStats(t *testing.T) {
+	a := parse.Domain{Kind: parse.Suffix, Name: "a.com"}
+	b := parse.Domain{Kind: parse.Suffix, Name: "b.com"}
+	gone := parse.Domain{Kind: parse.Suffix, Name: "gone.com"} // filtered out of the final list
+	srcs := []outcome{
+		{src: Source{Name: "s1"}, res: parse.Result{Domains: []parse.Domain{a, b}}},
+		{src: Source{Name: "s2"}, res: parse.Result{Domains: []parse.Domain{b}, CIDRs: []netip.Prefix{netip.MustParsePrefix("10.0.0.0/24")}}},
+		{src: Source{Name: "s3"}, res: parse.Result{Domains: []parse.Domain{gone}}},
+	}
+	final := catRules{domains: []parse.Domain{a, b}, cidrs: []netip.Prefix{netip.MustParsePrefix("10.0.0.0/16")}}
+	got, stats := provenance(srcs, final, map[string]srcStat{})
+	if want := "[\"s1\",\"s2\",\"s3\"]\n1\n3\n2\n"; string(got) != want {
+		t.Errorf("prov = %q, want %q", got, want)
+	}
+	want := map[string]srcStat{"s1": {2, 1}, "s2": {2, 1}, "s3": {0, 0}}
+	if !maps.Equal(stats, want) {
+		t.Errorf("stats = %v, want %v", stats, want)
 	}
 }

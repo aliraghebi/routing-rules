@@ -18,7 +18,7 @@ settings:
   # GitHub release; this URL always redirects to the newest copy.
   base_url: https://github.com/aliraghebi/routing-rules/releases/latest/download
   timeout: 90s
-  concurrency: 8
+  concurrency: 16
   retries: 3
   max_bytes: 67108864        # per-source default size cap (64 MiB)
   list_cap_warn: 200000      # warn above this many rules in one list (iOS NE memory)

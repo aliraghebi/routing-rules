@@ -8,7 +8,7 @@ Inspired by [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v
 - **Block** ads and trackers (including Iranian ad networks and trackers), malware, phishing, cryptominers,
   and Iran's DNS block-page addresses.
 - **Proxy** sites that refuse Iranian IPs.
-- **Direct** for Iranian domains and IP ranges; everything else goes through the proxy.
+- **Direct** for Iranian domains and IP ranges; everything else goes through the tunnel.
 
 **Outputs**, published as GitHub release assets:
 

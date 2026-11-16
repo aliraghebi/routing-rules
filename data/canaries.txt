@@ -1,4 +1,5 @@
-# Known answers checked against the built lists before anything is published.
+# Known answers checked against the built lists before anything is published,
+# and again by cmd/verify against the compiled rule-sets and PAC file in CI.
 # A mismatch fails the build, so a bad upstream update cannot silently block a
 # major site or send it the wrong way. Format: <domain or IP> <block|direct|proxy>
 # Domains are not resolved (like no-resolve rules), so IP-only behavior such as
@@ -13,6 +14,10 @@ wikipedia.org       proxy
 telegram.org        proxy
 cloudflare.com      proxy
 apple.com           proxy
+
+# Suffix rules match on a label boundary only
+xyektanet.com       proxy
+example.irx         proxy
 
 # Sites that block Iranian IPs: always through the proxy
 accounts.google.com proxy

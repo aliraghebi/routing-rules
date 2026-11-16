@@ -45,6 +45,7 @@ type DocSource struct {
 	Enabled                              bool
 	Health                               string // localized status label
 	Fetched, Changed                     string // YYYY-MM-DD or "—"
+	Rules, Unique                        string // rules in the final list from this source, and from no other; "—" if unused
 }
 
 //go:embed templates/*.md.tmpl

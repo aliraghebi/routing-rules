@@ -37,7 +37,7 @@
     checking: "Checking",
     notListed: "Not in any list the default configs use, so the default rule sends it through the proxy.",
     notFound: "Not found in any list",
-    notFoundSub: "Your app's default rule applies. In VPN clients, for example, the traffic goes through the proxy.",
+    notFoundSub: "Your app's default rule applies. In VPN clients, for example, the traffic goes through the tunnel.",
     geoipNote: "Apps that resolve domains (Shadowrocket <code>GEOIP,IR</code>, Xray <code>IPIfNonMatch</code>, " +
       "mihomo <code>geoip-ir</code>) still send it direct if its IP address is Iranian. This page cannot resolve " +
       "DNS, so check the IP address too if you know it.",

@@ -28,13 +28,13 @@ categories:
   - {name: phishing,     action: reject, enabled: true}
   - {name: cryptominers, action: reject, enabled: true}
   - {name: ads,          action: reject, enabled: true}
-  - {name: tracking,     action: reject, enabled: true}
   - {name: sanctioned,   action: proxy,  enabled: true}
   - {name: ir-domains,   action: direct, enabled: true}
   - {name: ir-cidr,      action: direct, enabled: true}
   # Optional lists: built and published, not referenced by shadowrocket.conf.
   - {name: social,       action: none,   enabled: true}
   - {name: nsfw,         action: none,   enabled: true}
+  - {name: tracking,     action: none,   enabled: true}
   - {name: cloudflare,   action: none,   enabled: true}
   - {name: cloudfront,   action: none,   enabled: true}
   - {name: fastly,       action: none,   enabled: true}
@@ -153,6 +153,17 @@ sources:
     license: MIT (bootmortis/iran-hosted-domains)
     # This category also tags some real sites (shops, magazines, payment links);
     # those are pinned in allowlist.txt so they are never blocked.
+  - name: persianblocker-trackers
+    url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerTrackers-Domains.txt
+    format: domains
+    match: suffix
+    category: ads
+    enabled: true
+    override_direct: true
+    license: AGPL-3.0 (MasterKia/PersianBlocker)
+    # Iranian analytics/tracking hosts; trusted like PersianBlocker's ad list, so it can
+    # block trackers that also appear in ir-domains. Web trackers belong with ads (blocked by
+    # default); device/OS telemetry goes in the optional tracking list.
   - name: hagezi-pro-mini
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.mini-onlydomains.txt
     format: domains
@@ -274,19 +285,9 @@ sources:
     enabled: true
     license: MIT (v2fly/domain-list-community)
 
-  # ---------- Trackers and telemetry (blocked by default) ----------
-  # Device/OS telemetry can break vendor features (cloud sync, some app functions);
-  # add affected domains to allowlist.txt.
-  - name: persianblocker-trackers
-    url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerTrackers-Domains.txt
-    format: domains
-    match: suffix
-    category: tracking
-    enabled: true
-    override_direct: true
-    license: AGPL-3.0 (MasterKia/PersianBlocker)
-    # Iranian analytics/tracking hosts; trusted like PersianBlocker's ad list, so it can
-    # block trackers that also appear in ir-domains.
+  # ---------- Device and OS telemetry (optional "tracking" list) ----------
+  # Not in the default configs: blocking vendor telemetry can break features (cloud sync,
+  # app stores, some app functions), which users can't easily diagnose.
   - name: windowsspyblocker-spy
     url: https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
     format: hosts

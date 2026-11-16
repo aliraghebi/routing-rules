@@ -17,7 +17,7 @@ the VPN. Paste the file's content after `AllowedIPs =` in the `[Peer]` section.
 | `wireguard-allowedips.txt` | ~16k, IPv4 and IPv6 | Desktop clients |
 | `wireguard-allowedips-lite.txt` | ~1.7k IPv4, plus `::/0` | Phones. Excludes only Iranian blocks of `/20` or larger (about 90% of Iranian IPv4 addresses) and sends all IPv6 through the tunnel. |
 
-[:material-download: Download wireguard-allowedips-lite.txt](dl/wireguard-allowedips-lite.txt){ .md-button .md-button--primary download="wireguard-allowedips-lite.txt" } [:material-download: Download wireguard-allowedips.txt](dl/wireguard-allowedips.txt){ .md-button download="wireguard-allowedips.txt" }
+[:material-download: Download wireguard-allowedips-lite.txt](https://github.com/aliraghebi/routing-rules/releases/latest/download/wireguard-allowedips-lite.txt){ .md-button .md-button--primary } [:material-download: Download wireguard-allowedips.txt](https://github.com/aliraghebi/routing-rules/releases/latest/download/wireguard-allowedips.txt){ .md-button }
 
 !!! warning "DNS"
     Split tunneling by IP doesn't decide where DNS goes. Set the WireGuard `DNS =` to a resolver inside the
@@ -41,7 +41,7 @@ changes.
 | `openvpn-ir-routes.txt` | ~2k, IPv4 | Desktop clients |
 | `openvpn-ir-routes-lite.txt` | ~350, IPv4 | Phones and routers. Only Iranian blocks of `/20` or larger (about 90% of Iranian IPv4 addresses). |
 
-[:material-download: Download openvpn-ir-routes-lite.txt](dl/openvpn-ir-routes-lite.txt){ .md-button .md-button--primary download="openvpn-ir-routes-lite.txt" } [:material-download: Download openvpn-ir-routes.txt](dl/openvpn-ir-routes.txt){ .md-button download="openvpn-ir-routes.txt" }
+[:material-download: Download openvpn-ir-routes-lite.txt](https://github.com/aliraghebi/routing-rules/releases/latest/download/openvpn-ir-routes-lite.txt){ .md-button .md-button--primary } [:material-download: Download openvpn-ir-routes.txt](https://github.com/aliraghebi/routing-rules/releases/latest/download/openvpn-ir-routes.txt){ .md-button }
 
 !!! note
     The routes are IPv4 only, so IPv6 stays in the tunnel. `net_gateway` is standard OpenVPN 2.x syntax
@@ -52,7 +52,7 @@ changes.
 
 `mikrotik-ir.rsc` creates the address list `IR` (IPv4 and IPv6). Running it again replaces the list.
 
-[:material-download: Download mikrotik-ir.rsc](dl/mikrotik-ir.rsc){ .md-button .md-button--primary download="mikrotik-ir.rsc" }
+[:material-download: Download mikrotik-ir.rsc](https://github.com/aliraghebi/routing-rules/releases/latest/download/mikrotik-ir.rsc){ .md-button .md-button--primary }
 
 ```
 /tool fetch url="https://github.com/aliraghebi/routing-rules/releases/latest/download/mikrotik-ir.rsc" dst-path=mikrotik-ir.rsc

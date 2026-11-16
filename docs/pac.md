@@ -8,9 +8,7 @@ A proxy auto-config (PAC) file tells a browser which sites to send through a pro
 Iranian domains (including all `.ir` domains) direct and everything else through your proxy client's
 local proxy (v2rayN, Clash, sing-box and similar).
 
-[:material-download: Download proxy.pac](dl/proxy.pac){ .md-button .md-button--primary download="proxy.pac" }
-
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/proxy.pac).
+[:material-download: Download proxy.pac](https://github.com/aliraghebi/routing-rules/releases/latest/download/proxy.pac){ .md-button .md-button--primary }
 
 ## Set the proxy address
 

@@ -43,7 +43,7 @@ Opening these URLs in a browser downloads the files.
 
 `xray-routing.json` follows the same order as the Shadowrocket config:
 
-[:material-download: Download xray-routing.json](dl/xray-routing.json){ .md-button .md-button--primary download="xray-routing.json" }
+[:material-download: Download xray-routing.json](https://github.com/aliraghebi/routing-rules/releases/latest/download/xray-routing.json){ .md-button .md-button--primary }
 
 ```json
 {
@@ -72,9 +72,7 @@ no domain rule matched, so `geoip:ir` also catches Iranian sites missing from `g
 `xray-dns.json` is a `dns` block: Iranian domains (`geosite:ir`) use the system resolver, everything else
 DNS-over-HTTPS (`https://1.1.1.1/dns-query`), which the routing above sends through the proxy.
 
-[:material-download: Download xray-dns.json](dl/xray-dns.json){ .md-button .md-button--primary download="xray-dns.json" }
-
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/xray-dns.json).
+[:material-download: Download xray-dns.json](https://github.com/aliraghebi/routing-rules/releases/latest/download/xray-dns.json){ .md-button .md-button--primary }
 
 ## v2rayN / v2rayNG
 

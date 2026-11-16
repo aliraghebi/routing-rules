@@ -9,9 +9,7 @@ icon: material/vector-polyline
 
 ## Get the rules file
 
-[:material-download: Download karing.json](dl/karing.json){ .md-button .md-button--primary download="karing.json" }
-
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/karing.json).
+[:material-download: Download karing.json](https://github.com/aliraghebi/routing-rules/releases/latest/download/karing.json){ .md-button .md-button--primary }
 
 ## Import it
 

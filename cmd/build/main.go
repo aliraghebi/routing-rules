@@ -598,22 +598,13 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	if err := writeIfChanged(filepath.Join(dir, "sources.md"), sources); err != nil {
 		return err
 	}
-	// Copies of the files users import as files, served by the docs site itself:
-	// a same-origin link with the download attribute makes browsers save the file
-	// instead of showing it as text (release-asset links force a download, but go through github.com redirects).
-	dl := map[string][]byte{}
-	for name, b := range files {
-		for _, stem := range []string{"karing", "v2rayn-routing", "clash", "sing-box-route", "sing-box-dns", "xray-routing", "xray-dns",
-			"shadowrocket", "proxy.pac", "mikrotik-ir", "wireguard-allowedips", "openvpn-ir-routes"} {
-			if strings.HasPrefix(name, stem) {
-				dl[name] = b
-			}
-		}
-	}
-	if err := syncDir(filepath.Join(dir, "dl"), dl); err != nil {
+	// Download buttons link to release assets (GitHub sends them as attachments),
+	// so docs/dl only holds the checker's lists; clear any older file copies.
+	if err := syncDir(filepath.Join(dir, "dl"), nil); err != nil {
 		return err
 	}
-	// Lists the "Check a domain" page loads (same origin, so no CORS issues).
+	// Lists the "Check a domain" page loads. Same origin: GitHub's download
+	// servers are not known to allow cross-origin fetches.
 	checkLists := map[string][]byte{}
 	for _, c := range cfg.Categories {
 		if b, ok := files[c.Name+".list"]; ok && c.Name != "ads-lite" {

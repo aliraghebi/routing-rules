@@ -7,7 +7,7 @@ icon: material/alpha-v-circle-outline
 `v2rayn-routing.json` is a set of custom routing rules in the JSON format v2rayN and v2rayNG import. It uses
 this project's `geosite:` / `geoip:` tags.
 
-[:material-download: Download v2rayn-routing.json](dl/v2rayn-routing.json){ .md-button .md-button--primary download="v2rayn-routing.json" }
+[:material-download: Download v2rayn-routing.json](https://github.com/aliraghebi/routing-rules/releases/latest/download/v2rayn-routing.json){ .md-button .md-button--primary }
 
 To import by URL instead, use:
 

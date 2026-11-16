@@ -30,7 +30,7 @@ Open the app's routing settings, add a new custom rule set, and import the downl
 | # | Match | Outbound |
 |---|-------|----------|
 | 1 | `geoip:private` | direct |
-| 2 | `geosite:malware`, `geosite:phishing`, `geosite:cryptominers`, `geosite:ads`, `geosite:tracking` | block |
+| 2 | `geosite:malware`, `geosite:phishing`, `geosite:cryptominers`, `geosite:ads` | block |
 | 3 | `geoip:malware`, `geoip:phishing` | block |
 | 4 | `geosite:sanctioned` | proxy |
 | 5 | `geosite:ir` | direct |

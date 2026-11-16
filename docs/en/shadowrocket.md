@@ -13,13 +13,13 @@ icon: material/rocket-launch-outline
     ```
 
 2. Shadowrocket → **Config** tab → **+** → paste the URL → **Download**.
-3. Tap the new config → **Use Config**.
+3. Tap the new config → **Use Config**. A checkmark marks the config in use.
 4. On the **Home** tab, add your server and set **Global Routing** to **Config**.
 
 ## Keep it updated
 
 The lists change daily. The config includes `update-url` and every rule list is a remote `RULE-SET`, so you
-don't need to re-import. To refresh, swipe left on the config in the **Config** tab → **Update**.
+don't need to re-import. To refresh now, long-press the config in the **Config** tab → **Update**.
 
 ## Rule order
 
@@ -34,7 +34,7 @@ don't need to re-import. To refresh, swipe left on the config in the **Config** 
 
 ## Add an optional list
 
-Edit the config (**Config** → tap the config → **Edit Config** → **Rule**) and add a line above `FINAL`. For
+Edit the config (**Config** → long-press the config → **Edit Config** → **Rule**) and add a line above `FINAL`. For
 example:
 
 ```

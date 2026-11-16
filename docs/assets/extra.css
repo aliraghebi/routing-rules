@@ -109,3 +109,8 @@
   direction: ltr;
   text-align: left;
 }
+
+/* Breadcrumb chevron points toward the next item: flip it on right-to-left pages */
+[dir="rtl"] .md-path__item:not(:first-child)::before {
+  transform: scaleX(-1);
+}

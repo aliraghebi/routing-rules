@@ -7,6 +7,7 @@
   // Rule order of the default configs.
   var ORDER = [
     { list: "ir-injected", verdict: "block", why: "whyInjected" },
+    { list: "private", verdict: "direct", why: "whyPrivate" },
     { list: "malware", verdict: "block" },
     { list: "phishing", verdict: "block" },
     { list: "cryptominers", verdict: "block" },
@@ -42,6 +43,7 @@
     whyInjected: "Iran's DNS block page address",
     whySanctioned: "site that blocks Iranian IPs",
     whyTLD: ".ir / xn--mgba3a4f16a domain",
+    whyPrivate: "private or local network",
   }, (window.VR_CHECK_I18N || {})[(document.documentElement.lang || "en").slice(0, 2)] || {});
 
   function load(name) {

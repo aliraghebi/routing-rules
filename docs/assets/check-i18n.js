@@ -19,5 +19,6 @@ window.VR_CHECK_I18N = {
     whyInjected: "آدرس صفحه مسدودسازی DNS ایران",
     whySanctioned: "سایتی که IPهای ایران را مسدود می‌کند",
     whyTLD: "دامنه .ir یا .ایران",
+    whyPrivate: "شبکه خصوصی یا محلی",
   },
 };

@@ -214,7 +214,7 @@ sources:
     format: domains
     match: suffix
     category: ads
-    enabled: true
+    enabled: false
     license: GPL-3.0 (hagezi/dns-blocklists)
     # pro.mini is hagezi's size-optimized list for memory-limited devices; full pro is ~2x larger.
   - name: goodbyeads
@@ -229,7 +229,7 @@ sources:
     url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
     format: abp
     category: ads
-    enabled: false
+    enabled: true
     license: GPL-3.0 (AdguardTeam/AdGuardSDNSFilter)
     # Disabled by default: ~190k rules, ads.list grows to ~257k rules / 8.9 MB (over list_cap_warn).
     # hagezi pro.mini already aggregates AdGuard's DNS filter among its sources.

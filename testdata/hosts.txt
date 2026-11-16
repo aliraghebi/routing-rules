@@ -1,0 +1,9 @@
+# comment
+127.0.0.1 localhost
+0.0.0.0 0.0.0.0
+0.0.0.0 Ads.Example.COM tracker.example.net # trailing comment
+0.0.0.0 1.2.3.4
+::1 ip6-localhost
+0.0.0.0 bad_-.example..org
+not-an-ip example.org
+0.0.0.0 bücher.de

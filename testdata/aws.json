@@ -1,0 +1,2 @@
+{"syncToken":"1","prefixes":[{"ip_prefix":"13.32.0.0/15","region":"GLOBAL","service":"CLOUDFRONT"},{"ip_prefix":"3.0.0.0/15","region":"x","service":"EC2"}],
+"ipv6_prefixes":[{"ipv6_prefix":"2600:9000::/28","service":"CLOUDFRONT"},{"ipv6_prefix":"2600:1f00::/24","service":"EC2"}]}

@@ -1,0 +1,10 @@
+# root
+include:child
+include:attrs @ads
+include:attrs @-ads @!cn
+domain:suffix.example
+full:exact.example.com
+keyword:tracker
+regexp:^ad\d+\.example\.com$
+plain.example @cn &other
+ir

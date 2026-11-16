@@ -1,0 +1,12 @@
+[Adblock Plus 2.0]
+! comment
+||ads.example.com^
+||tracker.example.net^$important
+||third.example.com^$third-party
+@@||good.example.com^
+example.com##.banner
+/^ads[0-9]+\./
+||wild*.example.com^
+||path.example.com/ads
+|https://x.example.com^
+||noanchor.example.com

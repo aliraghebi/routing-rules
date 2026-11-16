@@ -114,3 +114,19 @@
 [dir="rtl"] .md-path__item:not(:first-child)::before {
   transform: scaleX(-1);
 }
+
+/* Buttons: center the icon and the label vertically, with even spacing (LTR and RTL) */
+.md-typeset .md-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  line-height: 1.4;
+}
+.md-typeset .md-button .twemoji {
+  display: inline-flex;
+}
+.md-typeset .md-button .twemoji svg {
+  width: 1.1em;
+  height: 1.1em;
+}

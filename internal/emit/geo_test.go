@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"gopkg.in/yaml.v3"
 )
 
 func TestGeoSiteDat(t *testing.T) {
@@ -99,5 +100,62 @@ func TestKaring(t *testing.T) {
 	if len(r) != 2 || r[0].Outbound != "block" || r[1].Outbound != "direct" || !r[0].Switch || !r[0].Or ||
 		r[0].RuleSet[0] != "https://x/release/geosite-ads.srs" || r[1].RuleSet[2] != "https://x/release/geoip-private.srs" {
 		t.Fatalf("unexpected karing rules:\n%s", b)
+	}
+}
+
+func TestClash(t *testing.T) {
+	txt, skipped := ClashDomainText([]parse.Domain{{Kind: parse.Suffix, Name: "ir"}, {Kind: parse.Exact, Name: "a.io"}, {Kind: parse.Keyword, Name: "ad"}})
+	if string(txt) != "+.ir\na.io\n" || skipped != 1 {
+		t.Fatalf("domain text %q skipped %d", txt, skipped)
+	}
+	if got := string(ClashIPText([]netip.Prefix{netip.MustParsePrefix("2.144.0.0/14")})); got != "2.144.0.0/14\n" {
+		t.Fatalf("ip text %q", got)
+	}
+	conf := string(ClashConfig("https://x/release", RouteData{
+		Reject: []string{"geosite-ads", "geoip-malware"}, Proxy: []string{"geosite-sanctioned"}, Direct: []string{"geosite-ir", "geoip-ir"},
+		All: []string{"geosite-ads", "geoip-malware", "geosite-sanctioned", "geosite-ir", "geoip-ir", "geoip-private"}}))
+	var doc struct {
+		Providers map[string]struct {
+			Type, Behavior, Format, URL string
+		} `yaml:"rule-providers"`
+		Rules []string `yaml:"rules"`
+	}
+	if err := yaml.Unmarshal([]byte(conf), &doc); err != nil {
+		t.Fatalf("invalid YAML: %v\n%s", err, conf)
+	}
+	want := []string{"RULE-SET,geoip-private,DIRECT,no-resolve", "RULE-SET,geosite-ads,REJECT", "RULE-SET,geoip-malware,REJECT,no-resolve",
+		"RULE-SET,geosite-sanctioned,PROXY", "RULE-SET,geosite-ir,DIRECT", "RULE-SET,geoip-ir,DIRECT", "MATCH,PROXY"}
+	if strings.Join(doc.Rules, "|") != strings.Join(want, "|") {
+		t.Fatalf("rules\n got %v\nwant %v", doc.Rules, want)
+	}
+	if p := doc.Providers["geoip-ir"]; p.Behavior != "ipcidr" || p.Format != "mrs" || p.URL != "https://x/release/geoip-ir.mrs" {
+		t.Fatalf("provider %+v", p)
+	}
+	if doc.Providers["geosite-ir"].Behavior != "domain" {
+		t.Fatal("geosite-ir must use domain behavior")
+	}
+}
+
+func TestV2rayNRouting(t *testing.T) {
+	b, err := V2rayNRouting(RouteData{RejectSite: []string{"ads"}, RejectIP: []string{"malware"}, ProxySite: []string{"sanctioned"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var rules []struct {
+		OutboundTag string   `json:"outboundTag"`
+		Domain      []string `json:"domain"`
+		IP          []string `json:"ip"`
+		Port        string   `json:"port"`
+	}
+	if err := json.Unmarshal(b, &rules); err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, r := range rules {
+		got = append(got, r.OutboundTag+":"+strings.Join(append(append(r.Domain, r.IP...), r.Port), ","))
+	}
+	want := "direct:geoip:private,|block:geosite:ads,|block:geoip:malware,|proxy:geosite:sanctioned,|direct:geosite:ir,|direct:geoip:ir,|proxy:0-65535"
+	if strings.Join(got, "|") != want {
+		t.Fatalf("got  %s\nwant %s", strings.Join(got, "|"), want)
 	}
 }

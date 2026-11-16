@@ -316,6 +316,11 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 		return err
 	}
 	files["xray-routing.json"] = xr
+	vn, err := emit.V2rayNRouting(g.route)
+	if err != nil {
+		return err
+	}
+	files["v2rayn-routing.json"] = vn
 	// Files that embed URLs get one copy per mirror; the first mirror has no suffix.
 	for i, m := range st.Mirrors {
 		base := strings.TrimRight(m.BaseURL, "/")
@@ -339,6 +344,9 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 			return err
 		}
 		files[mirrorName("karing", ".json", i, m)] = karing
+		clashRoute := g.route
+		clashRoute.All = append(slices.Clone(g.route.All), "geoip-private")
+		files[mirrorName("clash", ".yaml", i, m)] = emit.ClashConfig(base, clashRoute)
 	}
 	if err := syncDir(dist, files); err != nil {
 		return err
@@ -352,6 +360,23 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 		return err
 	}
 	if err := writeIfChanged(filepath.Join(outDir, "geoip.dat"), emit.GeoIPDat(g.ips)); err != nil {
+		return err
+	}
+	// mihomo text rule-sets; CI compiles them to .mrs with the official binary.
+	clash := map[string][]byte{}
+	for _, t := range g.sites {
+		b, skipped := emit.ClashDomainText(t.Domains)
+		if skipped > 0 {
+			log.Printf("::warning::geosite-%s: %d DOMAIN-KEYWORD rules skipped for mihomo (domain behavior has no keyword type)", t.Name, skipped)
+		}
+		if len(b) > 0 {
+			clash["geosite-"+t.Name+".txt"] = b
+		}
+	}
+	for _, t := range g.ips {
+		clash["geoip-"+t.Name+".txt"] = emit.ClashIPText(t.CIDRs)
+	}
+	if err := syncDir(filepath.Join(outDir, "clash"), clash); err != nil {
 		return err
 	}
 	return writeDocs(docsDir, cfg, g, files)
@@ -471,14 +496,24 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 		sbSrc.Rows = append(sbSrc.Rows, row("geoip-"+t.Name+".json", "IP ranges: "+t.Name, false))
 	}
 	apps := emit.DocSection{Title: "App configs", Note: "Ready-made rule files for apps with their own format. Each copy loads its rule-sets from the same mirror."}
-	apps.Rows = append(apps.Rows, row("karing.json", "Karing custom diversion rules (Block, Direct)", true))
+	apps.Rows = append(apps.Rows,
+		row("karing.json", "Karing custom diversion rules (Block, Direct)", true),
+		row("v2rayn-routing.json", "v2rayN / v2rayNG custom routing rules (needs this project's geo files)", false))
+	cl := emit.DocSection{Title: "Clash / mihomo rule-sets", Note: "`.mrs` rule-sets for mihomo (`format: mrs`; `behavior: domain` for geosite, `ipcidr` for geoip)."}
+	cl.Rows = append(cl.Rows, row("clash.yaml", "`rule-providers` and `rules` to merge into a mihomo config (needs a `PROXY` group)", true))
+	for _, t := range g.sites {
+		cl.Rows = append(cl.Rows, row("geosite-"+t.Name+".mrs", "domains: "+t.Name, false))
+	}
+	for _, t := range g.ips {
+		cl.Rows = append(cl.Rows, row("geoip-"+t.Name+".mrs", "IP ranges: "+t.Name, false))
+	}
 	v2 = emit.DocSection{Title: "v2ray / Xray", Note: "Tags: `geosite:<name>` and `geoip:<name>` as listed in the sing-box tables above."}
 	v2.Rows = append(v2.Rows,
 		row("geosite.dat", "Domain tags", false),
 		row("geoip.dat", "IP tags, including `private`", false),
 		row("xray-routing.json", "Example `routing` block", false))
 
-	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, Mirrors: st.Mirrors, Sections: []emit.DocSection{sr, lists, apps, sb, sbSrc, v2}})
+	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, Mirrors: st.Mirrors, Sections: []emit.DocSection{sr, lists, apps, sb, sbSrc, cl, v2}})
 	if err != nil {
 		return err
 	}

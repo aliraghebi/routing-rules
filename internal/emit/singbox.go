@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"slices"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 // SingBoxVersion is the source rule-set format version, which also sets the

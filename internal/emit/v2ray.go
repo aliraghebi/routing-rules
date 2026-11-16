@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"strings"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 // Tag is one geosite/geoip entry (v2ray) or one rule-set (sing-box).

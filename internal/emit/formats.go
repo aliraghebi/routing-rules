@@ -6,7 +6,7 @@ import (
 	"net/netip"
 	"strings"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 // WireGuardAllowedIPs renders a comma-separated AllowedIPs value: every
@@ -23,7 +23,7 @@ func WireGuardAllowedIPs(allowed []netip.Prefix) []byte {
 // (IPv4 and IPv6) with the given prefixes.
 func MikroTik(list string, cidrs []netip.Prefix) []byte {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, "# vpn-routing: Iran IP ranges as the RouterOS address list %q.\n# Re-running replaces the list.\n", list)
+	fmt.Fprintf(&b, "# routing-rules: Iran IP ranges as the RouterOS address list %q.\n# Re-running replaces the list.\n", list)
 	for _, v4 := range []bool{true, false} {
 		menu := "/ipv6 firewall address-list"
 		if v4 {
@@ -70,7 +70,7 @@ func DomainSet(domains []parse.Domain) []byte {
 // widened to their subdomains, as DNS blocklists usually are.
 func AdGuard(title string, domains []parse.Domain) []byte {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, "! Title: vpn-routing %s\n! Homepage: https://github.com/aliraghebi/vpn-routing\n", title)
+	fmt.Fprintf(&b, "! Title: routing-rules %s\n! Homepage: https://github.com/aliraghebi/routing-rules\n", title)
 	for _, d := range domains {
 		if d.Kind != parse.Keyword {
 			b.WriteString("||" + d.Name + "^\n")
@@ -83,7 +83,7 @@ func AdGuard(title string, domains []parse.Domain) []byte {
 // cannot block subdomains, so suffix entries only block the domain itself.
 func Hosts(title string, domains []parse.Domain) []byte {
 	var b bytes.Buffer
-	fmt.Fprintf(&b, "# Title: vpn-routing %s (hosts format; subdomains of listed domains are not blocked)\n", title)
+	fmt.Fprintf(&b, "# Title: routing-rules %s (hosts format; subdomains of listed domains are not blocked)\n", title)
 	for _, d := range domains {
 		if d.Kind != parse.Keyword {
 			b.WriteString("0.0.0.0 " + d.Name + "\n")
@@ -105,7 +105,7 @@ func PAC(direct []parse.Domain) []byte {
 		}
 	}
 	var b bytes.Buffer
-	b.WriteString(`// vpn-routing PAC: Iranian domains go direct, everything else through your proxy.
+	b.WriteString(`// routing-rules PAC: Iranian domains go direct, everything else through your proxy.
 // Change PROXY to your client's local proxy (v2rayN defaults: SOCKS 10808, HTTP 10809).
 // No DIRECT fallback on purpose: if the proxy stops, browsing fails instead of silently
 // going out unprotected.
@@ -175,7 +175,7 @@ func XrayDNS() []byte {
 // Iranian domains, which resolve through the system DNS; other lookups use
 // DNS-over-HTTPS through the PROXY group.
 func ClashDNS() []byte {
-	return []byte(`# vpn-routing DNS for mihomo (Clash.Meta). Merge together with clash.yaml,
+	return []byte(`# routing-rules DNS for mihomo (Clash.Meta). Merge together with clash.yaml,
 # which defines the geosite-ir rule-provider. Requires a proxy group named PROXY.
 dns:
   enable: true
@@ -201,7 +201,7 @@ dns:
 // specific than the server's redirect-gateway routes, so they take priority.
 func OpenVPN(cidrs []netip.Prefix) []byte {
 	var b bytes.Buffer
-	b.WriteString("# vpn-routing: send Iranian IPv4 ranges outside the OpenVPN tunnel.\n# Paste into the client .ovpn file. IPv6 is not covered and stays in the tunnel.\n")
+	b.WriteString("# routing-rules: send Iranian IPv4 ranges outside the OpenVPN tunnel.\n# Paste into the client .ovpn file. IPv6 is not covered and stays in the tunnel.\n")
 	for _, p := range cidrs {
 		if !p.Addr().Is4() {
 			continue

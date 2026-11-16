@@ -27,8 +27,8 @@ permissions:
 env:
   # Identity for the release-branch commit and the keepalive commit. GitHub links
   # a commit to an account by email; this address belongs to no account.
-  BOT_NAME: vpn-routing-bot
-  BOT_EMAIL: vpn-routing-bot@users.noreply.github.com
+  BOT_NAME: routing-rules-bot
+  BOT_EMAIL: routing-rules-bot@users.noreply.github.com
   # Pinned tools that compile and validate the sing-box / v2ray outputs.
   # sing-box publishes no checksums; this hash was computed from the release file.
   SING_BOX_VERSION: 1.14.4

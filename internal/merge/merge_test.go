@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 func D(k parse.Kind, n string) parse.Domain { return parse.Domain{Kind: k, Name: n} }

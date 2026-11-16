@@ -1,4 +1,4 @@
-module github.com/aliraghebi/vpn-routing
+module github.com/aliraghebi/routing-rules
 
 go 1.26.0
 

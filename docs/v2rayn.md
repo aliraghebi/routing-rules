@@ -12,7 +12,7 @@ this project's `geosite:` / `geoip:` tags.
 To import by URL instead, use:
 
 ```
-https://github.com/aliraghebi/vpn-routing/releases/latest/download/v2rayn-routing.json
+https://github.com/aliraghebi/routing-rules/releases/latest/download/v2rayn-routing.json
 ```
 
 ## 1. Install the geo files first

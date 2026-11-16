@@ -10,7 +10,7 @@ proxy.
 
 [:material-download: Download proxy.pac](dl/proxy.pac){ .md-button .md-button--primary download="proxy.pac" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/proxy.pac).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/proxy.pac).
 
 ## Set the proxy address
 

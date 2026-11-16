@@ -11,7 +11,7 @@ icon: material/vector-polyline
 
 [:material-download: Download karing.json](dl/karing.json){ .md-button .md-button--primary download="karing.json" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/karing.json).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/karing.json).
 
 ## Import it
 

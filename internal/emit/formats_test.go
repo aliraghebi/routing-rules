@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 var sample = []parse.Domain{{Kind: parse.Suffix, Name: "a.ir"}, {Kind: parse.Exact, Name: "b.com"}, {Kind: parse.Keyword, Name: "ad"}}
@@ -13,11 +13,11 @@ var sample = []parse.Domain{{Kind: parse.Suffix, Name: "a.ir"}, {Kind: parse.Exa
 func TestTextFormats(t *testing.T) {
 	cases := map[string]struct{ got, want string }{
 		"domainset": {string(DomainSet(sample)), ".a.ir\nb.com\n"},
-		"adguard":   {string(AdGuard("x", sample)), "! Title: vpn-routing x\n! Homepage: https://github.com/aliraghebi/vpn-routing\n||a.ir^\n||b.com^\n"},
-		"hosts":     {string(Hosts("x", sample)), "# Title: vpn-routing x (hosts format; subdomains of listed domains are not blocked)\n0.0.0.0 a.ir\n0.0.0.0 b.com\n"},
+		"adguard":   {string(AdGuard("x", sample)), "! Title: routing-rules x\n! Homepage: https://github.com/aliraghebi/routing-rules\n||a.ir^\n||b.com^\n"},
+		"hosts":     {string(Hosts("x", sample)), "# Title: routing-rules x (hosts format; subdomains of listed domains are not blocked)\n0.0.0.0 a.ir\n0.0.0.0 b.com\n"},
 		"wireguard": {string(WireGuardAllowedIPs([]netip.Prefix{netip.MustParsePrefix("1.0.0.0/8"), netip.MustParsePrefix("::/0")})), "1.0.0.0/8, ::/0\n"},
 		"openvpn": {string(OpenVPN([]netip.Prefix{netip.MustParsePrefix("2.144.0.0/14"), netip.MustParsePrefix("5.22.0.0/23"), netip.MustParsePrefix("2a01::/32")})),
-			"# vpn-routing: send Iranian IPv4 ranges outside the OpenVPN tunnel.\n# Paste into the client .ovpn file. IPv6 is not covered and stays in the tunnel.\n" +
+			"# routing-rules: send Iranian IPv4 ranges outside the OpenVPN tunnel.\n# Paste into the client .ovpn file. IPv6 is not covered and stays in the tunnel.\n" +
 				"route 2.144.0.0 255.252.0.0 net_gateway\nroute 5.22.0.0 255.255.254.0 net_gateway\n"},
 		"cidr4": {string(CIDRLines([]netip.Prefix{netip.MustParsePrefix("2.144.0.0/14"), netip.MustParsePrefix("2a01::/32")}, true)), "2.144.0.0/14\n"},
 	}

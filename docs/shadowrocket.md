@@ -9,7 +9,7 @@ icon: material/rocket-launch-outline
 1. Copy the config URL:
 
     ```
-    https://github.com/aliraghebi/vpn-routing/releases/latest/download/shadowrocket.conf
+    https://github.com/aliraghebi/routing-rules/releases/latest/download/shadowrocket.conf
     ```
 
 2. Shadowrocket → **Config** tab → **+** → paste the URL → **Download**.
@@ -38,8 +38,8 @@ Edit the config (**Config** → tap the config → **Edit Config** → **Rule**)
 example:
 
 ```
-RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/nsfw.list,REJECT
-RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/telegram.list,PROXY
+RULE-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/nsfw.list,REJECT
+RULE-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/telegram.list,PROXY
 ```
 
 !!! warning
@@ -54,7 +54,7 @@ iOS limits how much memory a VPN app may use, and `ads.list` is large. Two light
 
 - **DOMAIN-SET**: the same domains in a format Shadowrocket and Surge load more efficiently. Replace a
   domain list's `RULE-SET` line with a `DOMAIN-SET` line, e.g.
-  `DOMAIN-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/ads-domainset.txt,REJECT`. DOMAIN-SET files hold only domains, so keep the `RULE-SET`
+  `DOMAIN-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/ads-domainset.txt,REJECT`. DOMAIN-SET files hold only domains, so keep the `RULE-SET`
   lines for lists that also contain IP ranges (`malware`, `phishing`).
 - **ads-lite**: about 5k rules from small curated sources (Iranian ad networks and trackers, Peter Lowe's
   list, v2fly) instead of 105k. Use `ads-lite.list` (or `ads-lite-domainset.txt`) in place of `ads.list`.

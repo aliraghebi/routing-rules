@@ -12,13 +12,13 @@ Set these as the custom geo file URLs in your app:
 `geosite.dat`
 
 ```
-https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite.dat
+https://github.com/aliraghebi/routing-rules/releases/latest/download/geosite.dat
 ```
 
 `geoip.dat`
 
 ```
-https://github.com/aliraghebi/vpn-routing/releases/latest/download/geoip.dat
+https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
 ```
 
 Opening these URLs in a browser downloads the files.
@@ -74,7 +74,7 @@ DNS-over-HTTPS (`https://1.1.1.1/dns-query`), which the routing above sends thro
 
 [:material-download: Download xray-dns.json](dl/xray-dns.json){ .md-button .md-button--primary download="xray-dns.json" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/xray-dns.json).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/xray-dns.json).
 
 ## v2rayN / v2rayNG
 

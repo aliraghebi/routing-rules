@@ -15,7 +15,7 @@ are named like [Chocolate4U/Iran-sing-box-rules](https://github.com/Chocolate4U/
 
 [:material-download: Download sing-box-route.json](dl/sing-box-route.json){ .md-button .md-button--primary download="sing-box-route.json" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route.json).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/sing-box-route.json).
 
 Copy its `route` object into your config. It expects outbounds tagged `proxy` and `direct`. Rule-sets are
 downloaded through `proxy` (`download_detour`) and refreshed automatically.
@@ -29,7 +29,7 @@ leaked nor tampered with.
 
 [:material-download: Download sing-box-dns.json](dl/sing-box-dns.json){ .md-button .md-button--primary download="sing-box-dns.json" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-dns.json). Merge it next to the `route` block; it uses the `geosite-ir` rule-set the
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/sing-box-dns.json). Merge it next to the `route` block; it uses the `geosite-ir` rule-set the
 route defines and the `proxy` outbound.
 
 ## Or reference rule-sets yourself
@@ -42,14 +42,14 @@ route defines and the `proxy` outbound.
         "tag": "geosite-ads",
         "type": "remote",
         "format": "binary",
-        "url": "https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite-ads.srs",
+        "url": "https://github.com/aliraghebi/routing-rules/releases/latest/download/geosite-ads.srs",
         "download_detour": "proxy"
       },
       {
         "tag": "geosite-ir",
         "type": "remote",
         "format": "binary",
-        "url": "https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite-ir.srs",
+        "url": "https://github.com/aliraghebi/routing-rules/releases/latest/download/geosite-ir.srs",
         "download_detour": "proxy"
       }
     ],

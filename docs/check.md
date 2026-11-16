@@ -20,5 +20,5 @@ Everything runs in your browser using the published lists.
     domains, Iranian sites and Iranian IP ranges go direct; everything else goes through the proxy.
     The first visit downloads the lists (a few MB), so the first check takes a moment.
 
-You can link to a result: `https://aliraghebi.github.io/vpn-routing/check/?q=example.com`.
-If a result looks wrong, [report it](https://github.com/aliraghebi/vpn-routing/issues/new/choose).
+You can link to a result: `https://aliraghebi.github.io/routing-rules/check/?q=example.com`.
+If a result looks wrong, [report it](https://github.com/aliraghebi/routing-rules/issues/new/choose).

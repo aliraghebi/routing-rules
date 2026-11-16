@@ -14,7 +14,7 @@ Clash Meta for Android and similar apps. The rule-sets here use mihomo's compact
 
 [:material-download: Download clash.yaml](dl/clash.yaml){ .md-button .md-button--primary download="clash.yaml" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash.yaml).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/clash.yaml).
 
 Merge both sections into your config. In Clash Verge Rev you can paste them into the profile's **Merge**
 (extend config) file, so your subscription stays untouched. The rules need a proxy group named **`PROXY`**;
@@ -28,7 +28,7 @@ Merge it together with `clash.yaml`, which defines the `geosite-ir` rule-provide
 
 [:material-download: Download clash-dns.yaml](dl/clash-dns.yaml){ .md-button .md-button--primary download="clash-dns.yaml" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash-dns.yaml).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/clash-dns.yaml).
 
 ## Or add rule-sets yourself
 
@@ -38,14 +38,14 @@ rule-providers:
     type: http
     behavior: domain
     format: mrs
-    url: https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite-ads.mrs
+    url: https://github.com/aliraghebi/routing-rules/releases/latest/download/geosite-ads.mrs
     path: ./rules/geosite-ads.mrs
     interval: 86400
   geoip-ir:
     type: http
     behavior: ipcidr
     format: mrs
-    url: https://github.com/aliraghebi/vpn-routing/releases/latest/download/geoip-ir.mrs
+    url: https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip-ir.mrs
     path: ./rules/geoip-ir.mrs
     interval: 86400
 

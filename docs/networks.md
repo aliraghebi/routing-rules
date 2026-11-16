@@ -55,7 +55,7 @@ changes.
 [:material-download: Download mikrotik-ir.rsc](dl/mikrotik-ir.rsc){ .md-button .md-button--primary download="mikrotik-ir.rsc" }
 
 ```
-/tool fetch url="https://github.com/aliraghebi/vpn-routing/releases/latest/download/mikrotik-ir.rsc" dst-path=mikrotik-ir.rsc
+/tool fetch url="https://github.com/aliraghebi/routing-rules/releases/latest/download/mikrotik-ir.rsc" dst-path=mikrotik-ir.rsc
 /import file-name=mikrotik-ir.rsc
 ```
 
@@ -68,12 +68,12 @@ Then use `dst-address-list=IR` in your mangle or routing rules, for example to m
 
 ```sh
 ipset create ir hash:net
-curl -sL https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-cidr4.txt | while read -r n; do ipset add ir "$n"; done
+curl -sL https://github.com/aliraghebi/routing-rules/releases/latest/download/ir-cidr4.txt | while read -r n; do ipset add ir "$n"; done
 ```
 
 ```sh
 nft add set inet fw4 ir '{ type ipv4_addr; flags interval; }'
-nft add element inet fw4 ir "{ $(curl -sL https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-cidr4.txt | paste -sd, -) }"
+nft add element inet fw4 ir "{ $(curl -sL https://github.com/aliraghebi/routing-rules/releases/latest/download/ir-cidr4.txt | paste -sd, -) }"
 ```
 
 Apps on OpenWrt that use v2ray/Xray (PassWall, ShadowSocksR Plus+) can use `geosite.dat` / `geoip.dat`

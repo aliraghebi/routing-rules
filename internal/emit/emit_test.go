@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 func TestList(t *testing.T) {

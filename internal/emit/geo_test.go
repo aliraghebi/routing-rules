@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 	"gopkg.in/yaml.v3"
 )
 

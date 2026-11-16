@@ -24,10 +24,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/aliraghebi/vpn-routing/internal/emit"
-	"github.com/aliraghebi/vpn-routing/internal/fetch"
-	"github.com/aliraghebi/vpn-routing/internal/merge"
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/emit"
+	"github.com/aliraghebi/routing-rules/internal/fetch"
+	"github.com/aliraghebi/routing-rules/internal/merge"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 type Config struct {

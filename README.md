@@ -1,4 +1,4 @@
-# vpn-routing
+# routing-rules
 
 Routing rules for VPN/proxy clients in Iran, rebuilt daily by GitHub Actions from public upstream lists.
 Inspired by [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules) and
@@ -14,7 +14,7 @@ Inspired by [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v
 ## Documentation
 
 Setup guides for each client, every file URL, and the full source list:
-**https://aliraghebi.github.io/vpn-routing/**
+**https://aliraghebi.github.io/routing-rules/**
 
 ## How it works
 
@@ -43,4 +43,4 @@ GPL-3.0 (hagezi, AdGuard) and AGPL-3.0 (PersianBlocker). Attribution:
 
 - IP geolocation data: [IP Geolocation by DB-IP](https://db-ip.com) (CC BY 4.0).
 - Country IP blocks: [ipverse](https://github.com/ipverse/country-ip-blocks) (CC0), [ipdeny.com](https://www.ipdeny.com), [RIPEstat](https://stat.ripe.net).
-- Domain lists: [bootmortis/iran-hosted-domains](https://github.com/bootmortis/iran-hosted-domains), [v2fly/domain-list-community](https://github.com/v2fly/domain-list-community), and the other sources listed on the [sources page](https://aliraghebi.github.io/vpn-routing/sources/).
+- Domain lists: [bootmortis/iran-hosted-domains](https://github.com/bootmortis/iran-hosted-domains), [v2fly/domain-list-community](https://github.com/v2fly/domain-list-community), and the other sources listed on the [sources page](https://aliraghebi.github.io/routing-rules/sources/).

@@ -6,7 +6,7 @@ import (
 	"net/netip"
 	"strings"
 
-	"github.com/aliraghebi/vpn-routing/internal/parse"
+	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
 // ClashDomainText renders a mihomo "domain" behavior text rule-set (the input
@@ -40,7 +40,7 @@ func ClashIPText(cidrs []netip.Prefix) []byte {
 // configs) to merge into a user's config. It expects a proxy group named PROXY.
 func ClashConfig(base string, d RouteData) []byte {
 	var b strings.Builder
-	b.WriteString("# vpn-routing rules for mihomo (Clash.Meta). Merge into your config.\n")
+	b.WriteString("# routing-rules: rules for mihomo (Clash.Meta). Merge into your config.\n")
 	b.WriteString("# Requires a proxy group named PROXY. Rule-sets refresh daily.\n")
 	b.WriteString("rule-providers:\n")
 	for _, t := range d.All {

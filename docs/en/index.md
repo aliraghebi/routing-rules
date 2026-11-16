@@ -24,11 +24,11 @@ Shadowrocket, Karing, WireGuard, OpenVPN, browsers and DNS filters.
 ```mermaid
 flowchart LR
     A([Connection]) --> B{DNS block page, malware,<br/>phishing, cryptominer, ad<br/>or tracker?}
-    B -- yes --> R[[Block]]
+    B -- yes --> R[Block]
     B -- no --> C{Site that blocks<br/>Iranian IPs?}
-    C -- yes --> P[[Proxy]]
+    C -- yes --> P[Proxy]
     C -- no --> D{Iranian domain<br/>or IP range?}
-    D -- yes --> X[[Direct]]
+    D -- yes --> X[Direct]
     D -- no --> P
 ```
 

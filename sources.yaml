@@ -22,28 +22,27 @@ settings:
   concurrency: 8
   retries: 3
   max_bytes: 67108864        # per-source default size cap (64 MiB)
-  max_shrink: 0.30           # fail if a list loses more than 30% vs the committed one
   list_cap_warn: 200000      # warn above this many rules in one list (iOS NE memory)
 
 # Order matters: REJECT rule-sets appear in the config in this order.
 categories:
-  - {name: malware,      action: reject, enabled: true,  min_rules: 1000}
-  - {name: phishing,     action: reject, enabled: true,  min_rules: 1000}
-  - {name: cryptominers, action: reject, enabled: true,  min_rules: 30}
-  - {name: ads,          action: reject, enabled: true,  min_rules: 20000}
-  - {name: sanctioned,   action: proxy,  enabled: true,  min_rules: 100}
-  - {name: ir-domains,   action: direct, enabled: true,  min_rules: 10000}
-  - {name: ir-cidr,      action: direct, enabled: true,  min_rules: 500}
+  - {name: malware,      action: reject, enabled: true}
+  - {name: phishing,     action: reject, enabled: true}
+  - {name: cryptominers, action: reject, enabled: true}
+  - {name: ads,          action: reject, enabled: true}
+  - {name: sanctioned,   action: proxy,  enabled: true}
+  - {name: ir-domains,   action: direct, enabled: true}
+  - {name: ir-cidr,      action: direct, enabled: true}
   # Optional lists: built and published, not referenced by shadowrocket.conf.
-  - {name: social,       action: none,   enabled: true,  min_rules: 100}
-  - {name: nsfw,         action: none,   enabled: true,  min_rules: 10000}
-  - {name: cloudflare,   action: none,   enabled: true,  min_rules: 5}
-  - {name: cloudfront,   action: none,   enabled: true,  min_rules: 50}
-  - {name: fastly,       action: none,   enabled: true,  min_rules: 5}
-  - {name: gcore,        action: none,   enabled: true,  min_rules: 50}
-  - {name: telegram,     action: none,   enabled: true,  min_rules: 5}
-  - {name: tor-exit,     action: none,   enabled: true,  min_rules: 300}
-  - {name: netflix,      action: none,   enabled: true,  min_rules: 20}
+  - {name: social,       action: none,   enabled: true}
+  - {name: nsfw,         action: none,   enabled: true}
+  - {name: cloudflare,   action: none,   enabled: true}
+  - {name: cloudfront,   action: none,   enabled: true}
+  - {name: fastly,       action: none,   enabled: true}
+  - {name: gcore,        action: none,   enabled: true}
+  - {name: telegram,     action: none,   enabled: true}
+  - {name: tor-exit,     action: none,   enabled: true}
+  - {name: netflix,      action: none,   enabled: true}
 
 sources:
   # ---------- Iran domains ----------

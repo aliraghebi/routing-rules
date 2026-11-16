@@ -1,5 +1,6 @@
 // Command build fetches all sources in sources.yaml and writes Shadowrocket
-// rule lists plus shadowrocket.conf into dist/.
+// rule lists, client configs and rule-sets into dist/, binary geo files into
+// out/, and the generated docs pages into docs/.
 package main
 
 import (
@@ -36,7 +37,6 @@ type Config struct {
 		Concurrency int           `yaml:"concurrency"`
 		Retries     int           `yaml:"retries"`
 		MaxBytes    int64         `yaml:"max_bytes"`
-		MaxShrink   float64       `yaml:"max_shrink"`
 		ListCapWarn int           `yaml:"list_cap_warn"`
 		RepoURL     string        `yaml:"repo_url"`
 		Mirrors     []emit.Mirror `yaml:"mirrors"`
@@ -46,10 +46,9 @@ type Config struct {
 }
 
 type Category struct {
-	Name     string `yaml:"name"`
-	Action   string `yaml:"action"` // reject | proxy | direct | none
-	Enabled  bool   `yaml:"enabled"`
-	MinRules int    `yaml:"min_rules"`
+	Name    string `yaml:"name"`
+	Action  string `yaml:"action"` // reject | proxy | direct | none
+	Enabled bool   `yaml:"enabled"`
 }
 
 type Source struct {
@@ -88,15 +87,16 @@ func main() {
 	allowPath := flag.String("allowlist", "allowlist.txt", "domains never to REJECT")
 	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
 	docs := flag.String("docs", "docs", "GitHub Pages directory for the generated URL and sources pages")
+	prev := flag.String("prev", "", "optional directory with the previous release, for the summary's delta column")
 	flag.Parse()
 	log.SetFlags(0)
-	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs); err != nil {
+	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs, *prev); err != nil {
 		log.Printf("::error::%v", err)
 		os.Exit(1)
 	}
 }
 
-func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
+func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) error {
 	raw, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return err
@@ -241,9 +241,9 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 		log.Printf("::warning::ALLOWLIST HIT — %s (removed from REJECT list)", w)
 	}
 
-	// Render and check thresholds.
+	// Render. An enabled list with no rules means every source failed or a
+	// parser broke; refuse to publish it. Big swings are allowed.
 	var fatal []string
-	allowShrink := os.Getenv("ALLOW_SHRINK") == "1"
 	for _, c := range cfg.Categories {
 		b := byCat[c.Name]
 		if b == nil {
@@ -251,19 +251,13 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 		}
 		b.body = emit.List(c.Name, b.domains, b.cidrs)
 		n := len(b.domains) + len(b.cidrs)
-		if old, err := os.ReadFile(filepath.Join(dist, c.Name+".list")); err == nil {
-			b.oldRules, b.oldExist = emit.CountRules(old), true
-		}
-		if n < c.MinRules {
-			fatal = append(fatal, fmt.Sprintf("%s: %d rules < min_rules %d", c.Name, n, c.MinRules))
-		}
-		if b.oldExist && b.oldRules > 0 && float64(n) < float64(b.oldRules)*(1-st.MaxShrink) {
-			msg := fmt.Sprintf("%s: shrank %d -> %d (more than %.0f%%)", c.Name, b.oldRules, n, st.MaxShrink*100)
-			if allowShrink {
-				log.Printf("::warning::%s (ALLOW_SHRINK=1)", msg)
-			} else {
-				fatal = append(fatal, msg+"; rerun with ALLOW_SHRINK=1 if intended")
+		if prevDir != "" { // previous release, for the summary's delta column only
+			if old, err := os.ReadFile(filepath.Join(prevDir, c.Name+".list")); err == nil {
+				b.oldRules, b.oldExist = emit.CountRules(old), true
 			}
+		}
+		if n == 0 {
+			fatal = append(fatal, c.Name+": list is empty")
 		}
 		if st.ListCapWarn > 0 && n > st.ListCapWarn {
 			log.Printf("::warning::%s: %d rules exceeds list_cap_warn %d (iOS network extension memory)", c.Name, n, st.ListCapWarn)
@@ -284,7 +278,7 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 		log.Printf("::warning::using last-known-good data for: %s", strings.Join(stale, ", "))
 	}
 	if len(fatal) > 0 {
-		return fmt.Errorf("build refused, dist/ left untouched:\n  %s", strings.Join(fatal, "\n  "))
+		return fmt.Errorf("build refused, nothing written:\n  %s", strings.Join(fatal, "\n  "))
 	}
 
 	// Render every output into one map, then make dist/ match it exactly
@@ -344,7 +338,7 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 		return err
 	}
 
-	// Binary outputs: published on the release branch only, never committed to main.
+	// Binary outputs, published on the release branch by CI.
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return err
 	}

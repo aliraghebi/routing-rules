@@ -4,10 +4,6 @@ on:
   schedule:
     - cron: "17 2 * * *" # daily, off the hour to avoid the top-of-hour queue
   workflow_dispatch:
-    inputs:
-      allow_shrink:
-        description: "Allow a list to shrink more than max_shrink (set to 1)"
-        default: "0"
   push:
     branches: [main]
     paths:
@@ -18,14 +14,19 @@ on:
       - "ir-ads.txt"
       - "go.mod"
       - "go.sum"
+      - "docs/**"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
       - ".github/workflows/build.yml"
 
 permissions:
-  contents: write
+  contents: write # push the release branch and the GitHub release
+  pages: write
+  id-token: write
 
-# Commit identity for automated commits. GitHub links a commit to an account by
-# email; this address belongs to no account, so commits show the plain name.
 env:
+  # Identity for the release-branch commit and the keepalive commit. GitHub links
+  # a commit to an account by email; this address belongs to no account.
   BOT_NAME: vpn-routing-bot
   BOT_EMAIL: vpn-routing-bot@users.noreply.github.com
   # Pinned tools that compile and validate the sing-box / v2ray outputs.
@@ -59,12 +60,20 @@ jobs:
           key: sources-${{ github.run_id }}
           restore-keys: sources-
 
+      # The current release is the baseline: what users have right now.
+      - name: Fetch previous release
+        run: |
+          mkdir -p "$RUNNER_TEMP/prev"
+          if git fetch -q --depth=1 origin release; then
+            git archive FETCH_HEAD | tar -x -C "$RUNNER_TEMP/prev"
+          else
+            echo "No release branch yet; this run publishes the first one."
+          fi
+
       - run: go test ./...
 
-      - name: Build lists
-        env:
-          ALLOW_SHRINK: ${{ github.event.inputs.allow_shrink || '0' }}
-        run: go run ./cmd/build
+      - name: Build
+        run: go run ./cmd/build -prev "$RUNNER_TEMP/prev"
 
       - name: Install sing-box and Xray
         run: |
@@ -77,7 +86,7 @@ jobs:
           unzip -q xr.zip xray -d bin
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
-      # Validate before committing, so a broken output never reaches dist/ or the release.
+      # Validate before publishing, so a broken output never reaches users.
       - name: Compile and check sing-box rule-sets
         run: |
           mkdir -p out/srs
@@ -109,29 +118,9 @@ jobs:
           # Fails with "list not found" if a tag referenced by the routing is missing.
           XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray-routing.json
 
-      - name: Commit dist/ and docs/
-        id: commit
-        run: |
-          git add dist docs
-          if git diff --cached --quiet; then
-            echo "No changes."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          files=$(git diff --cached --name-only -- dist docs | sed 's#^dist/##')
-          if [ "$(echo "$files" | wc -l)" -le 6 ]; then
-            lists=$(echo "$files" | paste -sd, - | sed 's/,/, /g')
-          else
-            lists="$(echo "$files" | wc -l | tr -d ' ') rule files"
-          fi
-          git config user.name "$BOT_NAME"
-          git config user.email "$BOT_EMAIL"
-          git commit -m "chore(dist): update ${lists}"
-          git push
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-
       # Everything users download, flat, under the same names the configs reference.
       - name: Assemble release files
+        id: assemble
         run: |
           rel="$RUNNER_TEMP/release"
           mkdir -p "$rel"
@@ -141,39 +130,39 @@ jobs:
           # jsDelivr refuses to serve GitHub packages above its size limit (50 MB at the time of writing).
           if [ "$size" -gt 45 ]; then echo "::warning::release files are ${size} MB, close to jsDelivr's 50 MB package limit"; fi
           echo "REL=$rel" >> "$GITHUB_ENV"
+          # Files added or changed vs the previous release (outputs are deterministic,
+          # so an unchanged source gives a byte-identical file).
+          changed="$RUNNER_TEMP/changed.txt"
+          : > "$changed"
+          for f in "$rel"/*; do
+            n=$(basename "$f")
+            cmp -s "$f" "$RUNNER_TEMP/prev/$n" || echo "$n" >> "$changed"
+          done
+          removed=$(cd "$RUNNER_TEMP/prev" && for f in *; do [ -e "$f" ] && [ ! -e "$rel/$f" ] && echo "$f"; done || true)
+          echo "changed: $(wc -l < "$changed"), removed: $(echo -n "$removed" | grep -c . || true)"
+          if [ -s "$changed" ] || [ -n "$removed" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      # The release branch holds exactly one commit with no history (rebuilt and
-      # force-pushed each time, like bootmortis/iran-hosted-domains), so binaries
-      # never accumulate in the repository. Only the bot pushes it; main is never
-      # force-pushed.
+      # The release branch holds exactly one commit with no history, rebuilt and
+      # force-pushed each time (like bootmortis/iran-hosted-domains), so outputs
+      # never accumulate in the repository. main is never touched.
       - name: Publish release branch
-        id: release
+        if: steps.assemble.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if [ "${{ steps.commit.outputs.changed }}" != "true" ] && git ls-remote --exit-code --heads origin release >/dev/null; then
-            echo "Nothing changed and the release branch exists."
-            exit 0
-          fi
           cd "$REL"
           git init -q -b release
           git config user.name "$BOT_NAME"
           git config user.email "$BOT_EMAIL"
           git add -A
           git commit -qm "release $(date -u +%Y-%m-%dT%H:%MZ) from ${GITHUB_SHA::7}"
-          # Purge only files that differ from the previous release (all files on the first run).
-          if git fetch -q --depth=1 "$remote" release:previous 2>/dev/null; then
-            git diff --name-only previous release > "$RUNNER_TEMP/changed.txt"
-          else
-            git ls-files > "$RUNNER_TEMP/changed.txt"
-          fi
-          git push -q -f "$remote" release
-          echo "published=true" >> "$GITHUB_OUTPUT"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" release
 
       # jsDelivr caches branch files for up to 12 hours; purge what changed.
       - name: Purge jsDelivr cache
-        if: steps.release.outputs.published == 'true'
+        if: steps.assemble.outputs.changed == 'true'
         run: |
           while read -r f; do
             curl -fsS -o /dev/null "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@release/${f}" \
@@ -183,7 +172,7 @@ jobs:
       # Rolling GitHub release with the same files, for .../releases/latest/download/<file>.
       # The "latest" release must stay the newest non-prerelease release.
       - name: Publish rolling GitHub release
-        if: steps.release.outputs.published == 'true'
+        if: steps.assemble.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -193,17 +182,42 @@ jobs:
           fi
           gh release upload latest --clobber "$REL"/*
 
+      # docs/urls.md and docs/sources.md were generated by the build step above.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+      - name: Build docs
+        env:
+          NO_MKDOCS_2_WARNING: "1"
+        run: |
+          pip install -q -r requirements-docs.txt
+          mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
   # GitHub disables scheduled workflows after 60 days without repository
-  # activity. Daily list changes normally keep the repo active; when sources
-  # have been stable for 50 days, push an empty commit to reset the timer.
+  # activity, and this workflow never commits to main. Push an empty commit
+  # when main has been quiet for 50 days.
   keepalive:
-    if: always() && github.event_name == 'schedule' # also when build fails for days
+    if: always() && github.event_name == 'schedule' # also when the build fails for days
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: |
-          git pull --ff-only
           last=$(git log -1 --format=%ct)
           if [ $(( $(date +%s) - last )) -gt $(( 50 * 86400 )) ]; then
             git config user.name "$BOT_NAME"

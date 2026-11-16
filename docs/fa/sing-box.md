@@ -78,4 +78,4 @@ Shadowrocket. اگر می‌خواهید دامنه‌ها هم به IP ترجم
 قانون `{ "action": "resolve" }` را اضافه کنید؛ این کار آن درخواست‌های DNS را به سرور DNS تنظیم‌شده شما
 می‌فرستد.
 
-نشانی همه rule-setها: [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/#sing-box-rule-sets-binary).
+نشانی همه rule-setها: [نشانی فایل‌ها](urls.md#sing-box-rule-sets-binary).

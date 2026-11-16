@@ -57,5 +57,5 @@ Surge می‌تواند فهرست‌های دامنه را به شکل `DOMAIN-
 DOMAIN-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/ads-domainset.txt,REJECT
 ```
 
-هر فهرست دامنه یک نسخه `-domainset.txt` دارد؛ ببینید [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/#surge-shadowrocket-domain-set).
+هر فهرست دامنه یک نسخه `-domainset.txt` دارد؛ ببینید [نشانی فایل‌ها](urls.md#surge-shadowrocket-domain-set).
 `ads-lite.list` جایگزینی حدود ۵ هزار قانونی برای `ads.list` کامل است.

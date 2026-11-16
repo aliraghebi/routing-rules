@@ -3,17 +3,15 @@ site_description: "Daily-built routing rules and ready-made configs for proxy an
 site_url: https://aliraghebi.github.io/routing-rules/
 repo_url: https://github.com/aliraghebi/routing-rules
 repo_name: aliraghebi/routing-rules
-edit_uri: edit/main/docs/en/
+edit_uri: edit/main/docs/
 copyright: Code GPL-3.0 · Lists keep their upstream licenses · IP geolocation by <a href="https://db-ip.com">DB-IP</a>
-docs_dir: docs/en
+docs_dir: docs
 strict: true
 
 theme:
   name: material
   language: en
   features:
-    - navigation.instant
-    - navigation.instant.progress
     - navigation.tracking
     - navigation.tabs
     - navigation.tabs.sticky
@@ -65,13 +63,6 @@ theme:
 
 extra:
   generator: false
-  alternate:
-    - name: English
-      link: /routing-rules/
-      lang: en
-    - name: فارسی
-      link: /routing-rules/fa/
-      lang: fa
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/aliraghebi/routing-rules
@@ -84,6 +75,7 @@ extra_css:
   - assets/extra.css
 
 extra_javascript:
+  - assets/check-i18n.js
   - assets/check.js
 
 nav:
@@ -139,3 +131,37 @@ markdown_extensions:
 
 plugins:
   - search
+  # docs/<locale>/ per language; pages missing in a language fall back to English
+  # (the generated File URLs and Sources pages exist only in docs/en).
+  - i18n:
+      docs_structure: folder
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        - locale: en
+          name: English
+          default: true
+          build: true
+        - locale: fa
+          name: فارسی
+          build: true
+          site_name: قوانین مسیریابی
+          site_description: "قوانین مسیریابی و پیکربندی‌های آماده برای کلاینت‌های پراکسی و VPN که هر روز به‌روز می‌شوند: اتصال مستقیم برای سایت‌ها و بازه‌های IP داخلی (فعلاً ایران) و مسدودسازی تبلیغات، ردیاب‌ها، بدافزار، فیشینگ و استخراج‌کننده‌های رمزارز."
+          copyright: کد تحت مجوز GPL-3.0 · فهرست‌ها مجوز منبع اصلی خود را دارند · مکان‌یابی IP از <a href="https://db-ip.com">DB-IP</a>
+          theme:
+            font:
+              text: Vazirmatn
+          nav_translations:
+            Home: خانه
+            Cores: هسته‌ها
+            Apps: برنامه‌ها
+            Surge & Loon: Surge و Loon
+            More: بیشتر
+            WireGuard, OpenVPN & routers: WireGuard، OpenVPN و روترها
+            Browsers (PAC): مرورگرها (PAC)
+            AdGuard Home & Pi-hole: AdGuard Home و Pi-hole
+            Check a domain: بررسی دامنه
+            Reference: مرجع
+            File URLs: نشانی فایل‌ها
+            Sources and licenses: منابع و مجوزها

@@ -41,4 +41,4 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/adguard-def
     ورودی‌ها از `||domain^` استفاده می‌کنند که دامنه و زیردامنه‌هایش را مسدود می‌کند. قالب hosts نمی‌تواند
     زیردامنه‌ها را بیان کند، پس `hosts-default.txt` فقط خود دامنه‌های فهرست‌شده را مسدود می‌کند.
 
-همه فایل‌های هر فهرست: [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/#adguard-home-and-pi-hole).
+همه فایل‌های هر فهرست: [نشانی فایل‌ها](urls.md#adguard-home-and-pi-hole).

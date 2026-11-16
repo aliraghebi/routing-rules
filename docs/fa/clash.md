@@ -66,4 +66,4 @@ Shadowrocket؛ این کار سایت‌های ایرانی را که در `geos
     نخوانند. فایل‌های `.list` مربوط به Shadowrocket از نحو کلاسیک `DOMAIN-SUFFIX,…` / `IP-CIDR,…` استفاده
     می‌کنند که providerهای `behavior: classical` در Clash می‌خوانند، اما در آن برنامه‌ها آزموده نشده‌اند.
 
-همه نشانی‌ها: [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/#clash-mihomo-rule-sets).
+همه نشانی‌ها: [نشانی فایل‌ها](urls.md#clash-mihomo-rule-sets).

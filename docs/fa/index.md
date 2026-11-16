@@ -173,7 +173,7 @@ flowchart LR
 
 </div>
 
-همه فایل‌ها و نشانی‌هایشان: [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/). منبع داده‌ها: [منابع و مجوزها](https://aliraghebi.github.io/routing-rules/sources/) (به انگلیسی).
+همه فایل‌ها و نشانی‌هایشان: [نشانی فایل‌ها](urls.md). منبع داده‌ها: [منابع و مجوزها](sources.md) (به انگلیسی).
 
 ## فایل‌ها کجا منتشر می‌شوند
 
@@ -207,4 +207,4 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/<file>
 | `cloudflare`، `cloudfront`، `fastly`، `gcore` | بازه‌های IP شبکه‌های CDN |
 | `telegram`، `tor-exit`، `netflix` | بازه‌های IP سرویس‌ها (`tor-exit` در فایل‌های geo و rule-setها برچسب `tor` دارد) |
 
-همه قالب‌ها در [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/).
+همه قالب‌ها در [نشانی فایل‌ها](urls.md).

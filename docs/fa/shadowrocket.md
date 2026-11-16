@@ -46,7 +46,7 @@ RULE-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/te
     ویرایش محلی با به‌روزرسانی پیکربندی از `update-url` از بین می‌رود. برای حفظ تغییرات، پیکربندی خودتان را
     بسازید و فقط با خطوط `RULE-SET` به این فهرست‌ها ارجاع دهید.
 
-نشانی همه فهرست‌ها: [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/#shadowrocket-rule-lists).
+نشانی همه فهرست‌ها: [نشانی فایل‌ها](urls.md#shadowrocket-rule-lists).
 
 ## فهرست‌های سبک‌تر
 

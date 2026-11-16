@@ -38,4 +38,4 @@ Karing خودش rule-setها را دانلود و به‌روز می‌کند، 
     جداگانه نگه دارید.
 
 برای rule-setهای بیشتر (`geosite-nsfw`، `geoip-telegram` و …) نشانی `.srs` آن‌ها را به یک گروه اضافه
-کنید؛ ببینید [نشانی فایل‌ها](https://aliraghebi.github.io/routing-rules/urls/#sing-box-rule-sets-binary).
+کنید؛ ببینید [نشانی فایل‌ها](urls.md#sing-box-rule-sets-binary).

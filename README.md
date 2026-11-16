@@ -39,7 +39,7 @@ when something changed since the last one. `releases/latest/download/<file>` alw
 ```sh
 go test ./...
 go run ./cmd/build                                        # also regenerates docs/en/urls.md and docs/en/sources.md
-pip install -r requirements-docs.txt && mkdocs serve      # preview the English docs (mkdocs.fa.yml: Persian)
+pip install -r requirements-docs.txt && mkdocs serve      # preview the docs (English and Persian)
 ```
 
 To add a source, add an entry to `sources.yaml`; the format is documented at the top of that file.

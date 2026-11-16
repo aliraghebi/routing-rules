@@ -22,8 +22,8 @@
   var cache = {};
   var listsBase = "../dl/lists/"; // set per page from data-lists (the Persian site lives one level deeper)
 
-  // User-facing text. Translations come from a locale file loaded before this
-  // script (e.g. check-i18n-fa.js sets window.VR_CHECK_I18N).
+  // User-facing text. Translations come from check-i18n.js (loaded before this
+  // script), keyed by the page language.
   var T = Object.assign({
     block: "Blocked",
     proxy: "Through the proxy",
@@ -42,7 +42,7 @@
     whyInjected: "Iran's DNS block page address",
     whySanctioned: "site that blocks Iranian IPs",
     whyTLD: ".ir / xn--mgba3a4f16a domain",
-  }, window.VR_CHECK_I18N || {});
+  }, (window.VR_CHECK_I18N || {})[(document.documentElement.lang || "en").slice(0, 2)] || {});
 
   function load(name) {
     if (!cache[name]) {

@@ -16,7 +16,6 @@ on:
       - "go.sum"
       - "docs/**"
       - "mkdocs.yml"
-      - "mkdocs.fa.yml"
       - "requirements-docs.txt"
       - ".github/workflows/build.yml"
 
@@ -256,8 +255,7 @@ jobs:
           NO_MKDOCS_2_WARNING: "1"
         run: |
           pip install -q -r requirements-docs.txt
-          mkdocs build --strict                         # English: site/
-          mkdocs build --strict -f mkdocs.fa.yml        # Persian: site/fa/
+          mkdocs build --strict                         # English at site/, Persian at site/fa/ (mkdocs-static-i18n)
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

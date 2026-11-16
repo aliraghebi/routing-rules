@@ -13,7 +13,17 @@ Surge و Loon همان قالب فهرست `RULE-SET` مربوط به Shadowrock
 
 ## Surge
 
-این خطوط را در بخش `[Rule]`، بالای `FINAL`، اضافه کنید:
+سریع‌ترین راه، ماژول است که همه قوانین زیر را روی پیکربندی شما اضافه می‌کند:
+
+```
+https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule
+```
+
+آن را از **Modules** ← **Install New Module** با همین نشانی نصب کنید. قوانین، سایت‌هایی را که IP ایران را
+مسدود می‌کنند به policy با نام `PROXY` می‌فرستند؛ یک policy group با همین نام بسازید، یا اگر نام گروه شما فرق
+دارد، نسخه‌ای از ماژول را ویرایش کنید.
+
+برای افزودن دستی قوانین، این خطوط را در بخش `[Rule]`، بالای `FINAL`، اضافه کنید:
 
 ```
 RULE-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/ir-injected.list,REJECT

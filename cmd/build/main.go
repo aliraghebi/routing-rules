@@ -330,6 +330,7 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 		return err
 	}
 	files[cd.Self] = conf
+	files["routing-rules.sgmodule"] = emit.Module(conf)
 	rd := g.route
 	rd.BaseURL = base
 	route, err := emit.SingBoxRoute(rd)
@@ -641,7 +642,9 @@ func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[stri
 	}
 	var sr, lists, sb, sbSrc, v2 emit.DocSection
 	sr = emit.DocSection{ID: emit.Slug("Shadowrocket config"), Title: T("Shadowrocket config"), Note: T("Import this URL in Shadowrocket.")}
-	sr.Rows = append(sr.Rows, row("shadowrocket.conf", T("Full config: REJECT, PROXY, DIRECT, GEOIP, FINAL")))
+	sr.Rows = append(sr.Rows,
+		row("shadowrocket.conf", T("Full config: REJECT, PROXY, DIRECT, GEOIP, FINAL")),
+		row("routing-rules.sgmodule", T("Shadowrocket / Surge module: the same rules on top of your own config")))
 	lists = emit.DocSection{ID: emit.Slug("Shadowrocket rule lists"), Title: T("Shadowrocket rule lists"), Note: T("`RULE-SET` text lists in Shadowrocket (Surge-style) syntax.")}
 	for _, c := range cfg.Categories {
 		if _, ok := files[c.Name+".list"]; ok {

@@ -13,7 +13,17 @@ below to your own config.
 
 ## Surge
 
-Add these lines to the `[Rule]` section, above `FINAL`:
+The quickest way is the module, which adds all the rules below on top of your config:
+
+```
+https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule
+```
+
+Install it from **Modules** → **Install New Module** with that URL. The rules send sites that block Iranian
+IPs to a policy named `PROXY`; create a policy group with that name, or edit the module's copy if yours is
+called something else.
+
+To add the rules by hand instead, put these lines in the `[Rule]` section, above `FINAL`:
 
 ```
 RULE-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/ir-injected.list,REJECT

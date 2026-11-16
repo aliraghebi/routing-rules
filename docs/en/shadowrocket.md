@@ -16,6 +16,25 @@ icon: material/rocket-launch-outline
 3. Tap the new config → **Use Config**. A checkmark marks the config in use.
 4. On the **Home** tab, add your server and set **Global Routing** to **Config**.
 
+## Or keep your own config (module)
+
+If you already have a config you like (your own servers, rules or settings), add these rules as a
+**module** instead of importing the config above. The module holds the same rules without the final
+catch-all, so your config keeps its servers and `FINAL`.
+
+1. Copy the module URL:
+
+    ```
+    https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule
+    ```
+
+2. Shadowrocket → **Config** tab → **Modules** → **+** → paste the URL → **Download**.
+3. Make sure the module is switched on.
+
+The rules use the policy `PROXY` (Shadowrocket's built-in proxy policy) for sites that block Iranian IPs.
+Modules update on their own like the config; to refresh now, update the module from the **Modules**
+screen.
+
 ## Keep it updated
 
 The lists change daily. The config includes `update-url` and every rule list is a remote `RULE-SET`, so you

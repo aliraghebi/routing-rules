@@ -30,6 +30,7 @@
   "Same, IPv4 only, larger Iranian blocks only (~1.7k entries, phones); all IPv6 through the tunnel": "همان، فقط IPv4 و فقط بلوک‌های بزرگ‌تر ایران (حدود ۱٫۷ هزار ورودی، گوشی)؛ همه IPv6 از تونل عبور می‌کند",
   "Same, hosts format (subdomains not blocked)": "همان، در قالب hosts (زیردامنه‌ها مسدود نمی‌شوند)",
   "Same, larger Iranian blocks only (fewer routes, for phones)": "همان، فقط بلوک‌های بزرگ‌تر ایران (مسیرهای کمتر، برای گوشی)",
+  "Shadowrocket / Surge module: the same rules on top of your own config": "ماژول Shadowrocket / Surge: همین قوانین روی پیکربندی خودتان",
   "Shadowrocket config": "پیکربندی Shadowrocket",
   "Shadowrocket rule lists": "فهرست‌های قوانین Shadowrocket",
   "Surge / Shadowrocket DOMAIN-SET": "DOMAIN-SET برای Surge / Shadowrocket",

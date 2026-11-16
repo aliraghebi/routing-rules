@@ -22,6 +22,7 @@
 
   var cache = {};
   var listsBase = "../dl/lists/"; // set per page from data-lists (the Persian site lives one level deeper)
+  var sourcesPage = "../sources/";
 
   // User-facing text. Translations come from check-i18n.js (loaded before this
   // script), keyed by the page language.
@@ -44,23 +45,51 @@
     whySanctioned: "site that blocks Iranian IPs",
     whyTLD: ".ir / xn--mgba3a4f16a domain",
     whyPrivate: "private or local network",
+    from: "From source:",
   }, (window.VR_CHECK_I18N || {})[(document.documentElement.lang || "en").slice(0, 2)] || {});
 
   function load(name) {
     if (!cache[name]) {
       var url = new URL(listsBase + name + ".list", location.href);
-      cache[name] = fetch(url).then(function (r) {
+      var prov = fetch(new URL(listsBase + name + ".prov", location.href))
+        .then(function (r) { return r.ok ? r.text() : ""; }, function () { return ""; });
+      cache[name] = Promise.all([fetch(url).then(function (r) {
         if (!r.ok) throw new Error(name + ": HTTP " + r.status);
         return r.text();
-      }).then(parse);
+      }), prov]).then(function (t) {
+        var l = parse(t[0]);
+        l.prov = parseProv(t[1]);
+        return l;
+      });
     }
     return cache[name];
   }
 
+  // .prov files: a JSON array of source names, then one hex bitmask per rule
+  // in the list's order, naming the sources that contributed each rule.
+  function parseProv(text) {
+    if (!text) return null;
+    var lines = text.split("\n");
+    try {
+      return { names: JSON.parse(lines[0]), masks: lines.slice(1) };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function sourcesOf(l, rule) {
+    var i = l.index.get(rule);
+    if (!l.prov || i === undefined || !l.prov.masks[i]) return [];
+    var mask = BigInt("0x" + l.prov.masks[i]);
+    return l.prov.names.filter(function (_, bit) { return (mask >> BigInt(bit)) & 1n; });
+  }
+
   function parse(text) {
-    var l = { suffix: new Set(), exact: new Set(), keyword: [], cidr: [] };
+    var l = { suffix: new Set(), exact: new Set(), keyword: [], cidr: [], index: new Map() };
+    var n = 0;
     text.split("\n").forEach(function (line) {
       var f = line.trim().split(",");
+      if (f[0] && f[0][0] !== "#" && f.length > 1) l.index.set(f[0] + "," + f[1], n++);
       switch (f[0]) {
         case "DOMAIN-SUFFIX": l.suffix.add(f[1]); break;
         case "DOMAIN": l.exact.add(f[1]); break;
@@ -178,7 +207,7 @@
         var l = lists[o.list];
         if (!l) continue;
         var rule = q.host ? matchDomain(l, q.host) : matchIP(l, q.ip);
-        if (rule) verdict = { o: o, rule: rule };
+        if (rule) verdict = { o: o, rule: rule, from: sourcesOf(l, rule) };
       }
       var optional = [];
       OPTIONAL.forEach(function (n) {
@@ -191,6 +220,11 @@
       if (verdict) {
         html += "<p>" + T.matched + " " + (verdict.o.list ? "<code>" + verdict.o.list + "</code>" : T.theRule) +
           (verdict.o.why ? " (" + T[verdict.o.why] + ")" : "") + " " + T.by + " <code>" + esc(verdict.rule) + "</code>.</p>";
+        if (verdict.from && verdict.from.length) {
+          html += "<p>" + T.from + " " + verdict.from.map(function (s) {
+            return '<a href="' + sourcesPage + '"><code>' + esc(s) + "</code></a>";
+          }).join(", ") + "</p>";
+        }
       } else {
         html += "<p>" + T.notListed + "</p>";
         if (q.host) {

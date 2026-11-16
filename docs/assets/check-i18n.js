@@ -20,5 +20,6 @@ window.VR_CHECK_I18N = {
     whySanctioned: "سایتی که IPهای ایران را مسدود می‌کند",
     whyTLD: "دامنه .ir یا .ایران",
     whyPrivate: "شبکه خصوصی یا محلی",
+    from: "از منبع:",
   },
 };

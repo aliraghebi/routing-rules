@@ -439,7 +439,7 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 	for _, o := range outcomes {
 		health[o.src.Name] = o
 	}
-	return writeDocs(docsDir, cfg, g, files, health)
+	return writeDocs(docsDir, cfg, g, files, health, sets)
 }
 
 // dnsBlocklist marks optional categories that also make sense as DNS blocklists.
@@ -603,7 +603,7 @@ var docLangs = []string{"en", "fa"}
 
 // writeDocs generates the URL and sources pages for every docs language, plus
 // the checker's lists (English folder only; other languages load them from there).
-func writeDocs(dir string, cfg Config, g geo, files map[string][]byte, health map[string]outcome) error {
+func writeDocs(dir string, cfg Config, g geo, files map[string][]byte, health map[string]outcome, sets map[string]catRules) error {
 	for _, lang := range docLangs {
 		l, err := emit.LoadLocale(lang)
 		if err != nil {
@@ -628,6 +628,13 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte, health ma
 	for _, c := range cfg.Categories {
 		if b, ok := files[c.Name+".list"]; ok && c.Name != "ads-lite" {
 			checkLists[c.Name+".list"] = b
+			var srcs []outcome
+			for _, s := range cfg.Sources {
+				if o := health[s.Name]; s.Category == c.Name && (o.status == "ok" || o.status == "stale") {
+					srcs = append(srcs, o)
+				}
+			}
+			checkLists[c.Name+".prov"] = provenance(srcs, sets[c.Name])
 		}
 	}
 	return syncDir(filepath.Join(en, "dl", "lists"), checkLists)
@@ -737,6 +744,46 @@ func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[stri
 		return err
 	}
 	return writeIfChanged(filepath.Join(dir, "sources.md"), sources)
+}
+
+// provenance renders which sources contributed each rule of a list, for the
+// domain checker: a JSON array of source names, then one hex bitmask per rule
+// in the list's order (domains, then IP ranges). A domain rule comes from the
+// sources that contained exactly that rule; a merged IP range from every
+// source with an overlapping range.
+// ponytail: overlap check is O(final × source ranges), fine for a few thousand ranges.
+func provenance(srcs []outcome, final catRules) []byte {
+	if len(srcs) > 64 { // one bit per source in a uint64
+		srcs = srcs[:64]
+	}
+	names := make([]string, len(srcs))
+	byRule := map[parse.Domain]uint64{}
+	for i, o := range srcs {
+		names[i] = o.src.Name
+		for _, d := range o.res.Domains {
+			byRule[d] |= 1 << i
+		}
+	}
+	var b bytes.Buffer
+	nb, _ := json.Marshal(names)
+	b.Write(nb)
+	b.WriteByte('\n')
+	for _, d := range final.domains {
+		fmt.Fprintf(&b, "%x\n", byRule[d])
+	}
+	for _, p := range final.cidrs {
+		var mask uint64
+		for i, o := range srcs {
+			for _, q := range o.res.CIDRs {
+				if p.Overlaps(q) {
+					mask |= 1 << i
+					break
+				}
+			}
+		}
+		fmt.Fprintf(&b, "%x\n", mask)
+	}
+	return b.Bytes()
 }
 
 func actionDesc(a string) string {

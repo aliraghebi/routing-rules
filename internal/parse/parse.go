@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"net/netip"
-	"regexp"
 	"strings"
 
 	"golang.org/x/net/idna"
@@ -55,14 +54,13 @@ type Func func(data []byte, opt Options) (Result, error)
 
 // Formats maps the sources.yaml format name to its parser.
 var Formats = map[string]Func{
-	"hosts":     Hosts,
-	"domains":   Domains,
-	"abp":       ABP,
-	"v2fly":     V2Fly,
-	"cidr":      CIDRText,
-	"html-cidr": HTMLCIDR,
-	"json":      JSON,
-	"dbip-csv":  DBIP,
+	"hosts":    Hosts,
+	"domains":  Domains,
+	"abp":      ABP,
+	"v2fly":    V2Fly,
+	"cidr":     CIDRText,
+	"json":     JSON,
+	"dbip-csv": DBIP,
 }
 
 var idnaProfile = idna.New(idna.MapForLookup(), idna.Transitional(false), idna.StrictDomainName(false))
@@ -317,24 +315,6 @@ func CIDRText(data []byte, _ Options) (Result, error) {
 			r.CIDRs = append(r.CIDRs, ParsePrefixish(f[0])...)
 		}
 	})
-	return r, nil
-}
-
-var (
-	reV4 = regexp.MustCompile(`\b(?:\d{1,3}\.){3}\d{1,3}/\d{1,2}\b`)
-	reV6 = regexp.MustCompile(`(?i)\b[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,7}/\d{1,3}\b`)
-)
-
-// HTMLCIDR regex-scrapes CIDRs (with an explicit prefix length) from any text.
-func HTMLCIDR(data []byte, _ Options) (Result, error) {
-	var r Result
-	for _, re := range []*regexp.Regexp{reV4, reV6} {
-		for _, m := range re.FindAll(data, -1) {
-			if p, err := netip.ParsePrefix(string(m)); err == nil {
-				r.CIDRs = append(r.CIDRs, p.Masked())
-			}
-		}
-	}
 	return r, nil
 }
 

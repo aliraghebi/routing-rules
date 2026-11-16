@@ -50,8 +50,6 @@ func TestParsers(t *testing.T) {
 			[]string{"E:exact.example.com", "K:tracker", "S:ads.example", "S:child.example", "S:cnads.example", "S:neutral.example", "S:plain.example", "S:suffix.example"}},
 		{"cidr", "cidr", "cidr.txt", Options{},
 			[]string{"1.2.3.0/24", "10.0.0.1/32", "10.0.1.0/24", "2001:db8::/32"}},
-		{"html", "html-cidr", "page.html", Options{},
-			[]string{"185.143.232.0/22", "2a0b:4d07::/32", "94.101.182.0/27"}},
 		{"aws", "json", "aws.json", Options{Filter: map[string]string{"service": "CLOUDFRONT"}},
 			[]string{"13.32.0.0/15", "2600:9000::/28"}},
 		{"fastly", "json", "fastly.json", Options{},

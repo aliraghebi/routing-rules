@@ -2,7 +2,7 @@
 # Every remote URL below was fetched and its format
 # checked on 2026-11-16 unless it is enabled: false with a TODO.
 #
-# format:  hosts | domains | abp | v2fly | cidr | html-cidr | json | dbip-csv
+# format:  hosts | domains | abp | v2fly | cidr | json | dbip-csv
 # match:   suffix | exact  (hosts/domains only; how plain domains become rules)
 # filter:  json only; skip objects whose key has a different value
 # override_direct: REJECT sources only. Rules from this source win over ir-domains:
@@ -98,27 +98,6 @@ sources:
     category: ir-cidr
     enabled: true
     license: Published by ParsPack, no license stated
-  - name: ito-messenger
-    url: https://eservices.ito.gov.ir/Page/IPListMessenger
-    format: html-cidr
-    category: ir-cidr
-    enabled: false
-    license: Published by ITO (gov.ir), no license stated
-    # TODO: connection times out from outside Iran (and from GitHub runners); enable only on an Iran-hosted runner.
-  - name: derak-cloud
-    url: https://derak.cloud/لیست-بازه-های-ip
-    format: html-cidr
-    category: ir-cidr
-    enabled: false
-    license: Published by Derak Cloud, no license stated
-    # TODO: page returns 200 but contains no CIDRs in HTML or wp-json (likely rendered client-side or geo-gated).
-  - name: iranserver-cdn
-    url: https://docs.iranserver.com/irserver-cloud/cdn/allow-iranserver-ip-addresses
-    format: html-cidr
-    category: ir-cidr
-    enabled: false
-    license: Published by IranServer, no license stated
-    # TODO: URL returns 404; no replacement page with CDN ranges found on docs.iranserver.com.
   - name: ipverse-ir-v4
     url: https://raw.githubusercontent.com/ipverse/country-ip-blocks/master/country/ir/ipv4-aggregated.txt
     format: cidr

@@ -86,7 +86,7 @@ func main() {
 	cache := flag.String("cache", ".cache", "HTTP + last-known-good cache directory")
 	allowPath := flag.String("allowlist", "allowlist.txt", "domains never to REJECT")
 	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
-	docs := flag.String("docs", "docs/en", "docs directory (English) for the generated URL and sources pages and the checker's lists")
+	docs := flag.String("docs", "docs", "docs root (docs/<lang>/) for the generated URL and sources pages and the checker's lists")
 	flag.Parse()
 	log.SetFlags(0)
 	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs); err != nil {
@@ -285,6 +285,10 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 			files[c.Name+".list"] = b.body
 		}
 	}
+	// Private and local ranges, which every config sends DIRECT (sing-box
+	// ip_is_private, geoip:private, Shadowrocket skip-proxy). Published for custom
+	// rules and the domain checker.
+	files["private.list"] = emit.List("private", nil, emit.Private)
 	sets := map[string]catRules{}
 	for name, b := range byCat {
 		sets[name] = catRules{b.cat, b.domains, b.cidrs}
@@ -505,102 +509,29 @@ func buildGeo(cats []Category, sets map[string]catRules) geo {
 	return g
 }
 
-// writeDocs generates the URL and sources pages for the GitHub Pages site.
-func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
-	st := cfg.Settings
-	row := func(name, desc string) emit.DocRow {
-		return emit.DocRow{Name: name, Desc: desc, URL: strings.TrimRight(st.BaseURL, "/") + "/" + name}
-	}
-	var sr, lists, sb, sbSrc, v2 emit.DocSection
-	sr = emit.DocSection{Title: "Shadowrocket config", Note: "Import this URL in Shadowrocket."}
-	sr.Rows = append(sr.Rows, row("shadowrocket.conf", "Full config: REJECT, PROXY, DIRECT, GEOIP, FINAL"))
-	lists = emit.DocSection{Title: "Shadowrocket rule lists", Note: "`RULE-SET` text lists in Shadowrocket (Surge-style) syntax."}
-	for _, c := range cfg.Categories {
-		if _, ok := files[c.Name+".list"]; ok {
-			lists.Rows = append(lists.Rows, row(c.Name+".list", fmt.Sprintf("%s (%s)", c.Name, actionDesc(c.Action))))
-		}
-	}
-	sb = emit.DocSection{Title: "sing-box rule-sets (binary)", Note: "Use with `\"type\": \"remote\", \"format\": \"binary\"`. Rule-set format version 1, readable by sing-box 1.8+ and apps built on it."}
-	sbSrc = emit.DocSection{Title: "sing-box rule-sets (JSON source)", Note: "Same rules as JSON, for `\"format\": \"source\"`."}
-	sb.Rows = append(sb.Rows, row("sing-box-route.json", "Example `route` block (sing-box 1.11+)"))
-	for _, t := range g.sites {
-		sb.Rows = append(sb.Rows, row("geosite-"+t.Name+".srs", "domains: "+t.Name))
-		sbSrc.Rows = append(sbSrc.Rows, row("geosite-"+t.Name+".json", "domains: "+t.Name))
-	}
-	for _, t := range g.ips {
-		sb.Rows = append(sb.Rows, row("geoip-"+t.Name+".srs", "IP ranges: "+t.Name))
-		sbSrc.Rows = append(sbSrc.Rows, row("geoip-"+t.Name+".json", "IP ranges: "+t.Name))
-	}
-	apps := emit.DocSection{Title: "App configs", Note: "Ready-made rule files for apps with their own format."}
-	apps.Rows = append(apps.Rows,
-		row("karing.json", "Karing custom diversion rules (Block, Direct)"),
-		row("v2rayn-routing.json", "v2rayN / v2rayNG custom routing rules (needs this project's geo files)"))
-	cl := emit.DocSection{Title: "Clash / mihomo rule-sets", Note: "`.mrs` rule-sets for mihomo (`format: mrs`; `behavior: domain` for geosite, `ipcidr` for geoip)."}
-	cl.Rows = append(cl.Rows, row("clash.yaml", "`rule-providers` and `rules` to merge into a mihomo config (needs a `PROXY` group)"))
-	for _, t := range g.sites {
-		cl.Rows = append(cl.Rows, row("geosite-"+t.Name+".mrs", "domains: "+t.Name))
-	}
-	for _, t := range g.ips {
-		cl.Rows = append(cl.Rows, row("geoip-"+t.Name+".mrs", "IP ranges: "+t.Name))
-	}
-	dns := emit.DocSection{Title: "DNS", Note: "DNS blocks to merge into a config: Iranian domains use the device's DNS, everything else DNS-over-HTTPS through the proxy."}
-	dns.Rows = append(dns.Rows,
-		row("sing-box-dns.json", "sing-box `dns` block (1.12+), merge with `sing-box-route.json`"),
-		row("xray-dns.json", "Xray `dns` block, merge with `xray-routing.json`"),
-		row("clash-dns.yaml", "mihomo `dns` block (fake-ip), merge with `clash.yaml`"))
-	net := emit.DocSection{Title: "Networks and routers", Note: "Iran IP ranges for split tunneling outside proxy apps."}
-	net.Rows = append(net.Rows,
-		row("wireguard-allowedips.txt", "WireGuard `AllowedIPs`: everything except Iran and private ranges (~16k entries, desktop)"),
-		row("wireguard-allowedips-lite.txt", "Same, IPv4 only, larger Iranian blocks only (~1.7k entries, phones); all IPv6 through the tunnel"),
-		row("openvpn-ir-routes.txt", "OpenVPN client routes that keep Iranian IPv4 ranges outside the tunnel"),
-		row("openvpn-ir-routes-lite.txt", "Same, larger Iranian blocks only (fewer routes, for phones)"),
-		row("mikrotik-ir.rsc", "MikroTik RouterOS script: address list `IR`"),
-		row("ir-cidr4.txt", "Iran IPv4 ranges, one per line (ipset, nftables)"),
-		row("ir-cidr6.txt", "Iran IPv6 ranges, one per line"),
-		row("proxy.pac", "Browser PAC: Iranian domains direct, everything else through a local proxy"))
-	dnsf := emit.DocSection{Title: "AdGuard Home and Pi-hole", Note: "DNS blocklists. `adguard-*` work in AdGuard Home and Pi-hole v6; `hosts-*` in Pi-hole v5 and hosts files."}
-	dnsf.Rows = append(dnsf.Rows,
-		row("adguard-default.txt", "Everything the default configs block (malware, phishing, cryptominers, ads)"),
-		row("hosts-default.txt", "Same, hosts format (subdomains not blocked)"))
-	ds := emit.DocSection{Title: "Surge / Shadowrocket DOMAIN-SET", Note: "Domain-only lists in DOMAIN-SET format, lighter than the same rules as RULE-SET."}
-	for _, c := range cfg.Categories {
-		if _, ok := files["adguard-"+c.Name+".txt"]; ok {
-			dnsf.Rows = append(dnsf.Rows, row("adguard-"+c.Name+".txt", c.Name))
-		}
-		if _, ok := files[c.Name+"-domainset.txt"]; ok {
-			ds.Rows = append(ds.Rows, row(c.Name+"-domainset.txt", c.Name))
-		}
-	}
-	v2 = emit.DocSection{Title: "v2ray / Xray", Note: "Tags: `geosite:<name>` and `geoip:<name>` as listed in the sing-box tables above."}
-	v2.Rows = append(v2.Rows,
-		row("geosite.dat", "Domain tags"),
-		row("geoip.dat", "IP tags, including `private`"),
-		row("xray-routing.json", "Example `routing` block"))
+// docLangs are the docs languages with generated pages (docs/<lang>/); each
+// non-English one has internal/emit/locales/<lang>.json and Persian templates.
+var docLangs = []string{"en", "fa"}
 
-	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, BaseURL: strings.TrimRight(st.BaseURL, "/"), Sections: []emit.DocSection{sr, lists, ds, apps, sb, sbSrc, cl, v2, dns, net, dnsf}})
-	if err != nil {
-		return err
+// writeDocs generates the URL and sources pages for every docs language, plus
+// the checker's lists (English folder only; other languages load them from there).
+func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
+	for _, lang := range docLangs {
+		l, err := emit.LoadLocale(lang)
+		if err != nil {
+			return err
+		}
+		if err := writeDocPages(filepath.Join(dir, lang), l, cfg, g, files); err != nil {
+			return err
+		}
+		if m := l.Missing(); len(m) > 0 {
+			log.Printf("::warning::docs: %d strings missing from locales/%s.json: %q", len(m), lang, m)
+		}
 	}
-	var srcs []emit.DocSource
-	for _, s := range cfg.Sources {
-		srcs = append(srcs, emit.DocSource{Name: s.Name, URL: s.URL, Category: s.Category, Format: s.Format, License: s.License, Enabled: s.Enabled && catEnabled(cfg, s.Category)})
-	}
-	sources, err := emit.SourcesPage(srcs)
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return err
-	}
-	if err := writeIfChanged(filepath.Join(dir, "urls.md"), urls); err != nil {
-		return err
-	}
-	if err := writeIfChanged(filepath.Join(dir, "sources.md"), sources); err != nil {
-		return err
-	}
+	en := filepath.Join(dir, "en")
 	// Download buttons link to release assets (GitHub sends them as attachments),
-	// so docs/dl only holds the checker's lists; clear any older file copies.
-	if err := syncDir(filepath.Join(dir, "dl"), nil); err != nil {
+	// so docs/en/dl only holds the checker's lists; clear any older file copies.
+	if err := syncDir(filepath.Join(en, "dl"), nil); err != nil {
 		return err
 	}
 	// Lists the "Check a domain" page loads. Same origin: GitHub's download
@@ -611,7 +542,103 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 			checkLists[c.Name+".list"] = b
 		}
 	}
-	return syncDir(filepath.Join(dir, "dl", "lists"), checkLists)
+	checkLists["private.list"] = files["private.list"]
+	return syncDir(filepath.Join(en, "dl", "lists"), checkLists)
+}
+
+// writeDocPages writes urls.md and sources.md for one language.
+func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[string][]byte) error {
+	st := cfg.Settings
+	T, Tf := l.T, l.Tf
+	row := func(name, desc string) emit.DocRow {
+		return emit.DocRow{Name: name, Desc: desc, URL: strings.TrimRight(st.BaseURL, "/") + "/" + name}
+	}
+	var sr, lists, sb, sbSrc, v2 emit.DocSection
+	sr = emit.DocSection{ID: emit.Slug("Shadowrocket config"), Title: T("Shadowrocket config"), Note: T("Import this URL in Shadowrocket.")}
+	sr.Rows = append(sr.Rows, row("shadowrocket.conf", T("Full config: REJECT, PROXY, DIRECT, GEOIP, FINAL")))
+	lists = emit.DocSection{ID: emit.Slug("Shadowrocket rule lists"), Title: T("Shadowrocket rule lists"), Note: T("`RULE-SET` text lists in Shadowrocket (Surge-style) syntax.")}
+	for _, c := range cfg.Categories {
+		if _, ok := files[c.Name+".list"]; ok {
+			lists.Rows = append(lists.Rows, row(c.Name+".list", fmt.Sprintf("%s (%s)", c.Name, T(actionDesc(c.Action)))))
+		}
+	}
+	lists.Rows = append(lists.Rows, row("private.list", T("private and local networks (DIRECT in every config)")))
+	sb = emit.DocSection{ID: emit.Slug("sing-box rule-sets (binary)"), Title: T("sing-box rule-sets (binary)"), Note: T("Use with `\"type\": \"remote\", \"format\": \"binary\"`. Rule-set format version 1, readable by sing-box 1.8+ and apps built on it.")}
+	sbSrc = emit.DocSection{ID: emit.Slug("sing-box rule-sets (JSON source)"), Title: T("sing-box rule-sets (JSON source)"), Note: T("Same rules as JSON, for `\"format\": \"source\"`.")}
+	sb.Rows = append(sb.Rows, row("sing-box-route.json", T("Example `route` block (sing-box 1.11+)")))
+	for _, t := range g.sites {
+		sb.Rows = append(sb.Rows, row("geosite-"+t.Name+".srs", Tf("domains: %s", t.Name)))
+		sbSrc.Rows = append(sbSrc.Rows, row("geosite-"+t.Name+".json", Tf("domains: %s", t.Name)))
+	}
+	for _, t := range g.ips {
+		sb.Rows = append(sb.Rows, row("geoip-"+t.Name+".srs", Tf("IP ranges: %s", t.Name)))
+		sbSrc.Rows = append(sbSrc.Rows, row("geoip-"+t.Name+".json", Tf("IP ranges: %s", t.Name)))
+	}
+	apps := emit.DocSection{ID: emit.Slug("App configs"), Title: T("App configs"), Note: T("Ready-made rule files for apps with their own format.")}
+	apps.Rows = append(apps.Rows,
+		row("karing.json", T("Karing custom diversion rules (Block, Direct)")),
+		row("v2rayn-routing.json", T("v2rayN / v2rayNG custom routing rules (needs this project's geo files)")))
+	cl := emit.DocSection{ID: emit.Slug("Clash / mihomo rule-sets"), Title: T("Clash / mihomo rule-sets"), Note: T("`.mrs` rule-sets for mihomo (`format: mrs`; `behavior: domain` for geosite, `ipcidr` for geoip).")}
+	cl.Rows = append(cl.Rows, row("clash.yaml", T("`rule-providers` and `rules` to merge into a mihomo config (needs a `PROXY` group)")))
+	for _, t := range g.sites {
+		cl.Rows = append(cl.Rows, row("geosite-"+t.Name+".mrs", Tf("domains: %s", t.Name)))
+	}
+	for _, t := range g.ips {
+		cl.Rows = append(cl.Rows, row("geoip-"+t.Name+".mrs", Tf("IP ranges: %s", t.Name)))
+	}
+	dns := emit.DocSection{ID: emit.Slug("DNS"), Title: T("DNS"), Note: T("DNS blocks to merge into a config: Iranian domains use the device's DNS, everything else DNS-over-HTTPS through the proxy.")}
+	dns.Rows = append(dns.Rows,
+		row("sing-box-dns.json", T("sing-box `dns` block (1.12+), merge with `sing-box-route.json`")),
+		row("xray-dns.json", T("Xray `dns` block, merge with `xray-routing.json`")),
+		row("clash-dns.yaml", T("mihomo `dns` block (fake-ip), merge with `clash.yaml`")))
+	net := emit.DocSection{ID: emit.Slug("Networks and routers"), Title: T("Networks and routers"), Note: T("Iran IP ranges for split tunneling outside proxy apps.")}
+	net.Rows = append(net.Rows,
+		row("wireguard-allowedips.txt", T("WireGuard `AllowedIPs`: everything except Iran and private ranges (~16k entries, desktop)")),
+		row("wireguard-allowedips-lite.txt", T("Same, IPv4 only, larger Iranian blocks only (~1.7k entries, phones); all IPv6 through the tunnel")),
+		row("openvpn-ir-routes.txt", T("OpenVPN client routes that keep Iranian IPv4 ranges outside the tunnel")),
+		row("openvpn-ir-routes-lite.txt", T("Same, larger Iranian blocks only (fewer routes, for phones)")),
+		row("mikrotik-ir.rsc", T("MikroTik RouterOS script: address list `IR`")),
+		row("ir-cidr4.txt", T("Iran IPv4 ranges, one per line (ipset, nftables)")),
+		row("ir-cidr6.txt", T("Iran IPv6 ranges, one per line")),
+		row("proxy.pac", T("Browser PAC: Iranian domains direct, everything else through a local proxy")))
+	dnsf := emit.DocSection{ID: emit.Slug("AdGuard Home and Pi-hole"), Title: T("AdGuard Home and Pi-hole"), Note: T("DNS blocklists. `adguard-*` work in AdGuard Home and Pi-hole v6; `hosts-*` in Pi-hole v5 and hosts files.")}
+	dnsf.Rows = append(dnsf.Rows,
+		row("adguard-default.txt", T("Everything the default configs block (malware, phishing, cryptominers, ads)")),
+		row("hosts-default.txt", T("Same, hosts format (subdomains not blocked)")))
+	ds := emit.DocSection{ID: emit.Slug("Surge / Shadowrocket DOMAIN-SET"), Title: T("Surge / Shadowrocket DOMAIN-SET"), Note: T("Domain-only lists in DOMAIN-SET format, lighter than the same rules as RULE-SET.")}
+	for _, c := range cfg.Categories {
+		if _, ok := files["adguard-"+c.Name+".txt"]; ok {
+			dnsf.Rows = append(dnsf.Rows, row("adguard-"+c.Name+".txt", c.Name))
+		}
+		if _, ok := files[c.Name+"-domainset.txt"]; ok {
+			ds.Rows = append(ds.Rows, row(c.Name+"-domainset.txt", c.Name))
+		}
+	}
+	v2 = emit.DocSection{ID: emit.Slug("v2ray / Xray"), Title: T("v2ray / Xray"), Note: T("Tags: `geosite:<name>` and `geoip:<name>` as listed in the sing-box tables above.")}
+	v2.Rows = append(v2.Rows,
+		row("geosite.dat", T("Domain tags")),
+		row("geoip.dat", T("IP tags, including `private`")),
+		row("xray-routing.json", T("Example `routing` block")))
+
+	urls, err := emit.URLsPage(l.Lang, emit.URLDocs{RepoURL: st.RepoURL, BaseURL: strings.TrimRight(st.BaseURL, "/"), Sections: []emit.DocSection{sr, lists, ds, apps, sb, sbSrc, cl, v2, dns, net, dnsf}})
+	if err != nil {
+		return err
+	}
+	var srcs []emit.DocSource
+	for _, s := range cfg.Sources {
+		srcs = append(srcs, emit.DocSource{Name: s.Name, URL: s.URL, Category: s.Category, Format: s.Format, License: s.License, Enabled: s.Enabled && catEnabled(cfg, s.Category)})
+	}
+	sources, err := emit.SourcesPage(l.Lang, srcs)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	if err := writeIfChanged(filepath.Join(dir, "urls.md"), urls); err != nil {
+		return err
+	}
+	return writeIfChanged(filepath.Join(dir, "sources.md"), sources)
 }
 
 func actionDesc(a string) string {

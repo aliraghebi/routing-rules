@@ -10,7 +10,7 @@ Every file is rebuilt daily and published as an asset of the
 [latest GitHub release]({{.RepoURL}}/releases/latest). The URLs below always point to the newest version:
 `{{.BaseURL}}/<file>`.
 {{range $sec := .Sections}}
-## {{.Title}}
+## {{.Title}} { #{{.ID}} }
 {{if .Note}}
 {{.Note}}
 {{end}}

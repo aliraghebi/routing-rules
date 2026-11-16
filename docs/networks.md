@@ -2,7 +2,7 @@
 icon: material/router-network
 ---
 
-# WireGuard and routers
+# WireGuard, OpenVPN and routers
 
 For VPNs that aren't proxy apps: keep Iranian traffic outside the tunnel by IP range.
 
@@ -22,6 +22,31 @@ the VPN. Paste the file's content after `AllowedIPs =` in the `[Peer]` section.
 !!! warning "DNS"
     Split tunneling by IP doesn't decide where DNS goes. Set the WireGuard `DNS =` to a resolver inside the
     tunnel, or Iranian DNS may return tampered answers for blocked sites.
+
+## OpenVPN (split tunnel)
+
+OpenVPN works the other way round: keep the server's full tunnel and add routes that send Iranian ranges
+**outside** it, through your normal connection. Paste the file's lines into your client `.ovpn` file (anywhere
+after `client`):
+
+```
+route 2.144.0.0 255.252.0.0 net_gateway
+```
+
+These routes are more specific than the server's default route, so they take priority. The server needs no
+changes.
+
+| File | Routes | Use it for |
+|------|--------|------------|
+| `openvpn-ir-routes.txt` | ~2k, IPv4 | Desktop clients |
+| `openvpn-ir-routes-lite.txt` | ~350, IPv4 | Phones and routers. Only Iranian blocks of `/20` or larger (about 90% of Iranian IPv4 addresses). |
+
+[:material-download: Download openvpn-ir-routes-lite.txt](dl/openvpn-ir-routes-lite.txt){ .md-button .md-button--primary download="openvpn-ir-routes-lite.txt" } [:material-download: Download openvpn-ir-routes.txt](dl/openvpn-ir-routes.txt){ .md-button download="openvpn-ir-routes.txt" }
+
+!!! note
+    The routes are IPv4 only, so IPv6 stays in the tunnel. `net_gateway` is standard OpenVPN 2.x syntax
+    (desktop, OpenVPN for Android); check that your app supports it if routes seem ignored. As with WireGuard,
+    keep DNS inside the tunnel.
 
 ## MikroTik (RouterOS)
 

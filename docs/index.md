@@ -137,11 +137,11 @@ For your own config, or apps that load rule-sets or geo files.
 
 <div class="grid cards" markdown>
 
--   :material-router-network:{ .lg .middle } **WireGuard & routers**
+-   :material-router-network:{ .lg .middle } **WireGuard, OpenVPN & routers**
 
     ---
 
-    Split-tunnel `AllowedIPs`, MikroTik address lists, ipset and nftables.
+    Split-tunnel `AllowedIPs` and OpenVPN routes, MikroTik address lists, ipset and nftables.
 
     [:octicons-arrow-right-24: Guide](networks.md)
 

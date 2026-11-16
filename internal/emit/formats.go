@@ -195,3 +195,22 @@ dns:
     - system
 `)
 }
+
+// OpenVPN renders client-config lines that route the given IPv4 prefixes
+// outside the tunnel ("route <net> <mask> net_gateway"). They are more
+// specific than the server's redirect-gateway routes, so they take priority.
+func OpenVPN(cidrs []netip.Prefix) []byte {
+	var b bytes.Buffer
+	b.WriteString("# vpn-routing: send Iranian IPv4 ranges outside the OpenVPN tunnel.\n# Paste into the client .ovpn file. IPv6 is not covered and stays in the tunnel.\n")
+	for _, p := range cidrs {
+		if !p.Addr().Is4() {
+			continue
+		}
+		mask := ^uint32(0) << (32 - p.Bits())
+		if p.Bits() == 0 {
+			mask = 0
+		}
+		fmt.Fprintf(&b, "route %s %d.%d.%d.%d net_gateway\n", p.Addr(), mask>>24, mask>>16&0xff, mask>>8&0xff, mask&0xff)
+	}
+	return b.Bytes()
+}

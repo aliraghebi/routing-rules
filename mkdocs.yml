@@ -91,7 +91,7 @@ nav:
       - Karing: karing.md
       - v2rayN / v2rayNG: v2rayn.md
   - More:
-      - WireGuard & routers: networks.md
+      - WireGuard, OpenVPN & routers: networks.md
       - Browsers (PAC): pac.md
       - AdGuard Home & Pi-hole: dns-filters.md
   - Check a domain: check.md

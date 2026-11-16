@@ -363,6 +363,8 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 			}
 		}
 		files["wireguard-allowedips-lite.txt"] = emit.WireGuardAllowedIPs(append(lite, netip.MustParsePrefix("::/0")))
+		files["openvpn-ir-routes.txt"] = emit.OpenVPN(ir.cidrs)
+		files["openvpn-ir-routes-lite.txt"] = emit.OpenVPN(big) // same /20 cut-off as the WireGuard lite file
 		files["mikrotik-ir.rsc"] = emit.MikroTik("IR", ir.cidrs)
 		files["ir-cidr4.txt"] = emit.CIDRLines(ir.cidrs, true)
 		files["ir-cidr6.txt"] = emit.CIDRLines(ir.cidrs, false)
@@ -550,6 +552,8 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	net.Rows = append(net.Rows,
 		row("wireguard-allowedips.txt", "WireGuard `AllowedIPs`: everything except Iran and private ranges (~16k entries, desktop)"),
 		row("wireguard-allowedips-lite.txt", "Same, IPv4 only, larger Iranian blocks only (~1.7k entries, phones); all IPv6 through the tunnel"),
+		row("openvpn-ir-routes.txt", "OpenVPN client routes that keep Iranian IPv4 ranges outside the tunnel"),
+		row("openvpn-ir-routes-lite.txt", "Same, larger Iranian blocks only (fewer routes, for phones)"),
 		row("mikrotik-ir.rsc", "MikroTik RouterOS script: address list `IR`"),
 		row("ir-cidr4.txt", "Iran IPv4 ranges, one per line (ipset, nftables)"),
 		row("ir-cidr6.txt", "Iran IPv6 ranges, one per line"),
@@ -600,7 +604,7 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	dl := map[string][]byte{}
 	for name, b := range files {
 		for _, stem := range []string{"karing", "v2rayn-routing", "clash", "sing-box-route", "sing-box-dns", "xray-routing", "xray-dns",
-			"shadowrocket", "proxy.pac", "mikrotik-ir", "wireguard-allowedips"} {
+			"shadowrocket", "proxy.pac", "mikrotik-ir", "wireguard-allowedips", "openvpn-ir-routes"} {
 			if strings.HasPrefix(name, stem) {
 				dl[name] = b
 			}

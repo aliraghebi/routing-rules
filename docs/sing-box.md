@@ -1,7 +1,3 @@
----
-title: sing-box guide
----
-
 # sing-box
 
 Works with sing-box 1.11+ and apps built on it. Rule-sets are named like
@@ -12,8 +8,17 @@ Works with sing-box 1.11+ and apps built on it. Rule-sets are named like
 
 `sing-box-route.json` is a complete `route` block, in the same order as the Shadowrocket config:
 
-- GitHub: `https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/sing-box-route.json`
-- jsDelivr: `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/sing-box-route-jsdelivr.json`
+=== "jsDelivr"
+
+    ```
+    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/sing-box-route-jsdelivr.json
+    ```
+
+=== "GitHub"
+
+    ```
+    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/sing-box-route.json
+    ```
 
 Copy its `route` object into your config. It expects outbounds tagged `proxy` and `direct`. Rule-sets are
 downloaded through `proxy` (`download_detour`) and refreshed automatically.

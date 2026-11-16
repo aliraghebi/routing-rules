@@ -1,7 +1,3 @@
----
-title: vpn-routing
----
-
 # vpn-routing
 
 Routing rules for VPN/proxy clients in Iran, rebuilt every day from public upstream lists:

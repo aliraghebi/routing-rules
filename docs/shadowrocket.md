@@ -1,20 +1,26 @@
----
-title: Shadowrocket guide
----
-
 # Shadowrocket
 
 ## Import the config
 
-1. Copy one config URL:
-   - GitHub: `https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/shadowrocket.conf`
-   - jsDelivr: `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/shadowrocket-jsdelivr.conf`
+1. Copy one config URL. Use jsDelivr if raw.githubusercontent.com doesn't load.
+
+    === "jsDelivr"
+
+        ```
+        https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/shadowrocket-jsdelivr.conf
+        ```
+
+    === "GitHub"
+
+        ```
+        https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/shadowrocket.conf
+        ```
+
 2. Shadowrocket → **Config** tab → **+** → paste the URL → **Download**.
 3. Tap the new config → **Use Config**.
 4. On the **Home** tab, add your server and set **Global Routing** to **Config**.
 
-Each config downloads its rule lists from the same mirror it came from. Pick jsDelivr if
-raw.githubusercontent.com doesn't load.
+Each config downloads its rule lists from the same mirror it came from.
 
 ## Keep it updated
 
@@ -42,7 +48,8 @@ RULE-SET,https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/nsfw.list,RE
 RULE-SET,https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/telegram.list,PROXY
 ```
 
-A local edit is lost when the config updates from `update-url`. To keep your changes, make your own config
-and only reference these lists with `RULE-SET` lines.
+!!! warning
+    A local edit is lost when the config updates from `update-url`. To keep your changes, make your own
+    config and only reference these lists with `RULE-SET` lines.
 
 All list URLs: [File URLs](urls.md#shadowrocket-rule-lists).

@@ -1,7 +1,3 @@
----
-title: v2ray / Xray guide
----
-
 # v2ray / Xray
 
 `geosite.dat` and `geoip.dat` use the standard v2ray format, so they work in Xray, v2ray, v2rayN, v2rayNG
@@ -12,20 +8,21 @@ and other Xray-based apps.
 | `geosite.dat` | `https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geosite.dat` | `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geosite.dat` |
 | `geoip.dat` | `https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geoip.dat` | `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geoip.dat` |
 
-## Important: these files only contain these tags
+## Tags
 
 | `geosite:` | `geoip:` |
 |------------|----------|
 | `ads`, `malware`, `phishing`, `cryptominers`, `sanctioned`, `ir`, `social`, `nsfw` | `ir`, `malware`, `phishing`, `private`, `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor`, `netflix` |
 
-If you replace your app's stock geo files with these, rules that use other tags (`geosite:google`,
-`geoip:cn`, `geosite:category-ads-all`) stop working. Either update those rules, or keep the stock files and
-load these under another name (Xray only):
+!!! warning "These files only contain the tags above"
+    If you replace your app's stock geo files with these, rules that use other tags (`geosite:google`,
+    `geoip:cn`, `geosite:category-ads-all`) stop working. Either update those rules, or keep the stock files
+    and load these under another name (Xray only):
 
-```
-ext:iran-geosite.dat:ads
-ext:iran-geoip.dat:ir
-```
+    ```
+    ext:iran-geosite.dat:ads
+    ext:iran-geoip.dat:ir
+    ```
 
 ## Example routing
 
@@ -58,4 +55,5 @@ no domain rule matched, so `geoip:ir` also catches Iranian sites missing from `g
 - **v2rayN**: put the files in the app's `bin` folder (replacing the stock ones), or set custom geo file URLs
   in the settings if your version has them. Then add routing rules with the tags above.
 
-Menu names change between app versions; look for "geo files" or "asset files" in the settings.
+!!! note
+    Menu names change between app versions; look for "geo files" or "asset files" in the settings.

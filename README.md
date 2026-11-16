@@ -25,7 +25,8 @@ to the `release` branch, which GitHub raw and jsDelivr serve.
 
 ```sh
 go test ./...
-go run ./cmd/build
+go run ./cmd/build                                        # also regenerates docs/urls.md and docs/sources.md
+pip install -r requirements-docs.txt && mkdocs serve      # preview the docs site (MkDocs Material)
 ```
 
 To add a source, add an entry to `sources.yaml`; the format is documented at the top of that file.
@@ -41,4 +42,4 @@ GPL-3.0 (hagezi, AdGuard) and AGPL-3.0 (PersianBlocker). Attribution:
 
 - IP geolocation data: [IP Geolocation by DB-IP](https://db-ip.com) (CC BY 4.0).
 - Country IP blocks: [ipverse](https://github.com/ipverse/country-ip-blocks) (CC0), [ipdeny.com](https://www.ipdeny.com), [RIPEstat](https://stat.ripe.net).
-- Domain lists: [bootmortis/iran-hosted-domains](https://github.com/bootmortis/iran-hosted-domains), [v2fly/domain-list-community](https://github.com/v2fly/domain-list-community), and the other sources listed on the [sources page](https://aliraghebi.github.io/vpn-routing/sources).
+- Domain lists: [bootmortis/iran-hosted-domains](https://github.com/bootmortis/iran-hosted-domains), [v2fly/domain-list-community](https://github.com/v2fly/domain-list-community), and the other sources listed on the [sources page](https://aliraghebi.github.io/vpn-routing/sources/).

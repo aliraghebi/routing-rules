@@ -21,6 +21,8 @@
     "cloudfront", "fastly", "gcore", "telegram", "tor-exit", "netflix"];
 
   var cache = {};
+  var provCache = {};
+  var run = 0; // latest check; older checks must not overwrite its result
   var listsBase = "../dl/lists/"; // set per page from data-lists (the Persian site lives one level deeper)
   var sourcesPage = "../sources/";
 
@@ -32,41 +34,44 @@
     direct: "Direct",
     enter: "Enter a domain, URL or IP address.",
     checking: "Checking",
-    matched: "Matched",
-    theRule: "the config rule",
-    by: "by",
-    notListed: "Not in any list, so the default rule sends it through the proxy.",
+    notListed: "Not in any list the default configs use, so the default rule sends it through the proxy.",
     geoipNote: "Apps that resolve domains (Shadowrocket <code>GEOIP,IR</code>, Xray <code>IPIfNonMatch</code>, " +
       "mihomo <code>geoip-ir</code>) still send it direct if its IP address is Iranian. This page cannot resolve " +
       "DNS, so check the IP address too if you know it.",
-    optional: "Also in these optional lists (not used by the default configs):",
+    optional: "Optional",
+    colList: "List",
+    colRule: "Rule",
+    colStatus: "Status",
+    colSource: "Source",
     loadError: "Could not load the lists:",
     whyInjected: "Iran's DNS block page address",
     whySanctioned: "site that blocks Iranian IPs",
     whyTLD: ".ir / xn--mgba3a4f16a domain",
     whyPrivate: "private or local network",
-    from: "From source:",
   }, (window.VR_CHECK_I18N || {})[(document.documentElement.lang || "en").slice(0, 2)] || {});
 
   function load(name) {
     if (!cache[name]) {
-      var url = new URL(listsBase + name + ".list", location.href);
-      var prov = fetch(new URL(listsBase + name + ".prov", location.href))
-        .then(function (r) { return r.ok ? r.text() : ""; }, function () { return ""; });
-      cache[name] = Promise.all([fetch(url).then(function (r) {
+      cache[name] = fetch(new URL(listsBase + name + ".list", location.href)).then(function (r) {
         if (!r.ok) throw new Error(name + ": HTTP " + r.status);
         return r.text();
-      }), prov]).then(function (t) {
-        var l = parse(t[0]);
-        l.prov = parseProv(t[1]);
-        return l;
-      });
+      }).then(parse);
     }
     return cache[name];
   }
 
   // .prov files: a JSON array of source names, then one hex bitmask per rule
-  // in the list's order, naming the sources that contributed each rule.
+  // in the list's order, naming the sources that contributed each rule. Only
+  // the list that decided the verdict needs one, so it is fetched on demand.
+  function loadProv(name) {
+    if (!provCache[name]) {
+      provCache[name] = fetch(new URL(listsBase + name + ".prov", location.href))
+        .then(function (r) { return r.ok ? r.text() : ""; }, function () { return ""; })
+        .then(parseProv);
+    }
+    return provCache[name];
+  }
+
   function parseProv(text) {
     if (!text) return null;
     var lines = text.split("\n");
@@ -77,11 +82,11 @@
     }
   }
 
-  function sourcesOf(l, rule) {
+  function sourcesOf(l, prov, rule) {
     var i = l.index.get(rule);
-    if (!l.prov || i === undefined || !l.prov.masks[i]) return [];
-    var mask = BigInt("0x" + l.prov.masks[i]);
-    return l.prov.names.filter(function (_, bit) { return (mask >> BigInt(bit)) & 1n; });
+    if (!prov || i === undefined || !prov.masks[i]) return [];
+    var mask = BigInt("0x" + prov.masks[i]);
+    return prov.names.filter(function (_, bit) { return (mask >> BigInt(bit)) & 1n; });
   }
 
   function parse(text) {
@@ -191,12 +196,25 @@
       return;
     }
     out.innerHTML = "<p>" + T.checking + " <code>" + esc(q.text) + "</code>…</p>";
-    var names = ORDER.filter(function (o) { return o.list; }).map(function (o) { return o.list; }).concat(OPTIONAL);
-    Promise.all(names.map(function (n) {
-      return load(n).then(function (l) { return [n, l]; }, function () { return [n, null]; });
-    })).then(function (pairs) {
-      var lists = {};
-      pairs.forEach(function (p) { lists[p[0]] = p[1]; });
+    var me = ++run;
+    function current() { return me === run; }
+    function loadAll(names) {
+      return Promise.all(names.map(function (n) {
+        return load(n).then(function (l) { return [n, l]; }, function () { return [n, null]; });
+      })).then(function (pairs) {
+        var lists = {};
+        pairs.forEach(function (p) { lists[p[0]] = p[1]; });
+        return lists;
+      });
+    }
+    function match(l) { return l && (q.host ? matchDomain(l, q.host) : matchIP(l, q.ip)); }
+    // Optional lists load in parallel with the default ones but do not hold
+    // up the verdict; their section is filled in when they arrive.
+    // Default lists are requested first so they lead the browser's queue.
+    var defaultLists = loadAll(ORDER.filter(function (o) { return o.list; }).map(function (o) { return o.list; }));
+    var optionalLists = loadAll(OPTIONAL);
+    defaultLists.then(function (lists) {
+      if (!current()) return;
       var verdict = null;
       for (var i = 0; i < ORDER.length && !verdict; i++) {
         var o = ORDER[i];
@@ -204,39 +222,56 @@
           if (q.host && /(^|\.)(ir|xn--mgba3a4f16a)$/.test(q.host)) verdict = { o: o, rule: "DOMAIN-SUFFIX,ir" };
           continue;
         }
-        var l = lists[o.list];
-        if (!l) continue;
-        var rule = q.host ? matchDomain(l, q.host) : matchIP(l, q.ip);
-        if (rule) verdict = { o: o, rule: rule, from: sourcesOf(l, rule) };
+        var rule = match(lists[o.list]);
+        if (rule) verdict = { o: o, rule: rule, l: lists[o.list] };
       }
-      var optional = [];
-      OPTIONAL.forEach(function (n) {
-        var l = lists[n];
-        var r = l && (q.host ? matchDomain(l, q.host) : matchIP(l, q.ip));
-        if (r) optional.push("<li><code>" + n + "</code>: <code>" + esc(r) + "</code></li>");
-      });
       var v = verdict ? verdict.o.verdict : "proxy";
       var html = '<div class="vr-check__verdict vr-check__verdict--' + v + '">' + T[v] + "</div>";
-      if (verdict) {
-        html += "<p>" + T.matched + " " + (verdict.o.list ? "<code>" + verdict.o.list + "</code>" : T.theRule) +
-          (verdict.o.why ? " (" + T[verdict.o.why] + ")" : "") + " " + T.by + " <code>" + esc(verdict.rule) + "</code>.</p>";
-        if (verdict.from && verdict.from.length) {
-          html += "<p>" + T.from + " " + verdict.from.map(function (s) {
-            return '<a href="' + sourcesPage + '"><code>' + esc(s) + "</code></a>";
-          }).join(", ") + "</p>";
-        }
-      } else {
-        html += "<p>" + T.notListed + "</p>";
-        if (q.host) {
-          html += "<p>" + T.geoipNote + "</p>";
-        }
-      }
-      if (optional.length) {
-        html += "<p>" + T.optional + "</p><ul>" + optional.join("") + "</ul>";
-      }
+      if (!verdict) html += "<p>" + T.notListed + "</p>";
+      html += '<div class="vr-check__matches"></div>';
+      if (!verdict && q.host) html += "<p>" + T.geoipNote + "</p>";
       out.innerHTML = html;
+
+      // One row per match: the rule that decided the verdict, then optional
+      // lists as they arrive. Sources are filled in from each list's .prov.
+      var rows = [];
+      function render() {
+        var el = out.querySelector(".vr-check__matches");
+        if (!current() || !el || !rows.length) return;
+        el.innerHTML = '<div class="vr-check__scroll"><table class="vr-check__table"><thead><tr><th>' + T.colList +
+          "</th><th>" + T.colRule + "</th><th>" + T.colStatus + "</th><th>" + T.colSource + "</th></tr></thead><tbody>" +
+          rows.map(function (r) {
+            var src = r.sources === null ? "…" : r.sources.length ? r.sources.map(function (s) {
+              return '<a href="' + sourcesPage + '"><code>' + esc(s) + "</code></a>";
+            }).join(", ") : "—";
+            return "<tr><td>" + (r.list ? "<code>" + r.list + "</code>" : "—") +
+              (r.why ? '<br><span class="vr-check__why">' + T[r.why] + "</span>" : "") +
+              "</td><td><code>" + esc(r.rule) + '</code></td><td><span class="vr-check__status vr-check__status--' +
+              r.status + '">' + T[r.status] + "</span></td><td>" + src + "</td></tr>";
+          }).join("") + "</tbody></table></div>";
+      }
+      function addRow(list, l, rule, status, why) {
+        var r = { list: list, rule: rule, status: status, why: why, sources: l ? null : [] };
+        rows.push(r);
+        if (l) {
+          loadProv(list).then(function (prov) {
+            r.sources = sourcesOf(l, prov, rule);
+            render();
+          });
+        }
+      }
+      if (verdict) addRow(verdict.o.list, verdict.l, verdict.rule, v, verdict.o.why);
+      render();
+      optionalLists.then(function (opt) {
+        if (!current()) return;
+        OPTIONAL.forEach(function (n) {
+          var r = match(opt[n]);
+          if (r) addRow(n, opt[n], r, "optional");
+        });
+        render();
+      });
     }).catch(function (e) {
-      out.innerHTML = '<p class="vr-check__error">' + T.loadError + " " + esc(String(e)) + "</p>";
+      if (current()) out.innerHTML = '<p class="vr-check__error">' + T.loadError + " " + esc(String(e)) + "</p>";
     });
   }
 

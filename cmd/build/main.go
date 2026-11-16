@@ -730,7 +730,7 @@ func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[stri
 		}
 		label := map[string]string{"ok": "✅ " + T("healthy"), "stale": "⚠️ " + T("stale (last good copy)"),
 			"FAILED": "❌ " + T("failing"), "disabled": T("disabled"), "skipped": T("disabled")}[o.status]
-		srcs = append(srcs, emit.DocSource{Name: s.Name, URL: s.URL, Category: s.Category, Format: s.Format, License: s.License,
+		srcs = append(srcs, emit.DocSource{Name: s.Name, URL: sourceLink(st.RepoURL, s.URL), Category: s.Category, Format: s.Format, License: s.License,
 			Enabled: s.Enabled && catEnabled(cfg, s.Category), Health: label, Fetched: day(o.fetched), Changed: day(o.changed)})
 	}
 	sources, err := emit.SourcesPage(l.Lang, srcs)
@@ -784,6 +784,16 @@ func provenance(srcs []outcome, final catRules) []byte {
 		fmt.Fprintf(&b, "%x\n", mask)
 	}
 	return b.Bytes()
+}
+
+// sourceLink turns a file:/// source (a file in this repo) into a link to it
+// on the repo's default branch; other URLs are returned as is.
+func sourceLink(repo, u string) string {
+	p, ok := strings.CutPrefix(u, "file:///")
+	if !ok || repo == "" {
+		return u
+	}
+	return strings.TrimRight(repo, "/") + "/blob/HEAD/" + p
 }
 
 func actionDesc(a string) string {

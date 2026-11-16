@@ -94,6 +94,28 @@
 .vr-check__verdict--proxy { background: #3949ab; }
 .vr-check__verdict--direct { background: #2e7d32; }
 .vr-check__error { color: #c62828; }
+.vr-check__scroll { overflow-x: auto; }
+.md-typeset .vr-check__table { display: table; width: 100%; }
+.md-typeset .vr-check__table code { word-break: normal; white-space: nowrap; }
+.vr-check__why {
+  font-size: 0.85em;
+  color: var(--md-default-fg-color--light);
+}
+.vr-check__status {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--vr-radius-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  color: #fff;
+}
+.vr-check__status--block { background: #c62828; }
+.vr-check__status--proxy { background: #3949ab; }
+.vr-check__status--direct { background: #2e7d32; }
+.vr-check__status--optional {
+  color: var(--md-default-fg-color--light);
+  background: var(--md-default-fg-color--lightest);
+}
 
 /* Persian (right-to-left) site: code, URLs and inputs stay left-to-right */
 [dir="rtl"] .md-typeset pre,

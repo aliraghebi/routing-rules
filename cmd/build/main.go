@@ -531,7 +531,21 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	if err := writeIfChanged(filepath.Join(dir, "urls.md"), urls); err != nil {
 		return err
 	}
-	return writeIfChanged(filepath.Join(dir, "sources.md"), sources)
+	if err := writeIfChanged(filepath.Join(dir, "sources.md"), sources); err != nil {
+		return err
+	}
+	// Copies of the files users import as files, served by the docs site itself:
+	// a same-origin link with the download attribute makes browsers save the file
+	// instead of showing it as text (raw GitHub and jsDelivr links cannot do that).
+	dl := map[string][]byte{}
+	for name, b := range files {
+		for _, stem := range []string{"karing", "v2rayn-routing", "clash", "sing-box-route", "xray-routing", "shadowrocket"} {
+			if strings.HasPrefix(name, stem) {
+				dl[name] = b
+			}
+		}
+	}
+	return syncDir(filepath.Join(dir, "dl"), dl)
 }
 
 func actionDesc(a string) string {

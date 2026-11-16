@@ -86,7 +86,7 @@ func main() {
 	cache := flag.String("cache", ".cache", "HTTP + last-known-good cache directory")
 	allowPath := flag.String("allowlist", "allowlist.txt", "domains never to REJECT")
 	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
-	docs := flag.String("docs", "docs", "GitHub Pages directory for the generated URL and sources pages")
+	docs := flag.String("docs", "docs/en", "docs directory (English) for the generated URL and sources pages and the checker's lists")
 	flag.Parse()
 	log.SetFlags(0)
 	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs); err != nil {

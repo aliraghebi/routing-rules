@@ -3,9 +3,9 @@ site_description: "Daily-built routing rules and ready-made configs for proxy an
 site_url: https://aliraghebi.github.io/routing-rules/
 repo_url: https://github.com/aliraghebi/routing-rules
 repo_name: aliraghebi/routing-rules
-edit_uri: edit/main/docs/
+edit_uri: edit/main/docs/en/
 copyright: Code GPL-3.0 · Lists keep their upstream licenses · IP geolocation by <a href="https://db-ip.com">DB-IP</a>
-docs_dir: docs
+docs_dir: docs/en
 strict: true
 
 theme:
@@ -65,6 +65,13 @@ theme:
 
 extra:
   generator: false
+  alternate:
+    - name: English
+      link: /routing-rules/
+      lang: en
+    - name: فارسی
+      link: /routing-rules/fa/
+      lang: fa
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/aliraghebi/routing-rules

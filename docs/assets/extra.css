@@ -94,3 +94,18 @@
 .vr-check__verdict--proxy { background: #3949ab; }
 .vr-check__verdict--direct { background: #2e7d32; }
 .vr-check__error { color: #c62828; }
+
+/* Persian (right-to-left) site: code, URLs and inputs stay left-to-right */
+[dir="rtl"] .md-typeset pre,
+[dir="rtl"] .md-typeset pre > code {
+  direction: ltr;
+  text-align: left;
+}
+[dir="rtl"] .md-typeset code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+[dir="rtl"] .vr-check__input {
+  direction: ltr;
+  text-align: left;
+}

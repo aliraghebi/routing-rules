@@ -6,13 +6,13 @@
 
   // Rule order of the default configs.
   var ORDER = [
-    { list: "ir-injected", verdict: "block", why: "Iran's DNS block page address" },
+    { list: "ir-injected", verdict: "block", why: "whyInjected" },
     { list: "malware", verdict: "block" },
     { list: "phishing", verdict: "block" },
     { list: "cryptominers", verdict: "block" },
     { list: "ads", verdict: "block" },
-    { list: "sanctioned", verdict: "proxy", why: "site that blocks Iranian IPs" },
-    { tld: true, verdict: "direct", why: ".ir / .ایران domain" },
+    { list: "sanctioned", verdict: "proxy", why: "whySanctioned" },
+    { tld: true, verdict: "direct", why: "whyTLD" },
     { list: "ir-domains", verdict: "direct" },
     { list: "ir-cidr", verdict: "direct" },
   ];
@@ -20,10 +20,33 @@
     "cloudfront", "fastly", "gcore", "telegram", "tor-exit", "netflix"];
 
   var cache = {};
+  var listsBase = "../dl/lists/"; // set per page from data-lists (the Persian site lives one level deeper)
+
+  // User-facing text. Translations come from a locale file loaded before this
+  // script (e.g. check-i18n-fa.js sets window.VR_CHECK_I18N).
+  var T = Object.assign({
+    block: "Blocked",
+    proxy: "Through the proxy",
+    direct: "Direct",
+    enter: "Enter a domain, URL or IP address.",
+    checking: "Checking",
+    matched: "Matched",
+    theRule: "the config rule",
+    by: "by",
+    notListed: "Not in any list, so the default rule sends it through the proxy.",
+    geoipNote: "Apps that resolve domains (Shadowrocket <code>GEOIP,IR</code>, Xray <code>IPIfNonMatch</code>, " +
+      "mihomo <code>geoip-ir</code>) still send it direct if its IP address is Iranian. This page cannot resolve " +
+      "DNS, so check the IP address too if you know it.",
+    optional: "Also in these optional lists (not used by the default configs):",
+    loadError: "Could not load the lists:",
+    whyInjected: "Iran's DNS block page address",
+    whySanctioned: "site that blocks Iranian IPs",
+    whyTLD: ".ir / xn--mgba3a4f16a domain",
+  }, window.VR_CHECK_I18N || {});
 
   function load(name) {
     if (!cache[name]) {
-      var url = new URL("../dl/lists/" + name + ".list", location.href);
+      var url = new URL(listsBase + name + ".list", location.href);
       cache[name] = fetch(url).then(function (r) {
         if (!r.ok) throw new Error(name + ": HTTP " + r.status);
         return r.text();
@@ -129,15 +152,13 @@
     }
   }
 
-  var LABEL = { block: "Blocked", proxy: "Through the proxy", direct: "Direct" };
-
   function check(input, out) {
     var q = normalize(input);
     if (!q) {
-      out.innerHTML = '<p class="vr-check__error">Enter a domain, URL or IP address.</p>';
+      out.innerHTML = '<p class="vr-check__error">' + T.enter + "</p>";
       return;
     }
-    out.innerHTML = "<p>Checking <code>" + esc(q.text) + "</code>…</p>";
+    out.innerHTML = "<p>" + T.checking + " <code>" + esc(q.text) + "</code>…</p>";
     var names = ORDER.filter(function (o) { return o.list; }).map(function (o) { return o.list; }).concat(OPTIONAL);
     Promise.all(names.map(function (n) {
       return load(n).then(function (l) { return [n, l]; }, function () { return [n, null]; });
@@ -163,24 +184,22 @@
         if (r) optional.push("<li><code>" + n + "</code>: <code>" + esc(r) + "</code></li>");
       });
       var v = verdict ? verdict.o.verdict : "proxy";
-      var html = '<div class="vr-check__verdict vr-check__verdict--' + v + '">' + LABEL[v] + "</div>";
+      var html = '<div class="vr-check__verdict vr-check__verdict--' + v + '">' + T[v] + "</div>";
       if (verdict) {
-        html += "<p>Matched " + (verdict.o.list ? "<code>" + verdict.o.list + "</code>" : "the config rule") +
-          (verdict.o.why ? " (" + verdict.o.why + ")" : "") + " by <code>" + esc(verdict.rule) + "</code>.</p>";
+        html += "<p>" + T.matched + " " + (verdict.o.list ? "<code>" + verdict.o.list + "</code>" : T.theRule) +
+          (verdict.o.why ? " (" + T[verdict.o.why] + ")" : "") + " " + T.by + " <code>" + esc(verdict.rule) + "</code>.</p>";
       } else {
-        html += "<p>Not in any list, so the default rule sends it through the proxy.</p>";
+        html += "<p>" + T.notListed + "</p>";
         if (q.host) {
-          html += "<p>Apps that resolve domains (Shadowrocket <code>GEOIP,IR</code>, Xray <code>IPIfNonMatch</code>, " +
-            "mihomo <code>geoip-ir</code>) still send it direct if its IP address is Iranian. This page cannot resolve " +
-            "DNS, so check the IP address too if you know it.</p>";
+          html += "<p>" + T.geoipNote + "</p>";
         }
       }
       if (optional.length) {
-        html += "<p>Also in these optional lists (not used by the default configs):</p><ul>" + optional.join("") + "</ul>";
+        html += "<p>" + T.optional + "</p><ul>" + optional.join("") + "</ul>";
       }
       out.innerHTML = html;
     }).catch(function (e) {
-      out.innerHTML = '<p class="vr-check__error">Could not load the lists: ' + esc(String(e)) + "</p>";
+      out.innerHTML = '<p class="vr-check__error">' + T.loadError + " " + esc(String(e)) + "</p>";
     });
   }
 
@@ -192,6 +211,7 @@
     var form = document.getElementById("vr-check-form");
     if (!form || form.dataset.ready) return;
     form.dataset.ready = "1";
+    if (form.dataset.lists) listsBase = form.dataset.lists;
     var input = document.getElementById("vr-check-input");
     var out = document.getElementById("vr-check-result");
     form.addEventListener("submit", function (e) {

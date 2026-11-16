@@ -7,7 +7,7 @@ icon: material/magnify
 ببینید پیکربندی‌های پیش‌فرض با یک دامنه، نشانی وب یا آدرس IP چه می‌کنند: مسدود، مستقیم یا از طریق پراکسی.
 همه چیز در مرورگر شما و با فهرست‌های منتشرشده انجام می‌شود.
 
-<form id="vr-check-form" class="vr-check" autocomplete="off" data-lists="../../dl/lists/">
+<form id="vr-check-form" class="vr-check" autocomplete="off" data-repo="https://github.com/aliraghebi/routing-rules" data-lists="../../dl/lists/">
   <input id="vr-check-input" class="vr-check__input" type="text" dir="ltr" placeholder="digikala.com, https://example.com/page or 2.144.0.1" aria-label="دامنه، نشانی وب یا آدرس IP">
   <button class="md-button md-button--primary" type="submit">بررسی</button>
 </form>

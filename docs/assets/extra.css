@@ -83,16 +83,6 @@
 .vr-check .md-button {
   margin: 0;
 }
-.vr-check__verdict {
-  display: inline-block;
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--vr-radius-sm);
-  font-weight: 700;
-  color: #fff;
-}
-.vr-check__verdict--block { background: #c62828; }
-.vr-check__verdict--proxy { background: #3949ab; }
-.vr-check__verdict--direct { background: #2e7d32; }
 .vr-check__error { color: #c62828; }
 .vr-check__scroll { overflow-x: auto; }
 .vr-check__scroll {
@@ -152,10 +142,6 @@
 .vr-check__state--applied {
   color: var(--md-default-fg-color);
   border: 1px solid var(--md-default-fg-color--light);
-}
-.vr-check__state--notApplied {
-  color: var(--md-default-fg-color--light);
-  border: 1px dashed var(--md-default-fg-color--lighter);
 }
 .vr-check__state--optional {
   color: var(--md-default-fg-color--light);

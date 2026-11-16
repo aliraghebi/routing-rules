@@ -7,7 +7,7 @@ icon: material/magnify
 See what the default configs do with a domain, URL or IP address: blocked, direct, or through the proxy.
 Everything runs in your browser using the published lists.
 
-<form id="vr-check-form" class="vr-check" autocomplete="off">
+<form id="vr-check-form" class="vr-check" autocomplete="off" data-repo="https://github.com/aliraghebi/routing-rules">
   <input id="vr-check-input" class="vr-check__input" type="text" placeholder="digikala.com, https://example.com/page or 2.144.0.1" aria-label="Domain, URL or IP address">
   <button class="md-button md-button--primary" type="submit">Check</button>
 </form>

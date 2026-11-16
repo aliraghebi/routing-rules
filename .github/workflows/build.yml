@@ -28,6 +28,12 @@ permissions:
 env:
   BOT_NAME: shadowrocket-config-bot
   BOT_EMAIL: shadowrocket-config-bot@users.noreply.github.com
+  # Pinned tools that compile and validate the sing-box / v2ray outputs.
+  # sing-box publishes no checksums; this hash was computed from the release file.
+  SING_BOX_VERSION: 1.14.4
+  SING_BOX_SHA256: 699a1b510aa4396b2176d32d1181920399ebf1e267835da6f3b598d0f7c24968
+  XRAY_VERSION: 26.11.9
+  XRAY_SHA256: b651f7e1d9966ee2c1b1ee1bf8b52c72771824d3065dce96bbc8bcc19ed95f82
 
 concurrency:
   group: build-${{ github.ref }}
@@ -63,6 +69,49 @@ jobs:
           ALLOW_SHRINK: ${{ github.event.inputs.allow_shrink || '0' }}
         run: go run ./cmd/build
 
+      - name: Install sing-box and Xray
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin" && cd "$RUNNER_TEMP"
+          curl -fsSL -o sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
+          echo "${SING_BOX_SHA256}  sb.tgz" | sha256sum -c -
+          tar xzf sb.tgz --strip-components=1 -C bin "sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box"
+          curl -fsSL -o xr.zip "https://github.com/XTLS/Xray-core/releases/download/v${XRAY_VERSION}/Xray-linux-64.zip"
+          echo "${XRAY_SHA256}  xr.zip" | sha256sum -c -
+          unzip -q xr.zip xray -d bin
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      # Validate before committing, so a broken output never reaches dist/ or the release.
+      - name: Compile and check sing-box rule-sets
+        run: |
+          mkdir -p out/srs
+          for f in dist/sing-box/geo*.json; do
+            sing-box rule-set compile --output "out/srs/$(basename "${f%.json}").srs" "$f"
+          done
+          # "rule-set match" prints the matching rule, nothing when there is no match.
+          must()    { [ -n "$(sing-box rule-set match -f binary "out/srs/$1.srs" "$2")" ] || { echo "::error::$1 should match $2"; exit 1; }; }
+          mustnot() { [ -z "$(sing-box rule-set match -f binary "out/srs/$1.srs" "$2")" ] || { echo "::error::$1 should not match $2"; exit 1; }; }
+          must geosite-ir digikala.com
+          must geosite-ir www.digikala.com
+          must geosite-ir example.ir
+          must geosite-ads yektanet.com
+          must geosite-ads cdn.yektanet.com
+          must geoip-ir 2.144.0.1
+          mustnot geosite-ir google.com
+          mustnot geosite-ads digikala.com
+          echo '{"outbounds":[{"type":"direct","tag":"direct"},{"type":"direct","tag":"proxy"}]}' > "$RUNNER_TEMP/sb-outbounds.json"
+          sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box/route.json
+
+      - name: Check v2ray geo files with Xray
+        run: |
+          cat > "$RUNNER_TEMP/outbounds.json" <<'JSON'
+          { "outbounds": [
+              { "tag": "proxy", "protocol": "freedom" },
+              { "tag": "direct", "protocol": "freedom" },
+              { "tag": "block", "protocol": "blackhole" } ] }
+          JSON
+          # Fails with "list not found" if a tag referenced by routing.json is missing.
+          XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray/routing.json
+
       - name: Commit dist/
         id: commit
         run: |
@@ -72,7 +121,12 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          lists=$(git diff --cached --name-only -- dist | xargs -n1 basename | paste -sd, - | sed 's/,/, /g')
+          files=$(git diff --cached --name-only -- dist | sed 's#^dist/##')
+          if [ "$(echo "$files" | wc -l)" -le 6 ]; then
+            lists=$(echo "$files" | paste -sd, - | sed 's/,/, /g')
+          else
+            lists="$(echo "$files" | wc -l | tr -d ' ') rule files"
+          fi
           git config user.name "$BOT_NAME"
           git config user.email "$BOT_EMAIL"
           git commit -m "chore(dist): update ${lists}"
@@ -90,7 +144,9 @@ jobs:
             gh release create latest --title "Latest rule lists" \
               --notes "Rebuilt automatically from sources.yaml. Assets are replaced on every change."
           fi
-          gh release upload latest dist/*.list dist/shadowrocket.conf --clobber
+          gh release upload latest --clobber \
+            dist/*.list dist/shadowrocket.conf \
+            out/geosite.dat out/geoip.dat out/srs/*.srs
 
   # GitHub disables scheduled workflows after 60 days without repository
   # activity. Daily list changes normally keep the repo active; when sources

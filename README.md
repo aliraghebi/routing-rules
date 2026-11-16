@@ -48,6 +48,18 @@ be blocked), [`ir-ads.txt`](data/ir-ads.txt) (Iranian ad networks to always bloc
 [`ir-injected.txt`](data/ir-injected.txt) (Iran's DNS block-page addresses) and
 [`private.txt`](data/private.txt) (private and special-use IP ranges).
 
+## Verifying files
+
+Every release includes `SHA256SUMS`, and each file carries a signed build provenance attestation from
+this repository's GitHub Actions workflow:
+
+```sh
+gh attestation verify ads.list --repo aliraghebi/routing-rules
+```
+
+Tool versions used for validation (sing-box, Xray, mihomo), GitHub Actions, Go modules and the docs
+dependencies are kept up to date by [Renovate](renovate.json).
+
 ## License
 
 The code is licensed under [GPL-3.0](LICENSE).

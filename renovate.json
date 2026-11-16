@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "sing-box, Xray and mihomo versions pinned in the build workflow",
+      "managerFilePatterns": ["/^\\.github/workflows/build\\.yml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>[^\\s]+)\\n\\s+[A-Z_]+_VERSION: (?<currentValue>\\S+)"
+      ],
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Group the validation tools so one PR updates them together",
+      "matchDepNames": ["SagerNet/sing-box", "XTLS/Xray-core", "MetaCubeX/mihomo"],
+      "groupName": "validation tools"
+    }
+  ]
+}

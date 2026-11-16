@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "30 23 * * *" # daily at 03:00 Iran time (UTC+3:30); off the hour, which GitHub may delay
   workflow_dispatch:
+  # PRs (e.g. Renovate updates) run the build and every check, but never publish.
+  pull_request:
   push:
     branches: [main]
     paths:
@@ -21,21 +23,23 @@ on:
 permissions:
   contents: write # publish GitHub releases
   pages: write
-  id-token: write
+  id-token: write # Pages deploy and build provenance attestations
+  attestations: write
 
 env:
   # Identity for the release-branch commit and the keepalive commit. GitHub links
   # a commit to an account by email; this address belongs to no account.
   BOT_NAME: routing-rules-bot
   BOT_EMAIL: routing-rules-bot@users.noreply.github.com
-  # Pinned tools that compile and validate the sing-box / v2ray outputs.
-  # sing-box publishes no checksums; this hash was computed from the release file.
+  # Pinned tools that compile and validate the outputs. Renovate bumps these
+  # versions; downloads are verified against the SHA-256 digest GitHub publishes
+  # for each release asset.
+  # renovate: datasource=github-releases depName=SagerNet/sing-box
   SING_BOX_VERSION: 1.14.4
-  SING_BOX_SHA256: 699a1b510aa4396b2176d32d1181920399ebf1e267835da6f3b598d0f7c24968
+  # renovate: datasource=github-releases depName=XTLS/Xray-core
   XRAY_VERSION: 26.11.9
-  XRAY_SHA256: b651f7e1d9966ee2c1b1ee1bf8b52c72771824d3065dce96bbc8bcc19ed95f82
+  # renovate: datasource=github-releases depName=MetaCubeX/mihomo
   MIHOMO_VERSION: 1.19.34
-  MIHOMO_SHA256: 223fab877e5795ce780ba39902e5f0b1113c1256ae244a7160f1165e017e9ccc
 
 concurrency:
   group: build-${{ github.ref }}
@@ -76,17 +80,24 @@ jobs:
         run: go run ./cmd/build
 
       - name: Install sing-box, Xray and mihomo
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$RUNNER_TEMP/bin" && cd "$RUNNER_TEMP"
-          curl -fsSL -o sb.tgz "https://github.com/SagerNet/sing-box/releases/download/v${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION}-linux-amd64.tar.gz"
-          echo "${SING_BOX_SHA256}  sb.tgz" | sha256sum -c -
-          tar xzf sb.tgz --strip-components=1 -C bin "sing-box-${SING_BOX_VERSION}-linux-amd64/sing-box"
-          curl -fsSL -o xr.zip "https://github.com/XTLS/Xray-core/releases/download/v${XRAY_VERSION}/Xray-linux-64.zip"
-          echo "${XRAY_SHA256}  xr.zip" | sha256sum -c -
-          unzip -q xr.zip xray -d bin
-          curl -fsSL -o mihomo.gz "https://github.com/MetaCubeX/mihomo/releases/download/v${MIHOMO_VERSION}/mihomo-linux-amd64-v${MIHOMO_VERSION}.gz"
-          echo "${MIHOMO_SHA256}  mihomo.gz" | sha256sum -c -
-          gunzip -c mihomo.gz > bin/mihomo && chmod +x bin/mihomo
+          # Download a release asset and check it against GitHub's published digest.
+          get() {
+            local repo=$1 tag=$2 asset=$3 want
+            want=$(gh api "repos/$repo/releases/tags/$tag" --jq ".assets[] | select(.name == \"$asset\") | .digest")
+            [ -n "$want" ] || { echo "::error::no published digest for $repo $tag $asset"; exit 1; }
+            curl -fsSL -o "$asset" "https://github.com/$repo/releases/download/$tag/$asset"
+            echo "${want#sha256:}  $asset" | sha256sum -c -
+          }
+          get SagerNet/sing-box "v$SING_BOX_VERSION" "sing-box-$SING_BOX_VERSION-linux-amd64.tar.gz"
+          tar xzf "sing-box-$SING_BOX_VERSION-linux-amd64.tar.gz" --strip-components=1 -C bin "sing-box-$SING_BOX_VERSION-linux-amd64/sing-box"
+          get XTLS/Xray-core "v$XRAY_VERSION" Xray-linux-64.zip
+          unzip -q Xray-linux-64.zip xray -d bin
+          get MetaCubeX/mihomo "v$MIHOMO_VERSION" "mihomo-linux-amd64-v$MIHOMO_VERSION.gz"
+          gunzip -c "mihomo-linux-amd64-v$MIHOMO_VERSION.gz" > bin/mihomo && chmod +x bin/mihomo
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       # Validate before publishing, so a broken output never reaches users.
@@ -192,8 +203,16 @@ jobs:
       # A new release per change: created as a draft, filled, then published, so
       # .../releases/latest/download/<file> switches to the new set at once and
       # never serves a half-uploaded release. Older releases are deleted.
+      # Signed build provenance for every release file: verify one with
+      # `gh attestation verify <file> --repo aliraghebi/routing-rules`.
+      - name: Attest release files
+        if: steps.assemble.outputs.changed == 'true' && github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: ${{ env.REL }}/*
+
       - name: Publish GitHub release
-        if: steps.assemble.outputs.changed == 'true'
+        if: steps.assemble.outputs.changed == 'true' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -256,11 +275,13 @@ jobs:
           pip install -q -r requirements-docs.txt
           mkdocs build --strict                         # English at site/, Persian at site/fa/ (mkdocs-static-i18n)
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
           path: site
 
   pages:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

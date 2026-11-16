@@ -1,9 +1,10 @@
 # shadowrocket-config
 
-A Shadowrocket config plus rule lists, rebuilt every day by GitHub Actions from upstream sources.
+Rule lists for Shadowrocket, sing-box and v2ray/Xray, rebuilt every day by GitHub Actions from upstream sources.
 It does what [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules) and
-[Chocolate4U/Iran-sing-box-rules](https://github.com/Chocolate4U/Iran-sing-box-rules) do, but writes Shadowrocket
-text rule-sets instead of `.dat` / `.srs` / `.db` files.
+[Chocolate4U/Iran-sing-box-rules](https://github.com/Chocolate4U/Iran-sing-box-rules) do, from one pipeline:
+Shadowrocket `RULE-SET` lists and config, sing-box rule-sets (`.srs` and JSON source), and v2ray `geosite.dat` /
+`geoip.dat`. Legacy sing-box `.db` files are not built (sing-box removed geosite/geoip `.db` support in 1.12).
 
 ## Use it in Shadowrocket
 
@@ -41,6 +42,36 @@ To use an optional list, add a line to your own config, for example
 `RULE-SET,https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist/nsfw.list,REJECT` or
 `RULE-SET,.../telegram.list,PROXY`.
 
+## Use it in sing-box (1.11+)
+
+Rule-sets are named like Chocolate4U's: `geosite-<tag>` and `geoip-<tag>`.
+
+| Format | URL |
+|--------|-----|
+| Binary (recommended) | `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download/geosite-ads.srs` |
+| JSON source (`"format": "source"`, also works through jsDelivr) | `https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist/sing-box/geosite-ads.json` |
+
+[`dist/sing-box/route.json`](dist/sing-box/route.json) is a ready `route` block with the same order as the
+Shadowrocket config. Merge it into your config; it expects outbounds tagged `proxy` and `direct`. `geoip-ir` only
+matches connections to an IP (like `no-resolve`); add a `{"action": "resolve"}` rule before it if you want
+domains resolved and matched by IP, which sends those DNS lookups through your configured DNS server.
+
+Domain tags: `ads`, `malware`, `phishing`, `cryptominers`, `sanctioned`, `ir`, `social`, `nsfw`.
+IP tags: `ir`, `malware`, `phishing`, `private`, `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor`,
+`netflix`. `geosite-ir` already includes the `.ir` and `.ایران` TLDs.
+
+## Use it in v2ray / Xray
+
+Download `geosite.dat` and `geoip.dat` from
+`https://github.com/aliraghebi/shadowrocket-config/releases/latest/download/` and use the tags as
+`geosite:ads`, `geoip:ir`, and so on. [`dist/xray/routing.json`](dist/xray/routing.json) is an example
+`routing` block (outbounds `proxy`, `direct`, `block`).
+
+These files contain **only** the tags listed above, plus `geoip:private`. If you replace your client's stock
+files with them, rules that use other tags (`geosite:google`, `geoip:cn`, `geosite:category-ads-all`) stop
+working. To keep the stock files, save these under another name and reference them with Xray's `ext:` syntax,
+e.g. `ext:iran-geosite.dat:ads` and `ext:iran-geoip.dat:ir`.
+
 ## Mirrors (raw.githubusercontent.com may be filtered in Iran)
 
 The `RULE-SET` URLs are written into `shadowrocket.conf` at build time from `BASE_URL`. To serve everything from
@@ -51,7 +82,7 @@ a mirror, set the repository variable **Settings → Secrets and variables → A
 | GitHub raw (default) | `https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist` | Updates within minutes; often filtered in Iran |
 | jsDelivr | `https://cdn.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist` | Caches branch URLs for up to 12 hours, so lists lag behind. Purge with `https://purge.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist/<file>` |
 | jsDelivr alternate hosts | `https://fastly.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist`, `https://gcore.jsdelivr.net/gh/...` | Same cache behavior; different CDN edges, sometimes reachable when the main one is not |
-| GitHub release assets | `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download` | Redirects to `objects.githubusercontent.com` |
+| GitHub release assets | `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download` | Redirects to `objects.githubusercontent.com`. The only place `.srs` and `.dat` are published |
 
 You can also import the config from one mirror and keep the lists on another: the config URL and `BASE_URL` are
 independent. Avoid untrusted "GitHub proxy" sites: they can rewrite the lists, and these lists control what goes
@@ -96,8 +127,16 @@ or disable those sources.
 sources.yaml ─► fetch (bounded concurrency, retries, size cap, ETag cache in .cache/)
              ─► parse (hosts | domains | abp | v2fly | cidr | html-cidr | json | maxmind-csv | ip2location)
              ─► merge (IDNA, validate, dedupe, drop DOMAIN-SUFFIX-covered entries, aggregate CIDRs)
-             ─► safety checks ─► emit dist/*.list + dist/shadowrocket.conf
+             ─► safety checks ─► emit dist/*.list, dist/shadowrocket.conf,
+                                       dist/sing-box/*.json, dist/xray/routing.json,
+                                       out/geosite.dat, out/geoip.dat
+CI only:     sing-box rule-set compile ─► out/srs/*.srs ─► checks ─► rolling release
 ```
+
+`.srs` and `.dat` are binary and change daily, so they go only to the rolling release, not into git history.
+Before anything is committed, CI compiles every rule-set with a pinned, checksum-verified sing-box. It then
+checks known matches (`digikala.com` in `geosite-ir`, `yektanet.com` in `geosite-ads`, …) and runs
+`sing-box check` on `route.json` and `xray run -test` on `routing.json` with the generated geo files.
 
 Output is sorted, deduped and has no timestamps, so `git diff` only shows real changes.
 

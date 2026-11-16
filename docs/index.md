@@ -1,6 +1,6 @@
-# vpn-routing
+# VPN Routing Config Files & Lists
 
-Routing rules for VPN/proxy clients in Iran, rebuilt every day from public upstream lists:
+A collection of cross-platform proxy routing rules and configurations. Supports direct routing for Iranian domains and IP ranges, and blocks ads, trackers, phishing, malware, and other malicious traffic across multiple proxy clients.
 
 - **Block** ads (including Iranian ad networks), malware, phishing and cryptominers.
 - **Proxy** sites that refuse Iranian IPs (sanctioned).

@@ -78,3 +78,26 @@ func TestRouteTemplates(t *testing.T) {
 		}
 	}
 }
+
+func TestKaring(t *testing.T) {
+	b, err := Karing("https://x/release", []string{"geosite-ads", "geoip-malware"}, []string{"geosite-ir", "geoip-ir", "geoip-private"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc struct {
+		Rules []struct {
+			Outbound string   `json:"outbound"`
+			Switch   bool     `json:"switch"`
+			Or       bool     `json:"or"`
+			RuleSet  []string `json:"rule_set"`
+		} `json:"rules"`
+	}
+	if err := json.Unmarshal(b, &doc); err != nil {
+		t.Fatal(err)
+	}
+	r := doc.Rules
+	if len(r) != 2 || r[0].Outbound != "block" || r[1].Outbound != "direct" || !r[0].Switch || !r[0].Or ||
+		r[0].RuleSet[0] != "https://x/release/geosite-ads.srs" || r[1].RuleSet[2] != "https://x/release/geoip-private.srs" {
+		t.Fatalf("unexpected karing rules:\n%s", b)
+	}
+}

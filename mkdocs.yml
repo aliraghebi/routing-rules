@@ -53,10 +53,12 @@ theme:
 
 nav:
   - Home: index.md
-  - Guides:
-      - Shadowrocket: shadowrocket.md
+  - Cores:
       - sing-box: sing-box.md
       - v2ray / Xray: v2ray.md
+  - Apps:
+      - Shadowrocket: shadowrocket.md
+      - Karing: karing.md
   - Reference:
       - File URLs: urls.md
       - Sources and licenses: sources.md

@@ -333,6 +333,12 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 			return err
 		}
 		files[mirrorName("sing-box-route", ".json", i, m)] = route
+		// Karing has no PROXY group here: unmatched traffic already uses the selected proxy.
+		karing, err := emit.Karing(base, g.route.Reject, append(slices.Clone(g.route.Direct), "geoip-private"))
+		if err != nil {
+			return err
+		}
+		files[mirrorName("karing", ".json", i, m)] = karing
 	}
 	if err := syncDir(dist, files); err != nil {
 		return err
@@ -464,13 +470,15 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 		sb.Rows = append(sb.Rows, row("geoip-"+t.Name+".srs", "IP ranges: "+t.Name, false))
 		sbSrc.Rows = append(sbSrc.Rows, row("geoip-"+t.Name+".json", "IP ranges: "+t.Name, false))
 	}
+	apps := emit.DocSection{Title: "App configs", Note: "Ready-made rule files for apps with their own format. Each copy loads its rule-sets from the same mirror."}
+	apps.Rows = append(apps.Rows, row("karing.json", "Karing custom diversion rules (Block, Direct)", true))
 	v2 = emit.DocSection{Title: "v2ray / Xray", Note: "Tags: `geosite:<name>` and `geoip:<name>` as listed in the sing-box tables above."}
 	v2.Rows = append(v2.Rows,
 		row("geosite.dat", "Domain tags", false),
 		row("geoip.dat", "IP tags, including `private`", false),
 		row("xray-routing.json", "Example `routing` block", false))
 
-	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, Mirrors: st.Mirrors, Sections: []emit.DocSection{sr, lists, sb, sbSrc, v2}})
+	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, Mirrors: st.Mirrors, Sections: []emit.DocSection{sr, lists, apps, sb, sbSrc, v2}})
 	if err != nil {
 		return err
 	}

@@ -9,11 +9,19 @@ A collection of cross-platform proxy routing rules and configurations. Supports 
 
 ## Pick your client
 
-| Client | Guide |
-|--------|-------|
-| Shadowrocket (iOS) | [Shadowrocket guide](shadowrocket.md) |
-| sing-box, and apps built on it (SFI, SFA, Hiddify, Karing, NekoBox…) | [sing-box guide](sing-box.md) |
+**Cores**: use these if you write your own config, or your app lets you load rule-sets / geo files.
+
+| Core | Guide |
+|------|-------|
+| sing-box, and apps built on it (SFI, SFA, Hiddify, NekoBox…) | [sing-box guide](sing-box.md) |
 | v2ray / Xray, v2rayN, v2rayNG, and other Xray-based apps | [v2ray / Xray guide](v2ray.md) |
+
+**Apps**: ready-made configs in the app's own format.
+
+| App | Guide |
+|-----|-------|
+| Shadowrocket (iOS) | [Shadowrocket guide](shadowrocket.md) |
+| Karing (iOS, Android, desktop) | [Karing guide](karing.md) |
 
 Every file and its URL: [File URLs](urls.md). Where the data comes from: [Sources and licenses](sources.md).
 

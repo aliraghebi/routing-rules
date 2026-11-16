@@ -25,3 +25,37 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* Rounded corners */
+:root {
+  --vr-radius: 0.6rem;
+  --vr-radius-sm: 0.4rem;
+}
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid > .card {
+  border-radius: var(--vr-radius);
+}
+.md-typeset .md-button {
+  border-radius: var(--vr-radius-sm);
+}
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: var(--vr-radius-sm);
+  overflow: hidden;
+}
+.md-typeset pre > code,
+.md-typeset .highlight,
+.md-typeset .tabbed-set {
+  border-radius: var(--vr-radius-sm);
+}
+.md-typeset table:not([class]) {
+  border-radius: var(--vr-radius-sm);
+  overflow: hidden;
+}
+.md-typeset code {
+  border-radius: 0.25rem;
+}
+.md-search__form,
+.md-search__output {
+  border-radius: var(--vr-radius-sm);
+}

@@ -12,8 +12,12 @@
 
 settings:
   user_agent: "vpn-routing-builder/1.0 (+https://github.com/aliraghebi/vpn-routing)"
-  base_url: https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist  # BASE_URL env overrides
   repo_url: https://github.com/aliraghebi/vpn-routing
+  # Where the release branch is served from. Configs that embed URLs are built once per
+  # mirror; the first mirror's files have no suffix, the others get "-<name>".
+  mirrors:
+    - {name: github, title: GitHub, base_url: https://raw.githubusercontent.com/aliraghebi/vpn-routing/release}
+    - {name: jsdelivr, title: jsDelivr, base_url: https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release}
   timeout: 90s
   concurrency: 8
   retries: 3

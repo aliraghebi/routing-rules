@@ -55,7 +55,8 @@ var tmpl = template.Must(template.New("conf").Parse(confTmpl))
 // ConfData feeds the config template.
 type ConfData struct {
 	Repo    string
-	BaseURL string
+	BaseURL string          // mirror base the RULE-SET URLs use
+	Self    string          // this config's own file name, for update-url
 	Reject  []string        // REJECT rule-set names, in order
 	On      map[string]bool // sanctioned, irdomains, ircidr
 }
@@ -81,7 +82,7 @@ var (
 // sing-box fields hold rule-set tags ("geosite-ads"); xray fields hold bare
 // tag names ("ads") used as geosite:/geoip: references.
 type RouteData struct {
-	ReleaseURL            string
+	BaseURL               string
 	Reject, Proxy, Direct []string
 	All                   []string
 	RejectSite, RejectIP  []string

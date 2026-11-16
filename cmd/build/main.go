@@ -38,8 +38,8 @@ type Config struct {
 		MaxBytes    int64         `yaml:"max_bytes"`
 		MaxShrink   float64       `yaml:"max_shrink"`
 		ListCapWarn int           `yaml:"list_cap_warn"`
-		BaseURL     string        `yaml:"base_url"`
 		RepoURL     string        `yaml:"repo_url"`
+		Mirrors     []emit.Mirror `yaml:"mirrors"`
 	} `yaml:"settings"`
 	Categories []Category `yaml:"categories"`
 	Sources    []Source   `yaml:"sources"`
@@ -87,15 +87,16 @@ func main() {
 	cache := flag.String("cache", ".cache", "HTTP + last-known-good cache directory")
 	allowPath := flag.String("allowlist", "allowlist.txt", "domains never to REJECT")
 	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
+	docs := flag.String("docs", "docs", "GitHub Pages directory for the generated URL and sources pages")
 	flag.Parse()
 	log.SetFlags(0)
-	if err := run(*cfgPath, *dist, *cache, *allowPath, *out); err != nil {
+	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs); err != nil {
 		log.Printf("::error::%v", err)
 		os.Exit(1)
 	}
 }
 
-func run(cfgPath, dist, cacheDir, allowPath, outDir string) error {
+func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 	raw, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return err
@@ -286,41 +287,92 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir string) error {
 		return fmt.Errorf("build refused, dist/ left untouched:\n  %s", strings.Join(fatal, "\n  "))
 	}
 
-	// Write outputs.
-	if err := os.MkdirAll(dist, 0o755); err != nil {
-		return err
+	// Render every output into one map, then make dist/ match it exactly
+	// (stale files from disabled categories are removed).
+	if len(st.Mirrors) == 0 {
+		return errors.New("settings.mirrors must list at least one mirror")
 	}
+	files := map[string][]byte{}
 	for _, c := range cfg.Categories {
-		path := filepath.Join(dist, c.Name+".list")
 		if b := byCat[c.Name]; b != nil {
-			if err := writeIfChanged(path, b.body); err != nil {
-				return err
-			}
-		} else if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
-			return err
+			files[c.Name+".list"] = b.body
 		}
-	}
-	if st.BaseURL == "" && os.Getenv("BASE_URL") == "" {
-		return errors.New("settings.base_url or BASE_URL must be set")
-	}
-	conf, err := emit.Conf(confData(st.BaseURL, st.RepoURL, cfg.Categories, byCat))
-	if err != nil {
-		return err
-	}
-	if err := writeIfChanged(filepath.Join(dist, "shadowrocket.conf"), conf); err != nil {
-		return err
 	}
 	sets := map[string]catRules{}
 	for name, b := range byCat {
 		sets[name] = catRules{b.cat, b.domains, b.cidrs}
 	}
-	return writeGeo(cfg.Categories, sets, dist, outDir, strings.TrimRight(st.RepoURL, "/")+"/releases/latest/download")
+	g := buildGeo(cfg.Categories, sets)
+	for _, t := range g.sites {
+		b, err := emit.SingBoxDomains(t.Domains)
+		if err != nil {
+			return err
+		}
+		files["geosite-"+t.Name+".json"] = b
+	}
+	for _, t := range g.ips {
+		b, err := emit.SingBoxCIDRs(t.CIDRs)
+		if err != nil {
+			return err
+		}
+		files["geoip-"+t.Name+".json"] = b
+	}
+	xr, err := emit.XrayRouting(g.route)
+	if err != nil {
+		return err
+	}
+	files["xray-routing.json"] = xr
+	// Files that embed URLs get one copy per mirror; the first mirror has no suffix.
+	for i, m := range st.Mirrors {
+		base := strings.TrimRight(m.BaseURL, "/")
+		cd := confData(cfg.Categories, byCat)
+		cd.Repo, cd.BaseURL, cd.Self = st.RepoURL, base, mirrorName("shadowrocket", ".conf", i, m)
+		conf, err := emit.Conf(cd)
+		if err != nil {
+			return err
+		}
+		files[cd.Self] = conf
+		rd := g.route
+		rd.BaseURL = base
+		route, err := emit.SingBoxRoute(rd)
+		if err != nil {
+			return err
+		}
+		files[mirrorName("sing-box-route", ".json", i, m)] = route
+	}
+	if err := syncDir(dist, files); err != nil {
+		return err
+	}
+
+	// Binary outputs: published on the release branch only, never committed to main.
+	if err := os.MkdirAll(outDir, 0o755); err != nil {
+		return err
+	}
+	if err := writeIfChanged(filepath.Join(outDir, "geosite.dat"), emit.GeoSiteDat(g.sites)); err != nil {
+		return err
+	}
+	if err := writeIfChanged(filepath.Join(outDir, "geoip.dat"), emit.GeoIPDat(g.ips)); err != nil {
+		return err
+	}
+	return writeDocs(docsDir, cfg, g, files)
+}
+
+func mirrorName(stem, ext string, i int, m emit.Mirror) string {
+	if i == 0 {
+		return stem + ext
+	}
+	return stem + "-" + m.Name + ext
 }
 
 type catRules struct {
 	cat     Category
 	domains []parse.Domain
 	cidrs   []netip.Prefix
+}
+
+type geo struct {
+	sites, ips []emit.Tag
+	route      emit.RouteData // BaseURL is set per mirror
 }
 
 // geoTag maps a category to its v2ray/sing-box tag (Chocolate4U naming).
@@ -334,12 +386,10 @@ func geoTag(cat string) string {
 	return cat
 }
 
-// writeGeo emits v2ray geosite.dat/geoip.dat into outDir (release assets) and
-// sing-box source rule-sets plus example routing configs into dist/.
-func writeGeo(cats []Category, sets map[string]catRules, dist, outDir, releaseURL string) error {
-	var sites, ips []emit.Tag
-	var rd emit.RouteData
-	rd.ReleaseURL = releaseURL
+// buildGeo derives v2ray/sing-box tags and the routing template data.
+func buildGeo(cats []Category, sets map[string]catRules) geo {
+	var g geo
+	rd := &g.route
 	for _, c := range cats {
 		r, ok := sets[c.Name]
 		if !ok {
@@ -351,7 +401,7 @@ func writeGeo(cats []Category, sets map[string]catRules, dist, outDir, releaseUR
 			if tag == "ir" { // the Shadowrocket config adds these TLDs inline instead
 				d = merge.Domains(append(slices.Clone(d), parse.Domain{Kind: parse.Suffix, Name: "ir"}, parse.Domain{Kind: parse.Suffix, Name: "xn--mgba3a4f16a"}))
 			}
-			sites = append(sites, emit.Tag{Name: tag, Domains: d})
+			g.sites = append(g.sites, emit.Tag{Name: tag, Domains: d})
 			switch c.Action {
 			case "reject":
 				rd.Reject = append(rd.Reject, "geosite-"+tag)
@@ -364,7 +414,7 @@ func writeGeo(cats []Category, sets map[string]catRules, dist, outDir, releaseUR
 			}
 		}
 		if len(r.cidrs) > 0 {
-			ips = append(ips, emit.Tag{Name: tag, CIDRs: r.cidrs})
+			g.ips = append(g.ips, emit.Tag{Name: tag, CIDRs: r.cidrs})
 			switch c.Action {
 			case "reject":
 				rd.Reject = append(rd.Reject, "geoip-"+tag)
@@ -376,55 +426,100 @@ func writeGeo(cats []Category, sets map[string]catRules, dist, outDir, releaseUR
 			}
 		}
 	}
-	// route.json only declares the rule-sets its rules reference.
+	// The route only declares the rule-sets its rules reference.
 	rd.All = slices.Concat(rd.Reject, rd.Proxy, rd.Direct)
-	ips = append(ips, emit.Tag{Name: "private", CIDRs: emit.Private})
+	g.ips = append(g.ips, emit.Tag{Name: "private", CIDRs: emit.Private})
 	byName := func(a, b emit.Tag) int { return strings.Compare(a.Name, b.Name) }
-	slices.SortFunc(sites, byName)
-	slices.SortFunc(ips, byName)
-
-	if err := os.MkdirAll(outDir, 0o755); err != nil {
-		return err
-	}
-	if err := writeIfChanged(filepath.Join(outDir, "geosite.dat"), emit.GeoSiteDat(sites)); err != nil {
-		return err
-	}
-	if err := writeIfChanged(filepath.Join(outDir, "geoip.dat"), emit.GeoIPDat(ips)); err != nil {
-		return err
-	}
-
-	sbDir := filepath.Join(dist, "sing-box")
-	want := map[string][]byte{}
-	for _, t := range sites {
-		b, err := emit.SingBoxDomains(t.Domains)
-		if err != nil {
-			return err
-		}
-		want["geosite-"+t.Name+".json"] = b
-	}
-	for _, t := range ips {
-		b, err := emit.SingBoxCIDRs(t.CIDRs)
-		if err != nil {
-			return err
-		}
-		want["geoip-"+t.Name+".json"] = b
-	}
-	route, err := emit.SingBoxRoute(rd)
-	if err != nil {
-		return err
-	}
-	want["route.json"] = route
-	if err := syncDir(sbDir, want); err != nil {
-		return err
-	}
-	xr, err := emit.XrayRouting(rd)
-	if err != nil {
-		return err
-	}
-	return syncDir(filepath.Join(dist, "xray"), map[string][]byte{"routing.json": xr})
+	slices.SortFunc(g.sites, byName)
+	slices.SortFunc(g.ips, byName)
+	return g
 }
 
-// syncDir makes dir contain exactly the given files (stale ones are removed).
+// writeDocs generates the URL and sources pages for the GitHub Pages site.
+func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
+	st := cfg.Settings
+	row := func(name, desc string, perMirror bool) emit.DocRow {
+		r := emit.DocRow{Name: name, Desc: desc}
+		for i, m := range st.Mirrors {
+			n := name
+			if perMirror {
+				stem, ext, _ := strings.Cut(name, ".")
+				n = mirrorName(stem, "."+ext, i, m)
+			}
+			r.URLs = append(r.URLs, strings.TrimRight(m.BaseURL, "/")+"/"+n)
+		}
+		return r
+	}
+	var sr, lists, sb, sbSrc, v2 emit.DocSection
+	sr = emit.DocSection{Title: "Shadowrocket config", Note: "Import the config from the mirror you can reach; its rule lists come from the same mirror."}
+	sr.Rows = append(sr.Rows, row("shadowrocket.conf", "Full config: REJECT, PROXY, DIRECT, GEOIP, FINAL", true))
+	lists = emit.DocSection{Title: "Shadowrocket rule lists", Note: "`RULE-SET` text lists in Shadowrocket (Surge-style) syntax."}
+	for _, c := range cfg.Categories {
+		if _, ok := files[c.Name+".list"]; ok {
+			lists.Rows = append(lists.Rows, row(c.Name+".list", fmt.Sprintf("%s (%s)", c.Name, actionDesc(c.Action)), false))
+		}
+	}
+	sb = emit.DocSection{Title: "sing-box rule-sets (binary)", Note: "Use with `\"type\": \"remote\", \"format\": \"binary\"`. Needs sing-box 1.10+."}
+	sbSrc = emit.DocSection{Title: "sing-box rule-sets (JSON source)", Note: "Same rules as JSON, for `\"format\": \"source\"`."}
+	sb.Rows = append(sb.Rows, row("sing-box-route.json", "Example `route` block (sing-box 1.11+), rule-sets from the same mirror", true))
+	for _, t := range g.sites {
+		sb.Rows = append(sb.Rows, row("geosite-"+t.Name+".srs", "domains: "+t.Name, false))
+		sbSrc.Rows = append(sbSrc.Rows, row("geosite-"+t.Name+".json", "domains: "+t.Name, false))
+	}
+	for _, t := range g.ips {
+		sb.Rows = append(sb.Rows, row("geoip-"+t.Name+".srs", "IP ranges: "+t.Name, false))
+		sbSrc.Rows = append(sbSrc.Rows, row("geoip-"+t.Name+".json", "IP ranges: "+t.Name, false))
+	}
+	v2 = emit.DocSection{Title: "v2ray / Xray", Note: "Tags: `geosite:<name>` and `geoip:<name>` as listed in the sing-box tables above."}
+	v2.Rows = append(v2.Rows,
+		row("geosite.dat", "Domain tags", false),
+		row("geoip.dat", "IP tags, including `private`", false),
+		row("xray-routing.json", "Example `routing` block", false))
+
+	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, Mirrors: st.Mirrors, Sections: []emit.DocSection{sr, lists, sb, sbSrc, v2}})
+	if err != nil {
+		return err
+	}
+	var srcs []emit.DocSource
+	for _, s := range cfg.Sources {
+		srcs = append(srcs, emit.DocSource{Name: s.Name, URL: s.URL, Category: s.Category, Format: s.Format, License: s.License, Enabled: s.Enabled && catEnabled(cfg, s.Category)})
+	}
+	sources, err := emit.SourcesPage(srcs)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	if err := writeIfChanged(filepath.Join(dir, "urls.md"), urls); err != nil {
+		return err
+	}
+	return writeIfChanged(filepath.Join(dir, "sources.md"), sources)
+}
+
+func actionDesc(a string) string {
+	switch a {
+	case "reject":
+		return "REJECT"
+	case "proxy":
+		return "PROXY"
+	case "direct":
+		return "DIRECT"
+	}
+	return "optional, not in the config"
+}
+
+func catEnabled(cfg Config, name string) bool {
+	for _, c := range cfg.Categories {
+		if c.Name == name {
+			return c.Enabled
+		}
+	}
+	return false
+}
+
+// syncDir makes dir contain exactly the given files (stale files are removed;
+// subdirectories are left alone).
 func syncDir(dir string, files map[string][]byte) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
@@ -448,13 +543,8 @@ func syncDir(dir string, files map[string][]byte) error {
 	return nil
 }
 
-// confData uses BASE_URL from the environment, else settings.base_url, so a
-// local build and CI produce the same config.
-func confData[T any](base, repo string, cats []Category, on map[string]T) emit.ConfData {
-	if env := os.Getenv("BASE_URL"); env != "" {
-		base = env
-	}
-	d := emit.ConfData{Repo: repo, BaseURL: strings.TrimRight(base, "/"), On: map[string]bool{}}
+func confData[T any](cats []Category, on map[string]T) emit.ConfData {
+	d := emit.ConfData{On: map[string]bool{}}
 	for _, c := range cats {
 		if _, ok := on[c.Name]; !ok {
 			continue

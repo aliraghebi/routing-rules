@@ -21,7 +21,7 @@ func TestList(t *testing.T) {
 }
 
 func TestConfOrder(t *testing.T) {
-	b, err := Conf(ConfData{BaseURL: "https://x/dist", Reject: []string{"malware", "ads"}, On: map[string]bool{"sanctioned": true, "irdomains": true, "ircidr": true}})
+	b, err := Conf(ConfData{BaseURL: "https://x/dist", Self: "shadowrocket.conf", Reject: []string{"malware", "ads"}, On: map[string]bool{"sanctioned": true, "irdomains": true, "ircidr": true}})
 	if err != nil {
 		t.Fatal(err)
 	}

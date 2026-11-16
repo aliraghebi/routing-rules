@@ -58,7 +58,7 @@ func TestSingBox(t *testing.T) {
 }
 
 func TestRouteTemplates(t *testing.T) {
-	d := RouteData{ReleaseURL: "https://x/releases/latest/download",
+	d := RouteData{BaseURL: "https://x/release",
 		Reject: []string{"geosite-ads", "geoip-malware"}, Proxy: []string{"geosite-sanctioned"}, Direct: []string{"geosite-ir", "geoip-ir"},
 		All:        []string{"geosite-ads", "geoip-malware", "geosite-sanctioned", "geosite-ir", "geoip-ir"},
 		RejectSite: []string{"ads"}, RejectIP: []string{"malware"}, ProxySite: []string{"sanctioned"}}

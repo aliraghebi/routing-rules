@@ -13,7 +13,7 @@ type karingRule struct {
 }
 
 // Karing renders custom diversion rules that reference our sing-box .srs
-// rule-sets on the given mirror. Block comes first, then Direct; anything
+// rule-sets under base. Block comes first, then Direct; anything
 // unmatched follows Karing's own default (the selected proxy).
 func Karing(base string, reject, direct []string) ([]byte, error) {
 	urls := func(tags []string) []string {

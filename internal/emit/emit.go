@@ -55,7 +55,7 @@ var tmpl = template.Must(template.New("conf").Parse(confTmpl))
 // ConfData feeds the config template.
 type ConfData struct {
 	Repo    string
-	BaseURL string          // mirror base the RULE-SET URLs use
+	BaseURL string          // base URL the RULE-SET URLs use
 	Self    string          // this config's own file name, for update-url
 	Reject  []string        // REJECT rule-set names, in order
 	On      map[string]bool // sanctioned, irdomains, ircidr

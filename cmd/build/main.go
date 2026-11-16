@@ -39,7 +39,7 @@ type Config struct {
 		MaxBytes    int64         `yaml:"max_bytes"`
 		ListCapWarn int           `yaml:"list_cap_warn"`
 		RepoURL     string        `yaml:"repo_url"`
-		Mirrors     []emit.Mirror `yaml:"mirrors"`
+		BaseURL     string        `yaml:"base_url"`
 	} `yaml:"settings"`
 	Categories []Category `yaml:"categories"`
 	Sources    []Source   `yaml:"sources"`
@@ -87,16 +87,15 @@ func main() {
 	allowPath := flag.String("allowlist", "allowlist.txt", "domains never to REJECT")
 	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
 	docs := flag.String("docs", "docs", "GitHub Pages directory for the generated URL and sources pages")
-	prev := flag.String("prev", "", "optional directory with the previous release, for the summary's delta column")
 	flag.Parse()
 	log.SetFlags(0)
-	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs, *prev); err != nil {
+	if err := run(*cfgPath, *dist, *cache, *allowPath, *out, *docs); err != nil {
 		log.Printf("::error::%v", err)
 		os.Exit(1)
 	}
 }
 
-func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) error {
+func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 	raw, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return err
@@ -137,13 +136,11 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 
 	// Per-category merge.
 	type built struct {
-		cat      Category
-		domains  []parse.Domain
-		cidrs    []netip.Prefix
-		removed  []string
-		body     []byte
-		oldRules int
-		oldExist bool
+		cat     Category
+		domains []parse.Domain
+		cidrs   []netip.Prefix
+		removed []string
+		body    []byte
 	}
 	byCat := map[string]*built{}
 	for _, c := range cfg.Categories {
@@ -251,11 +248,6 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 		}
 		b.body = emit.List(c.Name, b.domains, b.cidrs)
 		n := len(b.domains) + len(b.cidrs)
-		if prevDir != "" { // previous release, for the summary's delta column only
-			if old, err := os.ReadFile(filepath.Join(prevDir, c.Name+".list")); err == nil {
-				b.oldRules, b.oldExist = emit.CountRules(old), true
-			}
-		}
 		if n == 0 {
 			fatal = append(fatal, c.Name+": list is empty")
 		}
@@ -267,12 +259,12 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 		}
 	}
 
-	printSummary(outcomes, cfg.Categories, func(name string) (int, int, int, bool, int) {
+	printSummary(outcomes, cfg.Categories, func(name string) (int, int, int) {
 		b := byCat[name]
 		if b == nil {
-			return 0, 0, 0, false, 0
+			return 0, 0, 0
 		}
-		return len(b.domains) + len(b.cidrs), len(b.body), b.oldRules, b.oldExist, len(b.removed)
+		return len(b.domains) + len(b.cidrs), len(b.body), len(b.removed)
 	})
 	if len(stale) > 0 {
 		log.Printf("::warning::using last-known-good data for: %s", strings.Join(stale, ", "))
@@ -283,9 +275,10 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 
 	// Render every output into one map, then make dist/ match it exactly
 	// (stale files from disabled categories are removed).
-	if len(st.Mirrors) == 0 {
-		return errors.New("settings.mirrors must list at least one mirror")
+	if st.BaseURL == "" {
+		return errors.New("settings.base_url must be set")
 	}
+	base := strings.TrimRight(st.BaseURL, "/")
 	files := map[string][]byte{}
 	for _, c := range cfg.Categories {
 		if b := byCat[c.Name]; b != nil {
@@ -321,38 +314,35 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 		return err
 	}
 	files["v2rayn-routing.json"] = vn
-	// Files that embed URLs get one copy per mirror; the first mirror has no suffix.
-	for i, m := range st.Mirrors {
-		base := strings.TrimRight(m.BaseURL, "/")
-		cd := confData(cfg.Categories, byCat)
-		cd.Repo, cd.BaseURL, cd.Self = st.RepoURL, base, mirrorName("shadowrocket", ".conf", i, m)
-		conf, err := emit.Conf(cd)
-		if err != nil {
-			return err
-		}
-		files[cd.Self] = conf
-		rd := g.route
-		rd.BaseURL = base
-		route, err := emit.SingBoxRoute(rd)
-		if err != nil {
-			return err
-		}
-		files[mirrorName("sing-box-route", ".json", i, m)] = route
-		// Karing has no PROXY group here: unmatched traffic already uses the selected proxy.
-		karing, err := emit.Karing(base, g.route.Reject, append(slices.Clone(g.route.Direct), "geoip-private"))
-		if err != nil {
-			return err
-		}
-		files[mirrorName("karing", ".json", i, m)] = karing
-		clashRoute := g.route
-		clashRoute.All = append(slices.Clone(g.route.All), "geoip-private")
-		files[mirrorName("clash", ".yaml", i, m)] = emit.ClashConfig(base, clashRoute)
+	// Files that embed rule-set URLs.
+	cd := confData(cfg.Categories, byCat)
+	cd.Repo, cd.BaseURL, cd.Self = st.RepoURL, base, "shadowrocket.conf"
+	conf, err := emit.Conf(cd)
+	if err != nil {
+		return err
 	}
+	files[cd.Self] = conf
+	rd := g.route
+	rd.BaseURL = base
+	route, err := emit.SingBoxRoute(rd)
+	if err != nil {
+		return err
+	}
+	files["sing-box-route.json"] = route
+	// Karing has no PROXY group here: unmatched traffic already uses the selected proxy.
+	karing, err := emit.Karing(base, g.route.Reject, append(slices.Clone(g.route.Direct), "geoip-private"))
+	if err != nil {
+		return err
+	}
+	files["karing.json"] = karing
+	clashRoute := g.route
+	clashRoute.All = append(slices.Clone(g.route.All), "geoip-private")
+	files["clash.yaml"] = emit.ClashConfig(base, clashRoute)
 	if err := syncDir(dist, files); err != nil {
 		return err
 	}
 
-	// Binary outputs, published on the release branch by CI.
+	// Binary outputs, published as release assets by CI.
 	if err := os.MkdirAll(outDir, 0o755); err != nil {
 		return err
 	}
@@ -382,13 +372,6 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, prevDir string) er
 	return writeDocs(docsDir, cfg, g, files)
 }
 
-func mirrorName(stem, ext string, i int, m emit.Mirror) string {
-	if i == 0 {
-		return stem + ext
-	}
-	return stem + "-" + m.Name + ext
-}
-
 type catRules struct {
 	cat     Category
 	domains []parse.Domain
@@ -397,7 +380,7 @@ type catRules struct {
 
 type geo struct {
 	sites, ips []emit.Tag
-	route      emit.RouteData // BaseURL is set per mirror
+	route      emit.RouteData // BaseURL is filled in by the caller
 }
 
 // geoTag maps a category to its v2ray/sing-box tag (Chocolate4U naming).
@@ -463,57 +446,48 @@ func buildGeo(cats []Category, sets map[string]catRules) geo {
 // writeDocs generates the URL and sources pages for the GitHub Pages site.
 func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	st := cfg.Settings
-	row := func(name, desc string, perMirror bool) emit.DocRow {
-		r := emit.DocRow{Name: name, Desc: desc}
-		for i, m := range st.Mirrors {
-			n := name
-			if perMirror {
-				stem, ext, _ := strings.Cut(name, ".")
-				n = mirrorName(stem, "."+ext, i, m)
-			}
-			r.URLs = append(r.URLs, strings.TrimRight(m.BaseURL, "/")+"/"+n)
-		}
-		return r
+	row := func(name, desc string) emit.DocRow {
+		return emit.DocRow{Name: name, Desc: desc, URL: strings.TrimRight(st.BaseURL, "/") + "/" + name}
 	}
 	var sr, lists, sb, sbSrc, v2 emit.DocSection
-	sr = emit.DocSection{Title: "Shadowrocket config", Note: "Import the config from the mirror you can reach; its rule lists come from the same mirror."}
-	sr.Rows = append(sr.Rows, row("shadowrocket.conf", "Full config: REJECT, PROXY, DIRECT, GEOIP, FINAL", true))
+	sr = emit.DocSection{Title: "Shadowrocket config", Note: "Import this URL in Shadowrocket."}
+	sr.Rows = append(sr.Rows, row("shadowrocket.conf", "Full config: REJECT, PROXY, DIRECT, GEOIP, FINAL"))
 	lists = emit.DocSection{Title: "Shadowrocket rule lists", Note: "`RULE-SET` text lists in Shadowrocket (Surge-style) syntax."}
 	for _, c := range cfg.Categories {
 		if _, ok := files[c.Name+".list"]; ok {
-			lists.Rows = append(lists.Rows, row(c.Name+".list", fmt.Sprintf("%s (%s)", c.Name, actionDesc(c.Action)), false))
+			lists.Rows = append(lists.Rows, row(c.Name+".list", fmt.Sprintf("%s (%s)", c.Name, actionDesc(c.Action))))
 		}
 	}
 	sb = emit.DocSection{Title: "sing-box rule-sets (binary)", Note: "Use with `\"type\": \"remote\", \"format\": \"binary\"`. Needs sing-box 1.10+."}
 	sbSrc = emit.DocSection{Title: "sing-box rule-sets (JSON source)", Note: "Same rules as JSON, for `\"format\": \"source\"`."}
-	sb.Rows = append(sb.Rows, row("sing-box-route.json", "Example `route` block (sing-box 1.11+), rule-sets from the same mirror", true))
+	sb.Rows = append(sb.Rows, row("sing-box-route.json", "Example `route` block (sing-box 1.11+)"))
 	for _, t := range g.sites {
-		sb.Rows = append(sb.Rows, row("geosite-"+t.Name+".srs", "domains: "+t.Name, false))
-		sbSrc.Rows = append(sbSrc.Rows, row("geosite-"+t.Name+".json", "domains: "+t.Name, false))
+		sb.Rows = append(sb.Rows, row("geosite-"+t.Name+".srs", "domains: "+t.Name))
+		sbSrc.Rows = append(sbSrc.Rows, row("geosite-"+t.Name+".json", "domains: "+t.Name))
 	}
 	for _, t := range g.ips {
-		sb.Rows = append(sb.Rows, row("geoip-"+t.Name+".srs", "IP ranges: "+t.Name, false))
-		sbSrc.Rows = append(sbSrc.Rows, row("geoip-"+t.Name+".json", "IP ranges: "+t.Name, false))
+		sb.Rows = append(sb.Rows, row("geoip-"+t.Name+".srs", "IP ranges: "+t.Name))
+		sbSrc.Rows = append(sbSrc.Rows, row("geoip-"+t.Name+".json", "IP ranges: "+t.Name))
 	}
-	apps := emit.DocSection{Title: "App configs", Note: "Ready-made rule files for apps with their own format. Each copy loads its rule-sets from the same mirror."}
+	apps := emit.DocSection{Title: "App configs", Note: "Ready-made rule files for apps with their own format."}
 	apps.Rows = append(apps.Rows,
-		row("karing.json", "Karing custom diversion rules (Block, Direct)", true),
-		row("v2rayn-routing.json", "v2rayN / v2rayNG custom routing rules (needs this project's geo files)", false))
+		row("karing.json", "Karing custom diversion rules (Block, Direct)"),
+		row("v2rayn-routing.json", "v2rayN / v2rayNG custom routing rules (needs this project's geo files)"))
 	cl := emit.DocSection{Title: "Clash / mihomo rule-sets", Note: "`.mrs` rule-sets for mihomo (`format: mrs`; `behavior: domain` for geosite, `ipcidr` for geoip)."}
-	cl.Rows = append(cl.Rows, row("clash.yaml", "`rule-providers` and `rules` to merge into a mihomo config (needs a `PROXY` group)", true))
+	cl.Rows = append(cl.Rows, row("clash.yaml", "`rule-providers` and `rules` to merge into a mihomo config (needs a `PROXY` group)"))
 	for _, t := range g.sites {
-		cl.Rows = append(cl.Rows, row("geosite-"+t.Name+".mrs", "domains: "+t.Name, false))
+		cl.Rows = append(cl.Rows, row("geosite-"+t.Name+".mrs", "domains: "+t.Name))
 	}
 	for _, t := range g.ips {
-		cl.Rows = append(cl.Rows, row("geoip-"+t.Name+".mrs", "IP ranges: "+t.Name, false))
+		cl.Rows = append(cl.Rows, row("geoip-"+t.Name+".mrs", "IP ranges: "+t.Name))
 	}
 	v2 = emit.DocSection{Title: "v2ray / Xray", Note: "Tags: `geosite:<name>` and `geoip:<name>` as listed in the sing-box tables above."}
 	v2.Rows = append(v2.Rows,
-		row("geosite.dat", "Domain tags", false),
-		row("geoip.dat", "IP tags, including `private`", false),
-		row("xray-routing.json", "Example `routing` block", false))
+		row("geosite.dat", "Domain tags"),
+		row("geoip.dat", "IP tags, including `private`"),
+		row("xray-routing.json", "Example `routing` block"))
 
-	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, Mirrors: st.Mirrors, Sections: []emit.DocSection{sr, lists, apps, sb, sbSrc, cl, v2}})
+	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, BaseURL: strings.TrimRight(st.BaseURL, "/"), Sections: []emit.DocSection{sr, lists, apps, sb, sbSrc, cl, v2}})
 	if err != nil {
 		return err
 	}
@@ -536,7 +510,7 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	}
 	// Copies of the files users import as files, served by the docs site itself:
 	// a same-origin link with the download attribute makes browsers save the file
-	// instead of showing it as text (raw GitHub and jsDelivr links cannot do that).
+	// instead of showing it as text (release-asset links force a download, but go through github.com redirects).
 	dl := map[string][]byte{}
 	for name, b := range files {
 		for _, stem := range []string{"karing", "v2rayn-routing", "clash", "sing-box-route", "xray-routing", "shadowrocket"} {
@@ -835,7 +809,7 @@ func writeIfChanged(path string, b []byte) error {
 	return os.WriteFile(path, b, 0o644)
 }
 
-func printSummary(outs []outcome, cats []Category, stat func(string) (n, size, old int, oldExist bool, conflicts int)) {
+func printSummary(outs []outcome, cats []Category, stat func(string) (n, size, conflicts int)) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintln(w, "SOURCE\tCATEGORY\tSTATUS\tDOMAINS\tCIDRS\tNOTE\t")
 	for _, o := range outs {
@@ -848,18 +822,14 @@ func printSummary(outs []outcome, cats []Category, stat func(string) (n, size, o
 	w.Flush()
 	fmt.Println()
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.AlignRight)
-	fmt.Fprintln(w, "LIST\tACTION\tRULES\tSIZE KB\tPREVIOUS\tDELTA\tIR-CONFLICTS\t")
+	fmt.Fprintln(w, "LIST\tACTION\tRULES\tSIZE KB\tIR-CONFLICTS\t")
 	for _, c := range cats {
-		n, size, old, oldExist, conf := stat(c.Name)
+		n, size, conf := stat(c.Name)
 		if !c.Enabled {
-			fmt.Fprintf(w, "%s\t%s\tdisabled\t\t\t\t\t\n", c.Name, c.Action)
+			fmt.Fprintf(w, "%s\t%s\tdisabled\t\t\t\n", c.Name, c.Action)
 			continue
 		}
-		prev, delta := "-", "-"
-		if oldExist {
-			prev, delta = fmt.Sprint(old), fmt.Sprintf("%+d", n-old)
-		}
-		fmt.Fprintf(w, "%s\t%s\t%d\t%.1f\t%s\t%s\t%d\t\n", c.Name, c.Action, n, float64(size)/1024, prev, delta, conf)
+		fmt.Fprintf(w, "%s\t%s\t%d\t%.1f\t%d\t\n", c.Name, c.Action, n, float64(size)/1024, conf)
 	}
 	w.Flush()
 }

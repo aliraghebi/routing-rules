@@ -6,17 +6,9 @@ import (
 	"text/template"
 )
 
-// Mirror is one place the release branch is served from.
-type Mirror struct {
-	Name    string `yaml:"name"`
-	Title   string `yaml:"title"`
-	BaseURL string `yaml:"base_url"`
-}
-
-// DocRow is one published file; URLs has one entry per mirror.
+// DocRow is one published file.
 type DocRow struct {
-	Name, Desc string
-	URLs       []string
+	Name, Desc, URL string
 }
 
 type DocSection struct {
@@ -25,18 +17,8 @@ type DocSection struct {
 }
 
 type URLDocs struct {
-	RepoURL  string
-	Mirrors  []Mirror
-	Sections []DocSection
-}
-
-// SectionURLs lists the URLs of rows for mirror i (used by the template).
-func (URLDocs) SectionURLs(rows []DocRow, i int) []string {
-	out := make([]string, 0, len(rows))
-	for _, r := range rows {
-		out = append(out, r.URLs[i])
-	}
-	return out
+	RepoURL, BaseURL string
+	Sections         []DocSection
 }
 
 // DocSource is one sources.yaml entry for the generated sources page.

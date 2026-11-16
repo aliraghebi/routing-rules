@@ -43,8 +43,10 @@ pip install -r requirements-docs.txt && mkdocs serve      # preview the docs (En
 ```
 
 To add a source, add an entry to `sources.yaml`; the format is documented at the top of that file.
-[`allowlist.txt`](allowlist.txt) holds domains that must never be blocked, and [`ir-ads.txt`](ir-ads.txt)
-holds Iranian ad networks to always block.
+Hand-maintained lists live in [`data/`](data): [`allowlist.txt`](data/allowlist.txt) (domains that must never
+be blocked), [`ir-ads.txt`](data/ir-ads.txt) (Iranian ad networks to always block),
+[`ir-injected.txt`](data/ir-injected.txt) (Iran's DNS block-page addresses) and
+[`private.txt`](data/private.txt) (private and special-use IP ranges).
 
 ## License
 

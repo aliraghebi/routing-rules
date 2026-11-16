@@ -7,10 +7,17 @@ this project's `geosite:` / `geoip:` tags.
 
 To import by URL instead, use one of these:
 
-```
-https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/v2rayn-routing.json
-https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/v2rayn-routing.json
-```
+=== "jsDelivr"
+
+    ```
+    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/v2rayn-routing.json
+    ```
+
+=== "GitHub"
+
+    ```
+    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/v2rayn-routing.json
+    ```
 
 ## 1. Install the geo files first
 

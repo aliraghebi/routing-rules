@@ -3,10 +3,39 @@
 `geosite.dat` and `geoip.dat` use the standard v2ray format, so they work in Xray, v2ray, v2rayN, v2rayNG
 and other Xray-based apps.
 
-| File | GitHub | jsDelivr |
-|------|--------|----------|
-| `geosite.dat` | `https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geosite.dat` | `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geosite.dat` |
-| `geoip.dat` | `https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geoip.dat` | `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geoip.dat` |
+Set these as the custom geo file URLs in your app:
+
+=== "jsDelivr"
+
+    `geosite.dat`
+
+    ```
+    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geosite.dat
+    ```
+
+    `geoip.dat`
+
+    ```
+    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geoip.dat
+    ```
+
+=== "GitHub"
+
+    `geosite.dat`
+
+    ```
+    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geosite.dat
+    ```
+
+    `geoip.dat`
+
+    ```
+    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geoip.dat
+    ```
+
+To download the files instead, use GitHub Releases:
+[geosite.dat](https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite.dat) ·
+[geoip.dat](https://github.com/aliraghebi/vpn-routing/releases/latest/download/geoip.dat).
 
 ## Tags
 

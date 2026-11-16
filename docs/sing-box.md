@@ -29,7 +29,8 @@ leaked nor tampered with.
 
 [:material-download: Download sing-box-dns.json](dl/sing-box-dns.json){ .md-button .md-button--primary download="sing-box-dns.json" }
 
-If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/sing-box-dns.json). Merge it next to the `route` block; it uses the `geosite-ir` rule-set the
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/routing-rules/releases/latest/download/sing-box-dns.json). Merge it into your config: it adds a `dns` block and sets `route.default_domain_resolver` (required since
+sing-box 1.14) so proxy server hostnames resolve with the device's DNS. It uses the `geosite-ir` rule-set the
 route defines and the `proxy` outbound.
 
 ## Or reference rule-sets yourself

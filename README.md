@@ -1,15 +1,27 @@
-# routing-rules
+# Routing Rules
 
-Routing rules for VPN/proxy clients in Iran, rebuilt daily by GitHub Actions from public upstream lists.
+Routing rules and ready-made configs for proxy and VPN clients, rebuilt daily by GitHub Actions from public
+upstream lists. Currently built for **Iran**; the pipeline is country-agnostic.
 Inspired by [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules) and
 [Chocolate4U/Iran-sing-box-rules](https://github.com/Chocolate4U/Iran-sing-box-rules).
 
-- Blocks ads and trackers (including Iranian ad networks and trackers), malware, phishing and cryptominers.
-- Proxies sites that refuse Iranian IPs.
-- Sends Iranian domains and IP ranges direct; everything else goes through the proxy.
+- **Block** ads and trackers (including Iranian ad networks and trackers), malware, phishing, cryptominers,
+  and Iran's DNS block-page addresses.
+- **Proxy** sites that refuse Iranian IPs.
+- **Direct** for Iranian domains and IP ranges; everything else goes through the proxy.
 
-**Outputs:** Shadowrocket config and `RULE-SET` lists, sing-box rule-sets (`.srs` and JSON), and v2ray/Xray
-`geosite.dat` / `geoip.dat`, published as GitHub release assets.
+**Outputs**, published as GitHub release assets:
+
+| For | Files |
+|-----|-------|
+| sing-box | `.srs` and JSON rule-sets, route and DNS blocks |
+| Clash / mihomo | `.mrs` rule-sets, rules and DNS blocks |
+| v2ray / Xray | `geosite.dat`, `geoip.dat`, routing and DNS blocks |
+| Shadowrocket, Surge, Loon | Full config, `RULE-SET` lists, `DOMAIN-SET` lists |
+| Karing, v2rayN / v2rayNG | Ready-made rule files |
+| WireGuard, OpenVPN, routers | Split-tunnel `AllowedIPs` and routes, MikroTik script, CIDR lists |
+| Browsers | PAC file |
+| AdGuard Home, Pi-hole | DNS blocklists |
 
 ## Documentation
 

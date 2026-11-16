@@ -6,11 +6,12 @@ hide:
 
 <div class="vr-hero" markdown>
 
-# VPN Routing Config Files & Lists
+# Routing Rules
 
-A collection of cross-platform proxy routing rules and configurations. Supports direct routing for Iranian
-domains and IP ranges, and blocks ads, trackers, phishing, malware, and other malicious traffic across
-multiple proxy clients. Rebuilt daily from public lists.
+Routing rules and ready-made configs for proxy and VPN clients, rebuilt daily from public lists. Domestic
+sites and IP ranges go direct (currently for **Iran**), sites that block domestic IPs go through the proxy,
+and ads, trackers, malware, phishing and cryptominers are blocked: in sing-box, Clash/mihomo, Xray,
+Shadowrocket, Karing, WireGuard, OpenVPN, browsers and DNS filters.
 
 [:material-rocket-launch-outline: Get started](#pick-your-client){ .md-button .md-button--primary }
 [:material-magnify: Check a domain](check.md){ .md-button }
@@ -187,7 +188,7 @@ This URL always points to the newest version. It redirects to GitHub's download 
 networks in Iran. Apps follow the redirect automatically.
 
 !!! warning "Avoid untrusted GitHub proxy sites"
-    They can change the files, and these files decide what goes through your VPN and what goes direct.
+    They can change the files, and these files decide what goes through your proxy or VPN and what goes direct.
 
 ## Optional lists
 

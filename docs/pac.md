@@ -5,8 +5,8 @@ icon: material/web
 # Browsers (PAC)
 
 A proxy auto-config (PAC) file tells a browser which sites to send through a proxy. `proxy.pac` sends
-Iranian domains (including all `.ir` domains) direct and everything else through your VPN client's local
-proxy.
+Iranian domains (including all `.ir` domains) direct and everything else through your proxy client's
+local proxy (v2rayN, Clash, sing-box and similar).
 
 [:material-download: Download proxy.pac](dl/proxy.pac){ .md-button .md-button--primary download="proxy.pac" }
 
@@ -23,7 +23,7 @@ var PROXY = "SOCKS5 127.0.0.1:10808; SOCKS 127.0.0.1:10808";
 The defaults match v2rayN (SOCKS on `10808`; HTTP is `10809`, written as `PROXY 127.0.0.1:10809`).
 
 !!! note "No direct fallback"
-    The file deliberately has no `DIRECT` fallback. If your VPN client stops, sites fail to load instead of
+    The file deliberately has no `DIRECT` fallback. If your proxy client stops, sites fail to load instead of
     silently opening without protection.
 
 ## Use it

@@ -1,5 +1,5 @@
-site_name: VPN Routing Config Files
-site_description: A collection of cross-platform proxy routing rules and configurations. Supports direct routing for Iranian domains and IP ranges, and blocks ads, trackers, phishing, malware, and other malicious traffic across multiple proxy clients.
+site_name: Routing Rules
+site_description: "Daily-built routing rules and ready-made configs for proxy and VPN clients: direct routing for domestic sites and IP ranges (currently Iran), and blocking of ads, trackers, malware, phishing and cryptominers."
 site_url: https://aliraghebi.github.io/routing-rules/
 repo_url: https://github.com/aliraghebi/routing-rules
 repo_name: aliraghebi/routing-rules

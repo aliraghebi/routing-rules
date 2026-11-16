@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/aliraghebi/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/vpn-routing/internal/parse"
 )
 
 var kindPrefix = [...]string{parse.Suffix: "DOMAIN-SUFFIX", parse.Exact: "DOMAIN", parse.Keyword: "DOMAIN-KEYWORD"}

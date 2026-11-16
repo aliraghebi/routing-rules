@@ -1,4 +1,4 @@
-module github.com/aliraghebi/shadowrocket-config
+module github.com/aliraghebi/vpn-routing
 
 go 1.26.0
 

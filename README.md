@@ -1,4 +1,4 @@
-# shadowrocket-config
+# vpn-routing
 
 Rule lists for Shadowrocket, sing-box and v2ray/Xray, rebuilt every day by GitHub Actions from upstream sources.
 It does what [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v2ray-rules) and
@@ -9,8 +9,8 @@ Shadowrocket `RULE-SET` lists and config, sing-box rule-sets (`.srs` and JSON so
 ## Use it in Shadowrocket
 
 1. Shadowrocket → **Config** → **+** (top right) → paste the config URL:
-   - `https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist/shadowrocket.conf`
-   - or `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download/shadowrocket.conf`
+   - `https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist/shadowrocket.conf`
+   - or `https://github.com/aliraghebi/vpn-routing/releases/latest/download/shadowrocket.conf`
 2. Tap the downloaded config → **Use Config**.
 3. Add your proxy server on the Home tab and set **Global Routing** to **Config**.
 
@@ -39,7 +39,7 @@ lists without a re-import (Config → long-press → Update, or enable auto-upda
 | `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor-exit`, `netflix` `.list` | no | Provider IP ranges |
 
 To use an optional list, add a line to your own config, for example
-`RULE-SET,https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist/nsfw.list,REJECT` or
+`RULE-SET,https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist/nsfw.list,REJECT` or
 `RULE-SET,.../telegram.list,PROXY`.
 
 ## Use it in sing-box (1.11+)
@@ -48,8 +48,8 @@ Rule-sets are named like Chocolate4U's: `geosite-<tag>` and `geoip-<tag>`.
 
 | Format | URL |
 |--------|-----|
-| Binary (recommended) | `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download/geosite-ads.srs` |
-| JSON source (`"format": "source"`, also works through jsDelivr) | `https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist/sing-box/geosite-ads.json` |
+| Binary (recommended) | `https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite-ads.srs` |
+| JSON source (`"format": "source"`, also works through jsDelivr) | `https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist/sing-box/geosite-ads.json` |
 
 [`dist/sing-box/route.json`](dist/sing-box/route.json) is a ready `route` block with the same order as the
 Shadowrocket config. Merge it into your config; it expects outbounds tagged `proxy` and `direct`. `geoip-ir` only
@@ -63,7 +63,7 @@ IP tags: `ir`, `malware`, `phishing`, `private`, `cloudflare`, `cloudfront`, `fa
 ## Use it in v2ray / Xray
 
 Download `geosite.dat` and `geoip.dat` from
-`https://github.com/aliraghebi/shadowrocket-config/releases/latest/download/` and use the tags as
+`https://github.com/aliraghebi/vpn-routing/releases/latest/download/` and use the tags as
 `geosite:ads`, `geoip:ir`, and so on. [`dist/xray/routing.json`](dist/xray/routing.json) is an example
 `routing` block (outbounds `proxy`, `direct`, `block`).
 
@@ -79,10 +79,10 @@ a mirror, set the repository variable **Settings → Secrets and variables → A
 
 | Mirror | `BASE_URL` | Notes |
 |--------|-----------|-------|
-| GitHub raw (default) | `https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist` | Updates within minutes; often filtered in Iran |
-| jsDelivr | `https://cdn.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist` | Caches branch URLs for up to 12 hours, so lists lag behind. Purge with `https://purge.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist/<file>` |
-| jsDelivr alternate hosts | `https://fastly.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist`, `https://gcore.jsdelivr.net/gh/...` | Same cache behavior; different CDN edges, sometimes reachable when the main one is not |
-| GitHub release assets | `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download` | Redirects to `objects.githubusercontent.com`. The only place `.srs` and `.dat` are published |
+| GitHub raw (default) | `https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist` | Updates within minutes; often filtered in Iran |
+| jsDelivr | `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@main/dist` | Caches branch URLs for up to 12 hours, so lists lag behind. Purge with `https://purge.jsdelivr.net/gh/aliraghebi/vpn-routing@main/dist/<file>` |
+| jsDelivr alternate hosts | `https://fastly.jsdelivr.net/gh/aliraghebi/vpn-routing@main/dist`, `https://gcore.jsdelivr.net/gh/...` | Same cache behavior; different CDN edges, sometimes reachable when the main one is not |
+| GitHub release assets | `https://github.com/aliraghebi/vpn-routing/releases/latest/download` | Redirects to `objects.githubusercontent.com`. The only place `.srs` and `.dat` are published |
 
 You can also import the config from one mirror and keep the lists on another: the config URL and `BASE_URL` are
 independent. Avoid untrusted "GitHub proxy" sites: they can rewrite the lists, and these lists control what goes
@@ -184,7 +184,7 @@ Safety checks (they guard REJECT and DIRECT rules):
 
 ```sh
 go test ./...
-BASE_URL=https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist go run ./cmd/build
+BASE_URL=https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist go run ./cmd/build
 ```
 
 `BASE_URL` overrides `settings.base_url` in `sources.yaml`, so local and CI builds produce the same config.

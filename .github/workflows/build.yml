@@ -26,8 +26,8 @@ permissions:
 # Commit identity for automated commits. GitHub links a commit to an account by
 # email; this address belongs to no account, so commits show the plain name.
 env:
-  BOT_NAME: shadowrocket-config-bot
-  BOT_EMAIL: shadowrocket-config-bot@users.noreply.github.com
+  BOT_NAME: vpn-routing-bot
+  BOT_EMAIL: vpn-routing-bot@users.noreply.github.com
   # Pinned tools that compile and validate the sing-box / v2ray outputs.
   # sing-box publishes no checksums; this hash was computed from the release file.
   SING_BOX_VERSION: 1.14.4

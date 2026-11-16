@@ -12,9 +12,9 @@
 #          ${VAR} in url is expanded from the environment and never logged.
 
 settings:
-  user_agent: "shadowrocket-config-builder/1.0 (+https://github.com/aliraghebi/shadowrocket-config)"
-  base_url: https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist  # BASE_URL env overrides
-  repo_url: https://github.com/aliraghebi/shadowrocket-config
+  user_agent: "vpn-routing-builder/1.0 (+https://github.com/aliraghebi/vpn-routing)"
+  base_url: https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist  # BASE_URL env overrides
+  repo_url: https://github.com/aliraghebi/vpn-routing
   timeout: 90s
   concurrency: 8
   retries: 3

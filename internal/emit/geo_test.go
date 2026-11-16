@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aliraghebi/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/vpn-routing/internal/parse"
 )
 
 func TestGeoSiteDat(t *testing.T) {

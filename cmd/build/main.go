@@ -23,10 +23,10 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/aliraghebi/shadowrocket-config/internal/emit"
-	"github.com/aliraghebi/shadowrocket-config/internal/fetch"
-	"github.com/aliraghebi/shadowrocket-config/internal/merge"
-	"github.com/aliraghebi/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/vpn-routing/internal/emit"
+	"github.com/aliraghebi/vpn-routing/internal/fetch"
+	"github.com/aliraghebi/vpn-routing/internal/merge"
+	"github.com/aliraghebi/vpn-routing/internal/parse"
 )
 
 type Config struct {

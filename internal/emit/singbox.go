@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"slices"
 
-	"github.com/aliraghebi/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/vpn-routing/internal/parse"
 )
 
 // SingBoxVersion is the source rule-set format version. Version 2 needs

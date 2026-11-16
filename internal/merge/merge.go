@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/aliraghebi/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/vpn-routing/internal/parse"
 )
 
 // parents calls fn for name and each parent suffix ("a.b.c" -> "a.b.c", "b.c", "c").

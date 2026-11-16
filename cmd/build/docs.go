@@ -9,11 +9,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/aliraghebi/routing-rules/internal/emit"
+	"github.com/aliraghebi/routing-rules/internal/merge"
 	"github.com/aliraghebi/routing-rules/internal/parse"
 )
 
@@ -185,7 +187,8 @@ func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[stri
 // sources that contained exactly that rule; a merged IP range from every
 // source with an overlapping range.
 // It also counts, per source, the final rules it contributed to and those no
-// other source contributed to (added to stats, keyed by source name).
+// other source contributed to (added to stats, keyed by source name); for IP
+// ranges, "unique" is the prefixes covering addresses no other source has.
 // ponytail: overlap check is O(final × source ranges), fine for a few thousand ranges.
 func provenance(srcs []outcome, final catRules, stats map[string]srcStat) ([]byte, map[string]srcStat) {
 	if len(srcs) > 64 { // one bit per source in a uint64
@@ -204,14 +207,14 @@ func provenance(srcs []outcome, final catRules, stats map[string]srcStat) ([]byt
 	nb, _ := json.Marshal(names)
 	b.Write(nb)
 	b.WriteByte('\n')
-	count := func(mask uint64) {
+	count := func(mask uint64, unique bool) {
 		for i := range srcs {
 			if mask&(1<<i) == 0 {
 				continue
 			}
 			n := stats[names[i]]
 			n.rules++
-			if mask&(mask-1) == 0 { // only this source
+			if unique && mask&(mask-1) == 0 { // only this source
 				n.unique++
 			}
 			stats[names[i]] = n
@@ -219,7 +222,7 @@ func provenance(srcs []outcome, final catRules, stats map[string]srcStat) ([]byt
 	}
 	for _, d := range final.domains {
 		fmt.Fprintf(&b, "%x\n", byRule[d])
-		count(byRule[d])
+		count(byRule[d], true)
 	}
 	for _, p := range final.cidrs {
 		var mask uint64
@@ -232,7 +235,27 @@ func provenance(srcs []outcome, final catRules, stats map[string]srcStat) ([]byt
 			}
 		}
 		fmt.Fprintf(&b, "%x\n", mask)
-		count(mask)
+		count(mask, false)
+	}
+	// A merged range overlaps several sources, so its mask says little about
+	// what a source adds. Count instead the prefixes covering the final list's
+	// addresses that no other source has: what dropping the source would lose.
+	if len(final.cidrs) > 0 {
+		outside := merge.Complement(final.cidrs)
+		for i, o := range srcs {
+			if len(o.res.CIDRs) == 0 {
+				continue
+			}
+			drop := slices.Clone(outside)
+			for j, p := range srcs {
+				if j != i {
+					drop = append(drop, p.res.CIDRs...)
+				}
+			}
+			n := stats[names[i]]
+			n.unique += len(merge.Subtract(o.res.CIDRs, drop))
+			stats[names[i]] = n
+		}
 	}
 	for _, n := range names { // a source whose rules were all filtered out still gets a row
 		stats[n] = stats[n]

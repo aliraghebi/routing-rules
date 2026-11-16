@@ -553,16 +553,3 @@ sources:
     category: netflix
     enabled: true
     license: RIPEstat Data API terms (RIPE NCC)
-    # lord-alfred/ipranges has no netflix/ directory (checked tree); prefixes announced by Netflix's AS2906 instead.
-  - name: lord-alfred-cloudflare
-    url: https://raw.githubusercontent.com/lord-alfred/ipranges/main/cloudflare/ipv4_merged.txt
-    format: cidr
-    category: cloudflare
-    enabled: true
-    license: CC0-1.0 (lord-alfred/ipranges)
-  - name: lord-alfred-telegram
-    url: https://raw.githubusercontent.com/lord-alfred/ipranges/main/telegram/ipv4_merged.txt
-    format: cidr
-    category: telegram
-    enabled: true
-    license: CC0-1.0 (lord-alfred/ipranges)

@@ -3,6 +3,7 @@ package merge
 import (
 	"net/netip"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/aliraghebi/routing-rules/internal/parse"
@@ -116,6 +117,26 @@ func TestVerdict(t *testing.T) {
 		a, l := Verdict(order, q)
 		if got := a + " " + l; got != want {
 			t.Errorf("%s: got %q want %q", q, got, want)
+		}
+	}
+}
+
+func TestSubtract(t *testing.T) {
+	pp := func(ss ...string) []netip.Prefix {
+		var out []netip.Prefix
+		for _, s := range ss {
+			out = append(out, netip.MustParsePrefix(s))
+		}
+		return out
+	}
+	for _, tc := range []struct{ a, b, want []netip.Prefix }{
+		{pp("10.0.0.0/23"), pp("10.0.1.0/24"), pp("10.0.0.0/24")},
+		{pp("10.0.0.0/24"), pp("10.0.0.0/16"), nil},
+		{pp("10.0.0.0/24", "2001:db8::/32"), pp("10.0.0.128/25"), pp("10.0.0.0/25", "2001:db8::/32")},
+		{nil, pp("10.0.0.0/8"), nil},
+	} {
+		if got := Subtract(tc.a, tc.b); !slices.Equal(got, tc.want) {
+			t.Errorf("Subtract(%v, %v) = %v, want %v", tc.a, tc.b, got, tc.want)
 		}
 	}
 }

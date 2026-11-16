@@ -7,7 +7,7 @@ on:
   # PRs (e.g. Renovate updates) run the build and every check, but never publish.
   pull_request:
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
       - "cmd/**"
       - "internal/**"

@@ -293,3 +293,9 @@ func Complement(in []netip.Prefix) []netip.Prefix {
 	}
 	return out
 }
+
+// Subtract returns the minimal prefixes covering every address in a that is
+// not in b.
+func Subtract(a, b []netip.Prefix) []netip.Prefix {
+	return Complement(append(Complement(a), b...))
+}

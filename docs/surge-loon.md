@@ -16,7 +16,7 @@ RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/malw
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/phishing.list,REJECT
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/cryptominers.list,REJECT
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/ads.list,REJECT
-RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/trackers.list,REJECT
+RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/tracking.list,REJECT
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/sanctioned.list,PROXY
 DOMAIN-SUFFIX,ir,DIRECT
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-domains.list,DIRECT
@@ -36,7 +36,7 @@ https://github.com/aliraghebi/vpn-routing/releases/latest/download/malware.list,
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/phishing.list, policy=REJECT, tag=phishing, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/cryptominers.list, policy=REJECT, tag=cryptominers, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/ads.list, policy=REJECT, tag=ads, enabled=true
-https://github.com/aliraghebi/vpn-routing/releases/latest/download/trackers.list, policy=REJECT, tag=trackers, enabled=true
+https://github.com/aliraghebi/vpn-routing/releases/latest/download/tracking.list, policy=REJECT, tag=tracking, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/sanctioned.list, policy=PROXY, tag=sanctioned, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-domains.list, policy=DIRECT, tag=ir-domains, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-cidr.list, policy=DIRECT, tag=ir-cidr, enabled=true

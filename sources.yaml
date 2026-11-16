@@ -28,7 +28,7 @@ categories:
   - {name: phishing,     action: reject, enabled: true}
   - {name: cryptominers, action: reject, enabled: true}
   - {name: ads,          action: reject, enabled: true}
-  - {name: trackers,     action: reject, enabled: true}
+  - {name: tracking,     action: reject, enabled: true}
   - {name: sanctioned,   action: proxy,  enabled: true}
   - {name: ir-domains,   action: direct, enabled: true}
   - {name: ir-cidr,      action: direct, enabled: true}
@@ -281,7 +281,7 @@ sources:
     url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerTrackers-Domains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     override_direct: true
     license: AGPL-3.0 (MasterKia/PersianBlocker)
@@ -291,7 +291,7 @@ sources:
     url: https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
     format: hosts
     match: exact
-    category: trackers
+    category: tracking
     enabled: true
     license: MIT (crazy-max/WindowsSpyBlocker)
     # Only the "spy" list: "update" and "extra" block Windows Update and other functionality.
@@ -299,7 +299,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.amazon-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Amazon devices (Fire TV, Echo).
@@ -307,7 +307,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.apple-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Apple devices.
@@ -315,7 +315,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.huawei-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Huawei devices.
@@ -323,7 +323,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.lgwebos-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of LG webOS TVs.
@@ -331,7 +331,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.roku-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Roku devices.
@@ -339,7 +339,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.samsung-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Samsung devices.
@@ -347,7 +347,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.tiktok-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of TikTok.
@@ -355,7 +355,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.vivo-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Vivo devices.
@@ -363,7 +363,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.winoffice-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Windows and Office.
@@ -371,7 +371,7 @@ sources:
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.xiaomi-onlydomains.txt
     format: domains
     match: suffix
-    category: trackers
+    category: tracking
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
     # Native tracking/telemetry of Xiaomi devices.

@@ -209,14 +209,15 @@ sources:
     license: AGPL-3.0 (MasterKia/PersianBlocker)
     # Iranian analytics/tracking hosts. Web trackers belong with ads (blocked by
     # default); device/OS telemetry goes in the optional tracking list.
-  - name: hagezi-pro-mini
-    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.mini-onlydomains.txt
+  - name: hagezi-normal
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/multi-onlydomains.txt
     format: domains
     match: suffix
     category: ads
     enabled: true
     license: GPL-3.0 (hagezi/dns-blocklists)
-    # pro.mini is hagezi's size-optimized list for memory-limited devices; full pro is ~2x larger.
+    # Multi NORMAL: fewer false positives than Pro. There is no size-optimized "mini" version
+    # of it, so it is larger than pro.mini (~184k vs ~103k entries).
   - name: goodbyeads
     url: https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Hosts/GoodbyeAds.txt
     format: hosts
@@ -232,7 +233,7 @@ sources:
     enabled: false
     license: GPL-3.0 (AdguardTeam/AdGuardSDNSFilter)
     # Disabled by default: ~190k rules, ads.list grows to ~257k rules / 8.9 MB (over list_cap_warn).
-    # hagezi pro.mini already aggregates AdGuard's DNS filter among its sources.
+    # hagezi already aggregates AdGuard's DNS filter among its sources.
   - name: peterlowe
     url: https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext
     format: hosts

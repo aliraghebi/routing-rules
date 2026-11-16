@@ -93,9 +93,10 @@ jobs:
           for f in dist/geo*.json; do
             sing-box rule-set compile --output "out/srs/$(basename "${f%.json}").srs" "$f"
           done
-          # "rule-set match" prints the matching rule, nothing when there is no match.
-          must()    { [ -n "$(sing-box rule-set match -f binary "out/srs/$1.srs" "$2")" ] || { echo "::error::$1 should match $2"; exit 1; }; }
-          mustnot() { [ -z "$(sing-box rule-set match -f binary "out/srs/$1.srs" "$2")" ] || { echo "::error::$1 should not match $2"; exit 1; }; }
+          # "rule-set match" logs "match rules.[N]: ..." to stderr for each matching rule.
+          matches() { local out; out=$(sing-box rule-set match -f binary "out/srs/$1.srs" "$2" 2>&1); [[ $out == *"match rules"* ]]; }
+          must()    { matches "$1" "$2" || { echo "::error::$1 should match $2"; exit 1; }; }
+          mustnot() { ! matches "$1" "$2" || { echo "::error::$1 should not match $2"; exit 1; }; }
           must geosite-ir digikala.com
           must geosite-ir www.digikala.com
           must geosite-ir example.ir

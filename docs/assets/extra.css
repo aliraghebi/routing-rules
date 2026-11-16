@@ -95,24 +95,69 @@
 .vr-check__verdict--direct { background: #2e7d32; }
 .vr-check__error { color: #c62828; }
 .vr-check__scroll { overflow-x: auto; }
-.md-typeset .vr-check__table { display: table; width: 100%; }
+.vr-check__scroll {
+  margin: 1rem 0;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: var(--vr-radius-sm);
+}
+.md-typeset .vr-check__table {
+  display: table;
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.md-typeset .vr-check__table th,
+.md-typeset .vr-check__table td {
+  padding: 0.6rem 0.8rem;
+  text-align: start;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+.md-typeset .vr-check__table th {
+  font-weight: 700;
+  background: var(--md-default-fg-color--lightest);
+}
+.md-typeset .vr-check__table tbody tr:last-child td { border-bottom: none; }
+.md-typeset .vr-check__table td + td,
+.md-typeset .vr-check__table th + th {
+  border-inline-start: 1px solid var(--md-default-fg-color--lightest);
+}
 .md-typeset .vr-check__table code { word-break: normal; white-space: nowrap; }
+.md-typeset .vr-check__none {
+  margin: 1rem 0 0.2rem;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+.md-typeset .vr-check__none-sub {
+  margin-top: 0;
+  color: var(--md-default-fg-color--light);
+}
 .vr-check__why {
   font-size: 0.85em;
   color: var(--md-default-fg-color--light);
 }
-.vr-check__status {
+.vr-check__action,
+.vr-check__state {
   display: inline-block;
   padding: 0.1rem 0.5rem;
   border-radius: var(--vr-radius-sm);
   font-weight: 700;
   white-space: nowrap;
-  color: #fff;
 }
-.vr-check__status--block { background: #c62828; }
-.vr-check__status--proxy { background: #3949ab; }
-.vr-check__status--direct { background: #2e7d32; }
-.vr-check__status--optional {
+.vr-check__action { color: #fff; }
+.vr-check__action--block { background: #c62828; }
+.vr-check__action--proxy { background: #3949ab; }
+.vr-check__action--direct { background: #2e7d32; }
+.vr-check__state--applied {
+  color: var(--md-default-fg-color);
+  border: 1px solid var(--md-default-fg-color--light);
+}
+.vr-check__state--notApplied {
+  color: var(--md-default-fg-color--light);
+  border: 1px dashed var(--md-default-fg-color--lighter);
+}
+.vr-check__state--optional {
   color: var(--md-default-fg-color--light);
   background: var(--md-default-fg-color--lightest);
 }

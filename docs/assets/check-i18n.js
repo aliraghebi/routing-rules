@@ -11,9 +11,14 @@ window.VR_CHECK_I18N = {
     geoipNote: "برنامه‌هایی که دامنه را به IP تبدیل می‌کنند (Shadowrocket با <code>GEOIP,IR</code>، Xray با " +
       "<code>IPIfNonMatch</code> و mihomo با <code>geoip-ir</code>) اگر IP آن ایرانی باشد، باز هم آن را مستقیم " +
       "می‌فرستند. این صفحه نمی‌تواند DNS را بررسی کند؛ اگر IP را می‌دانید، آن را هم بررسی کنید.",
+    notFound: "در هیچ فهرستی پیدا نشد",
+    notFoundSub: "قانون پیش‌فرض برنامه اعمال می‌شود، پس ترافیک از طریق پراکسی می‌رود.",
     optional: "اختیاری",
+    applied: "اعمال می‌شود",
+    notApplied: "اعمال نمی‌شود",
     colList: "فهرست",
     colRule: "قانون",
+    colAction: "اقدام",
     colStatus: "وضعیت",
     colSource: "منبع",
     loadError: "بارگیری فهرست‌ها ممکن نشد:",

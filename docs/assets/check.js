@@ -35,12 +35,17 @@
     enter: "Enter a domain, URL or IP address.",
     checking: "Checking",
     notListed: "Not in any list the default configs use, so the default rule sends it through the proxy.",
+    notFound: "Not found in any list",
+    notFoundSub: "The app's default rule applies, so the traffic goes through the proxy.",
     geoipNote: "Apps that resolve domains (Shadowrocket <code>GEOIP,IR</code>, Xray <code>IPIfNonMatch</code>, " +
       "mihomo <code>geoip-ir</code>) still send it direct if its IP address is Iranian. This page cannot resolve " +
       "DNS, so check the IP address too if you know it.",
     optional: "Optional",
+    applied: "Applied",
+    notApplied: "Not applied",
     colList: "List",
     colRule: "Rule",
+    colAction: "Action",
     colStatus: "Status",
     colSource: "Source",
     loadError: "Could not load the lists:",
@@ -62,7 +67,7 @@
 
   // .prov files: a JSON array of source names, then one hex bitmask per rule
   // in the list's order, naming the sources that contributed each rule. Only
-  // the list that decided the verdict needs one, so it is fetched on demand.
+  // lists that matched need one, so it is fetched on demand.
   function loadProv(name) {
     if (!provCache[name]) {
       provCache[name] = fetch(new URL(listsBase + name + ".prov", location.href))
@@ -215,43 +220,50 @@
     var optionalLists = loadAll(OPTIONAL);
     defaultLists.then(function (lists) {
       if (!current()) return;
-      var verdict = null;
-      for (var i = 0; i < ORDER.length && !verdict; i++) {
-        var o = ORDER[i];
+      // Every default rule that matches, in config order; the first one wins.
+      var hits = [];
+      ORDER.forEach(function (o) {
         if (o.tld) {
-          if (q.host && /(^|\.)(ir|xn--mgba3a4f16a)$/.test(q.host)) verdict = { o: o, rule: "DOMAIN-SUFFIX,ir" };
-          continue;
+          if (q.host && /(^|\.)(ir|xn--mgba3a4f16a)$/.test(q.host)) hits.push({ o: o, rule: "DOMAIN-SUFFIX,ir" });
+          return;
         }
         var rule = match(lists[o.list]);
-        if (rule) verdict = { o: o, rule: rule, l: lists[o.list] };
-      }
+        if (rule) hits.push({ o: o, rule: rule, l: lists[o.list] });
+      });
+      var verdict = hits[0] || null;
+      // The applied rule (the first row), or the default rule when nothing matched.
       var v = verdict ? verdict.o.verdict : "proxy";
-      var html = '<div class="vr-check__verdict vr-check__verdict--' + v + '">' + T[v] + "</div>";
-      if (!verdict) html += "<p>" + T.notListed + "</p>";
-      html += '<div class="vr-check__matches"></div>';
+      var html = '<div class="vr-check__verdict vr-check__verdict--' + v + '">' + T[v] + "</div>" +
+        '<div class="vr-check__matches"></div>';
+      if (!verdict) html += '<div class="vr-check__unlisted"><p>' + T.notListed + "</p></div>";
       if (!verdict && q.host) html += "<p>" + T.geoipNote + "</p>";
       out.innerHTML = html;
 
-      // One row per match: the rule that decided the verdict, then optional
-      // lists as they arrive. Sources are filled in from each list's .prov.
+      // One row per match: the rule that decided the verdict, then
+      // lower-priority default matches, then optional lists as they arrive. Sources are filled in from each list's .prov.
       var rows = [];
       function render() {
         var el = out.querySelector(".vr-check__matches");
         if (!current() || !el || !rows.length) return;
         el.innerHTML = '<div class="vr-check__scroll"><table class="vr-check__table"><thead><tr><th>' + T.colList +
-          "</th><th>" + T.colRule + "</th><th>" + T.colStatus + "</th><th>" + T.colSource + "</th></tr></thead><tbody>" +
+          "</th><th>" + T.colRule + "</th><th>" + T.colAction + "</th><th>" + T.colStatus + "</th><th>" + T.colSource + "</th></tr></thead><tbody>" +
           rows.map(function (r) {
             var src = r.sources === null ? "…" : r.sources.length ? r.sources.map(function (s) {
               return '<a href="' + sourcesPage + '"><code>' + esc(s) + "</code></a>";
             }).join(", ") : "—";
             return "<tr><td>" + (r.list ? "<code>" + r.list + "</code>" : "—") +
               (r.why ? '<br><span class="vr-check__why">' + T[r.why] + "</span>" : "") +
-              "</td><td><code>" + esc(r.rule) + '</code></td><td><span class="vr-check__status vr-check__status--' +
-              r.status + '">' + T[r.status] + "</span></td><td>" + src + "</td></tr>";
+              "</td><td><code>" + esc(r.rule) + "</code></td><td>" +
+              (r.action ? '<span class="vr-check__action vr-check__action--' + r.action + '">' + T[r.action] + "</span>" : "—") +
+              '</td><td><span class="vr-check__state vr-check__state--' + r.status + '">' + T[r.status] + "</span></td><td>" +
+              src + "</td></tr>";
           }).join("") + "</tbody></table></div>";
       }
-      function addRow(list, l, rule, status, why) {
-        var r = { list: list, rule: rule, status: status, why: why, sources: l ? null : [] };
+      // action: what the rule does (block/proxy/direct; none for optional
+      // lists, which the default configs do not use). status: applied,
+      // notApplied (a higher rule won) or optional.
+      function addRow(list, l, rule, action, status, why) {
+        var r = { list: list, rule: rule, action: action, status: status, why: why, sources: l ? null : [] };
         rows.push(r);
         if (l) {
           loadProv(list).then(function (prov) {
@@ -260,15 +272,24 @@
           });
         }
       }
-      if (verdict) addRow(verdict.o.list, verdict.l, verdict.rule, v, verdict.o.why);
+      // Lower-priority matches are shown but never applied.
+      hits.forEach(function (h, i) {
+        addRow(h.o.list, h.l, h.rule, h.o.verdict, i ? "notApplied" : "applied", h.o.why);
+      });
       render();
       optionalLists.then(function (opt) {
         if (!current()) return;
         OPTIONAL.forEach(function (n) {
           var r = match(opt[n]);
-          if (r) addRow(n, opt[n], r, "optional");
+          if (r) addRow(n, opt[n], r, null, "optional");
         });
         render();
+        // Nothing matched, not even an optional list.
+        var un = out.querySelector(".vr-check__unlisted");
+        if (!rows.length && un) {
+          un.innerHTML = '<p class="vr-check__none">' + T.notFound + '</p><p class="vr-check__none-sub">' +
+            T.notFoundSub + "</p>";
+        }
       });
     }).catch(function (e) {
       if (current()) out.innerHTML = '<p class="vr-check__error">' + T.loadError + " " + esc(String(e)) + "</p>";

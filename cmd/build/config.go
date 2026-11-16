@@ -48,10 +48,7 @@ type Source struct {
 	MaxBytes    int64             `yaml:"max_bytes"`
 	SkipInclude []string          `yaml:"skip_includes"`
 	AllowTLD    bool              `yaml:"allow_tld"`
-	// OverrideDirect (REJECT sources only): this source's rules win over
-	// ir-domains; matching ir-domains entries are dropped instead of the rule.
-	OverrideDirect bool   `yaml:"override_direct"`
-	License        string `yaml:"license"`
+	License     string            `yaml:"license"`
 }
 
 // minBits rejects absurdly broad prefixes from any feed (a scraped 0.0.0.0/0

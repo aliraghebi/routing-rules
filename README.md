@@ -31,8 +31,8 @@ Setup guides for each client, every file URL, and the full source list:
 ## How it works
 
 `cmd/build` reads [`sources.yaml`](sources.yaml), then fetches, parses, normalizes and merges every source.
-It runs safety checks before writing anything: no empty lists, the allowlist, and no blocking of Iranian
-sites. A source that fails falls back to its last good copy. Outputs are never committed to `main`. CI
+It runs safety checks before writing anything: no empty lists, the allowlist, and known answers
+(`data/canaries.txt`). A source that fails falls back to its last good copy. Outputs are never committed to `main`. CI
 validates them with sing-box, Xray and mihomo, then publishes them as a new GitHub release, but only
 when something changed since the last one. `releases/latest/download/<file>` always serves the newest copy.
 

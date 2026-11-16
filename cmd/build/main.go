@@ -87,7 +87,6 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 		cat     Category
 		domains []parse.Domain
 		cidrs   []netip.Prefix
-		removed []string
 		body    []byte
 	}
 	byCat := map[string]*built{}
@@ -97,13 +96,7 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 		}
 	}
 	var stale []string
-	var override []parse.Domain                  // all override_direct rules
-	overrideByCat := map[string][]parse.Domain{} // same, per REJECT category
 	for _, o := range outcomes {
-		if o.src.OverrideDirect && byCat[o.src.Category] != nil && byCat[o.src.Category].cat.Action == "reject" {
-			override = append(override, o.res.Domains...)
-			overrideByCat[o.src.Category] = append(overrideByCat[o.src.Category], o.res.Domains...)
-		}
 		b := byCat[o.src.Category]
 		if b == nil {
 			continue
@@ -130,27 +123,8 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 		}
 	}
 
-	// Safety filters on REJECT lists.
-	var protD []parse.Domain
-	var protC []netip.Prefix
-	if b := byCat["ir-domains"]; b != nil {
-		protD = b.domains
-		// ir-domains entries covered by a trusted Iran ad rule are ad networks,
-		// not sites to send DIRECT. The conflict check still uses the full list.
-		var rm []parse.Domain
-		override, _ = merge.RemoveAllowed(override, allow) // allowlisted sites stay DIRECT
-		b.domains, rm = merge.RemoveMatched(b.domains, override)
-		for _, d := range rm {
-			b.removed = append(b.removed, "override_direct "+ruleString(d))
-		}
-	}
-	exempt := map[parse.Domain]bool{}
-	for _, d := range override {
-		exempt[d] = true
-	}
-	if b := byCat["ir-cidr"]; b != nil {
-		protC = b.cidrs
-	}
+	// REJECT lists never block allowlisted domains. Rules that also match
+	// ir-domains are kept: the configs check REJECT lists first, so they win.
 	var warns []string
 	for _, b := range byCat {
 		if b.cat.Action != "reject" {
@@ -160,26 +134,6 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 		b.domains, rm = merge.RemoveAllowed(b.domains, allow)
 		for _, d := range rm {
 			warns = append(warns, fmt.Sprintf("%s: allowlist blocked %s", b.cat.Name, ruleString(d)))
-		}
-		// Rules from override_direct sources skip the conflict check and are
-		// re-added afterwards (the first merge may have folded them under a
-		// broader generic rule that the check then removes).
-		var rest []parse.Domain
-		for _, d := range b.domains {
-			if !exempt[d] {
-				rest = append(rest, d)
-			}
-		}
-		rest, rm = merge.RemoveConflicts(rest, protD)
-		trusted, _ := merge.RemoveAllowed(overrideByCat[b.cat.Name], allow)
-		b.domains = merge.Domains(append(trusted, rest...))
-		for _, d := range rm {
-			b.removed = append(b.removed, "ir-conflict "+ruleString(d))
-		}
-		var rmc []netip.Prefix
-		b.cidrs, rmc = merge.RemoveCIDRConflicts(b.cidrs, protC)
-		for _, p := range rmc {
-			b.removed = append(b.removed, "ir-conflict "+p.String())
 		}
 	}
 	slices.Sort(warns)
@@ -203,17 +157,14 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 		if st.ListCapWarn > 0 && n > st.ListCapWarn {
 			log.Printf("::warning::%s: %d rules exceeds list_cap_warn %d (iOS network extension memory)", c.Name, n, st.ListCapWarn)
 		}
-		for _, r := range b.removed {
-			log.Printf("filtered: %s removed %s", c.Name, r)
-		}
 	}
 
-	printSummary(outcomes, cfg.Categories, func(name string) (int, int, int) {
+	printSummary(outcomes, cfg.Categories, func(name string) (int, int) {
 		b := byCat[name]
 		if b == nil {
-			return 0, 0, 0
+			return 0, 0
 		}
-		return len(b.domains) + len(b.cidrs), len(b.body), len(b.removed)
+		return len(b.domains) + len(b.cidrs), len(b.body)
 	})
 	if len(stale) > 0 {
 		log.Printf("::warning::using last-known-good data for: %s", strings.Join(stale, ", "))

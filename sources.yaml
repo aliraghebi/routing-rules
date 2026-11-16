@@ -5,9 +5,9 @@
 # format:  hosts | domains | abp | v2fly | cidr | json | dbip-csv
 # match:   suffix | exact  (hosts/domains only; how plain domains become rules)
 # filter:  json only; skip objects whose key has a different value
-# override_direct: REJECT sources only. Rules from this source win over ir-domains:
-#          matching ir-domains entries are removed instead of the REJECT rule.
-#          Only for curated Iran-focused ad lists; a bad list here can block Iranian sites.
+# Rule order decides overlaps: REJECT lists come before ir-domains in every config, so a
+# domain in both is blocked. A bad ad list can block an Iranian site; pin real sites in
+# data/allowlist.txt.
 # allow_tld: keep single-label names ("lan", "localhost"); only for special-use TLD lists.
 # url:     {YYYY-MM} is replaced by the current UTC month (previous month as fallback).
 
@@ -59,8 +59,8 @@ sources:
     category: ir-domains
     enabled: true
     license: MIT (bootmortis/iran-hosted-domains)
-    # "other" excludes bootmortis' ads category (domains.txt mixes both, which would
-    # make the REJECT-vs-DIRECT conflict check strip Iranian ad networks from ads.list).
+    # "other" excludes bootmortis' ads category (domains.txt mixes both; ad networks
+    # belong in ads.list, not DIRECT).
   - name: v2fly-category-ir
     url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ir
     format: v2fly
@@ -182,7 +182,6 @@ sources:
     match: exact
     category: ads
     enabled: true
-    override_direct: true
     license: AGPL-3.0 (MasterKia/PersianBlocker)
   - name: local-ir-ads
     url: file:///data/ir-ads.txt
@@ -190,7 +189,6 @@ sources:
     match: suffix
     category: ads
     enabled: true
-    override_direct: true
     license: This repository
     # Iranian ad networks that no trusted upstream list covers; maintained by hand.
   - name: bootmortis-ads
@@ -199,7 +197,6 @@ sources:
     match: suffix
     category: ads
     enabled: true
-    override_direct: true
     license: MIT (bootmortis/iran-hosted-domains)
     # This category also tags some real sites (shops, magazines, payment links);
     # those are pinned in allowlist.txt so they are never blocked.
@@ -209,10 +206,8 @@ sources:
     match: suffix
     category: ads
     enabled: true
-    override_direct: true
     license: AGPL-3.0 (MasterKia/PersianBlocker)
-    # Iranian analytics/tracking hosts; trusted like PersianBlocker's ad list, so it can
-    # block trackers that also appear in ir-domains. Web trackers belong with ads (blocked by
+    # Iranian analytics/tracking hosts. Web trackers belong with ads (blocked by
     # default); device/OS telemetry goes in the optional tracking list.
   - name: hagezi-pro-mini
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.mini-onlydomains.txt

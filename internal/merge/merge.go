@@ -118,70 +118,6 @@ func RemoveAllowed(in []parse.Domain, allow []string) (kept, removed []parse.Dom
 	return kept, removed
 }
 
-// RemoveConflicts drops rules that would match any protected domain rule's
-// own name (e.g. a REJECT entry that would block a whole ir-domains site).
-// More specific rules (a REJECT for ads.site.ir under DIRECT site.ir) are kept.
-func RemoveConflicts(in, protected []parse.Domain) (kept, removed []parse.Domain) {
-	exact := map[string]bool{}
-	anc := map[string]bool{} // every protected name and all its parents
-	for _, p := range protected {
-		if p.Kind == parse.Keyword {
-			continue
-		}
-		exact[p.Name] = true
-		parents(p.Name, func(s string) bool { anc[s] = true; return false })
-	}
-	for _, d := range in {
-		var bad bool
-		switch d.Kind {
-		case parse.Exact:
-			bad = exact[d.Name]
-		case parse.Suffix:
-			bad = anc[d.Name]
-		case parse.Keyword:
-			for n := range exact {
-				if strings.Contains(n, d.Name) {
-					bad = true
-					break
-				}
-			}
-		}
-		if bad {
-			removed = append(removed, d)
-		} else {
-			kept = append(kept, d)
-		}
-	}
-	return kept, removed
-}
-
-// RemoveMatched drops entries fully covered by a rule in by: any entry equal
-// to or under a suffix rule, or an exact entry equal to an exact rule. A suffix
-// entry is kept when by only has the exact name (its subdomains stay covered).
-func RemoveMatched(in, by []parse.Domain) (kept, removed []parse.Domain) {
-	exact, suffix := map[string]bool{}, map[string]bool{}
-	for _, d := range by {
-		switch d.Kind {
-		case parse.Exact:
-			exact[d.Name] = true
-		case parse.Suffix:
-			suffix[d.Name] = true
-		}
-	}
-	for _, d := range in {
-		hit := d.Kind == parse.Exact && exact[d.Name]
-		if !hit && d.Kind != parse.Keyword {
-			parents(d.Name, func(p string) bool { hit = suffix[p]; return hit })
-		}
-		if hit {
-			removed = append(removed, d)
-		} else {
-			kept = append(kept, d)
-		}
-	}
-	return kept, removed
-}
-
 type span struct {
 	lo, hi parse.U128
 	v4     bool
@@ -242,22 +178,6 @@ func lastOf(lo parse.U128, n int) parse.U128 {
 	default:
 		return parse.U128{Hi: lo.Hi, Lo: lo.Lo | (1<<n - 1)}
 	}
-}
-
-// RemoveCIDRConflicts drops prefixes that equal or contain any protected
-// prefix. protected must be the output of CIDRs (sorted, non-overlapping).
-func RemoveCIDRConflicts(in, protected []netip.Prefix) (kept, removed []netip.Prefix) {
-	for _, r := range in {
-		i, _ := slices.BinarySearchFunc(protected, r.Addr(), func(p netip.Prefix, a netip.Addr) int {
-			return p.Addr().Compare(a)
-		})
-		if i < len(protected) && r.Bits() <= protected[i].Bits() && r.Contains(protected[i].Addr()) {
-			removed = append(removed, r)
-		} else {
-			kept = append(kept, r)
-		}
-	}
-	return kept, removed
 }
 
 // Complement returns the minimal prefixes covering every address (IPv4 and

@@ -42,7 +42,7 @@ func writeIfChanged(path string, b []byte) error {
 	return os.WriteFile(path, b, 0o644)
 }
 
-func printSummary(outs []outcome, cats []Category, stat func(string) (n, size, conflicts int)) {
+func printSummary(outs []outcome, cats []Category, stat func(string) (n, size int)) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.AlignRight)
 	fmt.Fprintln(w, "SOURCE\tCATEGORY\tSTATUS\tDOMAINS\tCIDRS\tNOTE\t")
 	for _, o := range outs {
@@ -55,14 +55,14 @@ func printSummary(outs []outcome, cats []Category, stat func(string) (n, size, c
 	w.Flush()
 	fmt.Println()
 	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.AlignRight)
-	fmt.Fprintln(w, "LIST\tACTION\tRULES\tSIZE KB\tIR-CONFLICTS\t")
+	fmt.Fprintln(w, "LIST\tACTION\tRULES\tSIZE KB\t")
 	for _, c := range cats {
-		n, size, conf := stat(c.Name)
+		n, size := stat(c.Name)
 		if !c.Enabled {
-			fmt.Fprintf(w, "%s\t%s\tdisabled\t\t\t\n", c.Name, c.Action)
+			fmt.Fprintf(w, "%s\t%s\tdisabled\t\t\n", c.Name, c.Action)
 			continue
 		}
-		fmt.Fprintf(w, "%s\t%s\t%d\t%.1f\t%d\t\n", c.Name, c.Action, n, float64(size)/1024, conf)
+		fmt.Fprintf(w, "%s\t%s\t%d\t%.1f\t\n", c.Name, c.Action, n, float64(size)/1024)
 	}
 	w.Flush()
 }

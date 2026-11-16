@@ -28,13 +28,13 @@ categories:
   - {name: phishing,     action: reject, enabled: true}
   - {name: cryptominers, action: reject, enabled: true}
   - {name: ads,          action: reject, enabled: true}
+  - {name: trackers,     action: reject, enabled: true}
   - {name: sanctioned,   action: proxy,  enabled: true}
   - {name: ir-domains,   action: direct, enabled: true}
   - {name: ir-cidr,      action: direct, enabled: true}
   # Optional lists: built and published, not referenced by shadowrocket.conf.
   - {name: social,       action: none,   enabled: true}
   - {name: nsfw,         action: none,   enabled: true}
-  - {name: tracking,     action: none,   enabled: true}
   - {name: cloudflare,   action: none,   enabled: true}
   - {name: cloudfront,   action: none,   enabled: true}
   - {name: fastly,       action: none,   enabled: true}
@@ -118,7 +118,7 @@ sources:
     # Monthly file: {YYYY-MM} is the current UTC month, falling back to the previous month.
     # Geolocation-based (where ranges are used), unlike the registry-based sources above.
 
-  # ---------- Ads / tracking ----------
+  # ---------- Ads ----------
   - name: persianblocker
     url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerHosts.txt
     format: domains  # despite the name, the file is one domain per line
@@ -274,15 +274,107 @@ sources:
     enabled: true
     license: MIT (v2fly/domain-list-community)
 
-  # ---------- Tracking and telemetry (optional) ----------
+  # ---------- Trackers and telemetry (blocked by default) ----------
+  # Device/OS telemetry can break vendor features (cloud sync, some app functions);
+  # add affected domains to allowlist.txt.
+  - name: persianblocker-trackers
+    url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerTrackers-Domains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    override_direct: true
+    license: AGPL-3.0 (MasterKia/PersianBlocker)
+    # Iranian analytics/tracking hosts; trusted like PersianBlocker's ad list, so it can
+    # block trackers that also appear in ir-domains.
   - name: windowsspyblocker-spy
     url: https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
     format: hosts
     match: exact
-    category: tracking
+    category: trackers
     enabled: true
     license: MIT (crazy-max/WindowsSpyBlocker)
     # Only the "spy" list: "update" and "extra" block Windows Update and other functionality.
+  - name: hagezi-native-amazon
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.amazon-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Amazon devices (Fire TV, Echo).
+  - name: hagezi-native-apple
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.apple-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Apple devices.
+  - name: hagezi-native-huawei
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.huawei-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Huawei devices.
+  - name: hagezi-native-lgwebos
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.lgwebos-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of LG webOS TVs.
+  - name: hagezi-native-roku
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.roku-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Roku devices.
+  - name: hagezi-native-samsung
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.samsung-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Samsung devices.
+  - name: hagezi-native-tiktok
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.tiktok-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of TikTok.
+  - name: hagezi-native-vivo
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.vivo-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Vivo devices.
+  - name: hagezi-native-winoffice
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.winoffice-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Windows and Office.
+  - name: hagezi-native-xiaomi
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.xiaomi-onlydomains.txt
+    format: domains
+    match: suffix
+    category: trackers
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # Native tracking/telemetry of Xiaomi devices.
 
   # ---------- Sanctioned (domains that block Iranian IPs) ----------
   - name: dynx-antiban

@@ -63,7 +63,6 @@ jobs:
 
       - name: Build lists
         env:
-          BASE_URL: ${{ vars.BASE_URL }}
           ALLOW_SHRINK: ${{ github.event.inputs.allow_shrink || '0' }}
         run: go run ./cmd/build
 
@@ -82,7 +81,7 @@ jobs:
       - name: Compile and check sing-box rule-sets
         run: |
           mkdir -p out/srs
-          for f in dist/sing-box/geo*.json; do
+          for f in dist/geo*.json; do
             sing-box rule-set compile --output "out/srs/$(basename "${f%.json}").srs" "$f"
           done
           # "rule-set match" prints the matching rule, nothing when there is no match.
@@ -97,7 +96,7 @@ jobs:
           mustnot geosite-ir google.com
           mustnot geosite-ads digikala.com
           echo '{"outbounds":[{"type":"direct","tag":"direct"},{"type":"direct","tag":"proxy"}]}' > "$RUNNER_TEMP/sb-outbounds.json"
-          sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box/route.json
+          sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box-route.json
 
       - name: Check v2ray geo files with Xray
         run: |
@@ -107,19 +106,19 @@ jobs:
               { "tag": "direct", "protocol": "freedom" },
               { "tag": "block", "protocol": "blackhole" } ] }
           JSON
-          # Fails with "list not found" if a tag referenced by routing.json is missing.
-          XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray/routing.json
+          # Fails with "list not found" if a tag referenced by the routing is missing.
+          XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray-routing.json
 
-      - name: Commit dist/
+      - name: Commit dist/ and docs/
         id: commit
         run: |
-          git add dist
+          git add dist docs
           if git diff --cached --quiet; then
             echo "No changes."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          files=$(git diff --cached --name-only -- dist | sed 's#^dist/##')
+          files=$(git diff --cached --name-only -- dist docs | sed 's#^dist/##')
           if [ "$(echo "$files" | wc -l)" -le 6 ]; then
             lists=$(echo "$files" | paste -sd, - | sed 's/,/, /g')
           else
@@ -131,20 +130,68 @@ jobs:
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      # Rolling release so .../releases/latest/download/<file> works. The
-      # "latest" release must stay the newest non-prerelease release.
-      - name: Publish rolling release
-        if: steps.commit.outputs.changed == 'true'
+      # Everything users download, flat, under the same names the configs reference.
+      - name: Assemble release files
+        run: |
+          rel="$RUNNER_TEMP/release"
+          mkdir -p "$rel"
+          cp dist/* out/geosite.dat out/geoip.dat out/srs/*.srs "$rel/"
+          size=$(du -sm "$rel" | cut -f1)
+          echo "release files: $(ls "$rel" | wc -l), ${size} MB"
+          # jsDelivr refuses to serve GitHub packages above its size limit (50 MB at the time of writing).
+          if [ "$size" -gt 45 ]; then echo "::warning::release files are ${size} MB, close to jsDelivr's 50 MB package limit"; fi
+          echo "REL=$rel" >> "$GITHUB_ENV"
+
+      # The release branch holds exactly one commit with no history (rebuilt and
+      # force-pushed each time, like bootmortis/iran-hosted-domains), so binaries
+      # never accumulate in the repository. Only the bot pushes it; main is never
+      # force-pushed.
+      - name: Publish release branch
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if [ "${{ steps.commit.outputs.changed }}" != "true" ] && git ls-remote --exit-code --heads origin release >/dev/null; then
+            echo "Nothing changed and the release branch exists."
+            exit 0
+          fi
+          cd "$REL"
+          git init -q -b release
+          git config user.name "$BOT_NAME"
+          git config user.email "$BOT_EMAIL"
+          git add -A
+          git commit -qm "release $(date -u +%Y-%m-%dT%H:%MZ) from ${GITHUB_SHA::7}"
+          # Purge only files that differ from the previous release (all files on the first run).
+          if git fetch -q --depth=1 "$remote" release:previous 2>/dev/null; then
+            git diff --name-only previous release > "$RUNNER_TEMP/changed.txt"
+          else
+            git ls-files > "$RUNNER_TEMP/changed.txt"
+          fi
+          git push -q -f "$remote" release
+          echo "published=true" >> "$GITHUB_OUTPUT"
+
+      # jsDelivr caches branch files for up to 12 hours; purge what changed.
+      - name: Purge jsDelivr cache
+        if: steps.release.outputs.published == 'true'
+        run: |
+          while read -r f; do
+            curl -fsS -o /dev/null "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@release/${f}" \
+              || echo "::warning::jsDelivr purge failed for ${f}"
+          done < "$RUNNER_TEMP/changed.txt"
+
+      # Rolling GitHub release with the same files, for .../releases/latest/download/<file>.
+      # The "latest" release must stay the newest non-prerelease release.
+      - name: Publish rolling GitHub release
+        if: steps.release.outputs.published == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           if ! gh release view latest >/dev/null 2>&1; then
-            gh release create latest --title "Latest rule lists" \
-              --notes "Rebuilt automatically from sources.yaml. Assets are replaced on every change."
+            gh release create latest --title "Latest rule files" \
+              --notes "Rebuilt automatically. The same files are on the release branch (GitHub raw and jsDelivr)."
           fi
-          gh release upload latest --clobber \
-            dist/*.list dist/shadowrocket.conf \
-            out/geosite.dat out/geoip.dat out/srs/*.srs
+          gh release upload latest --clobber "$REL"/*
 
   # GitHub disables scheduled workflows after 60 days without repository
   # activity. Daily list changes normally keep the repo active; when sources

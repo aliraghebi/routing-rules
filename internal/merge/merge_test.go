@@ -83,3 +83,19 @@ func TestRemoveMatched(t *testing.T) {
 		t.Fatalf("got %v want %v", kept, want)
 	}
 }
+
+func TestComplement(t *testing.T) {
+	got := Complement(P("0.0.0.0/1", "192.168.0.0/16", "::/1"))
+	want := P("128.0.0.0/2", "192.0.0.0/9", "192.128.0.0/11", "192.160.0.0/13", "192.169.0.0/16", "192.170.0.0/15",
+		"192.172.0.0/14", "192.176.0.0/12", "192.192.0.0/10", "193.0.0.0/8", "194.0.0.0/7", "196.0.0.0/6", "200.0.0.0/5",
+		"208.0.0.0/4", "224.0.0.0/3", "8000::/1")
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v\nwant %v", got, want)
+	}
+	if all := Complement(nil); !reflect.DeepEqual(all, P("0.0.0.0/0", "::/0")) {
+		t.Fatalf("complement of nothing: %v", all)
+	}
+	if none := Complement(P("0.0.0.0/0", "::/0")); len(none) != 0 {
+		t.Fatalf("complement of everything: %v", none)
+	}
+}

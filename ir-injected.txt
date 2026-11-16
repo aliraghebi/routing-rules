@@ -1,0 +1,10 @@
+# Addresses Iran's filtering injects into DNS answers for blocked domains (the block page).
+# A connection to one of these never reaches the real site, so rules reject it at once
+# instead of letting it hang or go DIRECT as a "private" address.
+# Source: Chocolate4U/Iran-v2ray-rules config.json (irgfw-block-injected-ips).
+# The "other" injected IPs there (Google/Bing SafeSearch VIPs, etc.) are real services and
+# are deliberately not listed.
+10.10.34.0/24
+2001:4188:2:600:10:10:34:34
+2001:4188:2:600:10:10:34:35
+2001:4188:2:600:10:10:34:36

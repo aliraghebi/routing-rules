@@ -59,6 +59,9 @@ func ClashConfig(base string, d RouteData) []byte {
 		}
 		fmt.Fprintf(&b, "  - RULE-SET,%s,%s%s\n", tag, target, suffix)
 	}
+	for _, t := range d.Early {
+		rule(t, "REJECT")
+	}
 	b.WriteString("  - RULE-SET,geoip-private,DIRECT,no-resolve\n")
 	for _, t := range d.Reject {
 		rule(t, "REJECT")

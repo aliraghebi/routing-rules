@@ -87,6 +87,10 @@ type RouteData struct {
 	All                   []string
 	RejectSite, RejectIP  []string
 	ProxySite             []string
+	// Early holds IP rule-sets rejected before the private-IP DIRECT rule
+	// (Iran's DNS block-page range is inside 10.0.0.0/8). EarlyIP is the same
+	// as bare geo tag names for v2ray/Xray.
+	Early, EarlyIP []string
 }
 
 func SingBoxRoute(d RouteData) ([]byte, error) { return execJSON(sbRoute, d) }

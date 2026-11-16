@@ -259,3 +259,37 @@ func RemoveCIDRConflicts(in, protected []netip.Prefix) (kept, removed []netip.Pr
 	}
 	return kept, removed
 }
+
+// Complement returns the minimal prefixes covering every address (IPv4 and
+// IPv6) that is not in any of the given prefixes.
+func Complement(in []netip.Prefix) []netip.Prefix {
+	merged := CIDRs(in)
+	var out []netip.Prefix
+	for _, v4 := range []bool{true, false} {
+		width := 128
+		if v4 {
+			width = 32
+		}
+		next := parse.U128{} // first address not yet covered
+		done := false
+		for _, p := range merged {
+			if p.Addr().Is4() != v4 {
+				continue
+			}
+			lo := parse.AddrToU128(p.Addr())
+			if lo.Cmp(next) > 0 {
+				out = append(out, parse.RangeToPrefixes(parse.U128ToAddr(next, v4), parse.U128ToAddr(lo.Sub(parse.U128{Lo: 1}), v4))...)
+			}
+			hi := lastOf(lo, width-p.Bits())
+			if hi == lastOf(parse.U128{}, width) {
+				done = true // reached the top of the address space
+				break
+			}
+			next = hi.Add1()
+		}
+		if !done {
+			out = append(out, parse.RangeToPrefixes(parse.U128ToAddr(next, v4), parse.U128ToAddr(lastOf(parse.U128{}, width), v4))...)
+		}
+	}
+	return out
+}

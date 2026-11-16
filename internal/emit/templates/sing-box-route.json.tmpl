@@ -3,6 +3,9 @@
     "rules": [
       { "action": "sniff" },
       { "protocol": "dns", "action": "hijack-dns" },
+{{- if .Early}}
+      { "rule_set": [{{range $i, $t := .Early}}{{if $i}}, {{end}}"{{$t}}"{{end}}], "action": "reject" },
+{{- end}}
       { "ip_is_private": true, "outbound": "direct" },
       {
         "rule_set": [{{range $i, $t := .Reject}}{{if $i}}, {{end}}"{{$t}}"{{end}}],

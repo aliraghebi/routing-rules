@@ -338,6 +338,59 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 	clashRoute := g.route
 	clashRoute.All = append(slices.Clone(g.route.All), "geoip-private")
 	files["clash.yaml"] = emit.ClashConfig(base, clashRoute)
+
+	// DNS blocks for the cores (merge with the matching route/rules file).
+	files["sing-box-dns.json"] = emit.SingBoxDNS()
+	files["xray-dns.json"] = emit.XrayDNS()
+	files["clash-dns.yaml"] = emit.ClashDNS()
+
+	// Networks: WireGuard split tunnel, routers, ipset/nftables.
+	if ir := byCat["ir-cidr"]; ir != nil {
+		files["wireguard-allowedips.txt"] = emit.WireGuardAllowedIPs(merge.Complement(append(slices.Clone(ir.cidrs), emit.Private...)))
+		// Lite: IPv4 only, excluding Iranian blocks of /20 or larger (~1.7k entries,
+		// ~90% of Iranian IPv4 space still direct), all IPv6 through the tunnel.
+		// ponytail: fixed /20 cut-off; make it configurable if mobile clients need fewer entries.
+		var big []netip.Prefix
+		for _, p := range ir.cidrs {
+			if p.Addr().Is4() && p.Bits() <= 20 {
+				big = append(big, p)
+			}
+		}
+		var lite []netip.Prefix
+		for _, p := range merge.Complement(append(big, emit.Private...)) {
+			if p.Addr().Is4() {
+				lite = append(lite, p)
+			}
+		}
+		files["wireguard-allowedips-lite.txt"] = emit.WireGuardAllowedIPs(append(lite, netip.MustParsePrefix("::/0")))
+		files["mikrotik-ir.rsc"] = emit.MikroTik("IR", ir.cidrs)
+		files["ir-cidr4.txt"] = emit.CIDRLines(ir.cidrs, true)
+		files["ir-cidr6.txt"] = emit.CIDRLines(ir.cidrs, false)
+	}
+	// Browsers: PAC with Iranian domains (including the TLDs) direct.
+	for _, t := range g.sites {
+		if t.Name == "ir" {
+			files["proxy.pac"] = emit.PAC(t.Domains)
+		}
+	}
+	// Surge/Shadowrocket DOMAIN-SET, AdGuard Home / Pi-hole blocklists.
+	var defaultBlock []parse.Domain
+	for _, c := range cfg.Categories {
+		b := byCat[c.Name]
+		if b == nil || len(b.domains) == 0 {
+			continue
+		}
+		files[c.Name+"-domainset.txt"] = emit.DomainSet(b.domains)
+		if c.Action == "reject" || dnsBlocklist[c.Name] {
+			files["adguard-"+c.Name+".txt"] = emit.AdGuard(c.Name, b.domains)
+		}
+		if c.Action == "reject" {
+			defaultBlock = append(defaultBlock, b.domains...)
+		}
+	}
+	defaultBlock = merge.Domains(defaultBlock)
+	files["adguard-default.txt"] = emit.AdGuard("default (malware, phishing, cryptominers, ads)", defaultBlock)
+	files["hosts-default.txt"] = emit.Hosts("default (malware, phishing, cryptominers, ads)", defaultBlock)
 	if err := syncDir(dist, files); err != nil {
 		return err
 	}
@@ -371,6 +424,9 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 	}
 	return writeDocs(docsDir, cfg, g, files)
 }
+
+// dnsBlocklist marks optional categories that also make sense as DNS blocklists.
+var dnsBlocklist = map[string]bool{"ads-lite": true, "tracking": true, "nsfw": true, "social": true}
 
 type catRules struct {
 	cat     Category
@@ -423,6 +479,10 @@ func buildGeo(cats []Category, sets map[string]catRules) geo {
 		}
 		if len(r.cidrs) > 0 {
 			g.ips = append(g.ips, emit.Tag{Name: tag, CIDRs: r.cidrs})
+			if c.Name == "ir-injected" {
+				rd.Early = append(rd.Early, "geoip-"+tag)
+				rd.EarlyIP = append(rd.EarlyIP, tag)
+			}
 			switch c.Action {
 			case "reject":
 				rd.Reject = append(rd.Reject, "geoip-"+tag)
@@ -481,13 +541,39 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	for _, t := range g.ips {
 		cl.Rows = append(cl.Rows, row("geoip-"+t.Name+".mrs", "IP ranges: "+t.Name))
 	}
+	dns := emit.DocSection{Title: "DNS", Note: "DNS blocks to merge into a config: Iranian domains use the device's DNS, everything else DNS-over-HTTPS through the proxy."}
+	dns.Rows = append(dns.Rows,
+		row("sing-box-dns.json", "sing-box `dns` block (1.12+), merge with `sing-box-route.json`"),
+		row("xray-dns.json", "Xray `dns` block, merge with `xray-routing.json`"),
+		row("clash-dns.yaml", "mihomo `dns` block (fake-ip), merge with `clash.yaml`"))
+	net := emit.DocSection{Title: "Networks and routers", Note: "Iran IP ranges for split tunneling outside proxy apps."}
+	net.Rows = append(net.Rows,
+		row("wireguard-allowedips.txt", "WireGuard `AllowedIPs`: everything except Iran and private ranges (~16k entries, desktop)"),
+		row("wireguard-allowedips-lite.txt", "Same, IPv4 only, larger Iranian blocks only (~1.7k entries, phones); all IPv6 through the tunnel"),
+		row("mikrotik-ir.rsc", "MikroTik RouterOS script: address list `IR`"),
+		row("ir-cidr4.txt", "Iran IPv4 ranges, one per line (ipset, nftables)"),
+		row("ir-cidr6.txt", "Iran IPv6 ranges, one per line"),
+		row("proxy.pac", "Browser PAC: Iranian domains direct, everything else through a local proxy"))
+	dnsf := emit.DocSection{Title: "AdGuard Home and Pi-hole", Note: "DNS blocklists. `adguard-*` work in AdGuard Home and Pi-hole v6; `hosts-*` in Pi-hole v5 and hosts files."}
+	dnsf.Rows = append(dnsf.Rows,
+		row("adguard-default.txt", "Everything the default configs block (malware, phishing, cryptominers, ads)"),
+		row("hosts-default.txt", "Same, hosts format (subdomains not blocked)"))
+	ds := emit.DocSection{Title: "Surge / Shadowrocket DOMAIN-SET", Note: "Domain-only lists in DOMAIN-SET format, lighter than the same rules as RULE-SET."}
+	for _, c := range cfg.Categories {
+		if _, ok := files["adguard-"+c.Name+".txt"]; ok {
+			dnsf.Rows = append(dnsf.Rows, row("adguard-"+c.Name+".txt", c.Name))
+		}
+		if _, ok := files[c.Name+"-domainset.txt"]; ok {
+			ds.Rows = append(ds.Rows, row(c.Name+"-domainset.txt", c.Name))
+		}
+	}
 	v2 = emit.DocSection{Title: "v2ray / Xray", Note: "Tags: `geosite:<name>` and `geoip:<name>` as listed in the sing-box tables above."}
 	v2.Rows = append(v2.Rows,
 		row("geosite.dat", "Domain tags"),
 		row("geoip.dat", "IP tags, including `private`"),
 		row("xray-routing.json", "Example `routing` block"))
 
-	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, BaseURL: strings.TrimRight(st.BaseURL, "/"), Sections: []emit.DocSection{sr, lists, apps, sb, sbSrc, cl, v2}})
+	urls, err := emit.URLsPage(emit.URLDocs{RepoURL: st.RepoURL, BaseURL: strings.TrimRight(st.BaseURL, "/"), Sections: []emit.DocSection{sr, lists, ds, apps, sb, sbSrc, cl, v2, dns, net, dnsf}})
 	if err != nil {
 		return err
 	}
@@ -513,13 +599,24 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 	// instead of showing it as text (release-asset links force a download, but go through github.com redirects).
 	dl := map[string][]byte{}
 	for name, b := range files {
-		for _, stem := range []string{"karing", "v2rayn-routing", "clash", "sing-box-route", "xray-routing", "shadowrocket"} {
+		for _, stem := range []string{"karing", "v2rayn-routing", "clash", "sing-box-route", "sing-box-dns", "xray-routing", "xray-dns",
+			"shadowrocket", "proxy.pac", "mikrotik-ir", "wireguard-allowedips"} {
 			if strings.HasPrefix(name, stem) {
 				dl[name] = b
 			}
 		}
 	}
-	return syncDir(filepath.Join(dir, "dl"), dl)
+	if err := syncDir(filepath.Join(dir, "dl"), dl); err != nil {
+		return err
+	}
+	// Lists the "Check a domain" page loads (same origin, so no CORS issues).
+	checkLists := map[string][]byte{}
+	for _, c := range cfg.Categories {
+		if b, ok := files[c.Name+".list"]; ok && c.Name != "ads-lite" {
+			checkLists[c.Name+".list"] = b
+		}
+	}
+	return syncDir(filepath.Join(dir, "dl", "lists"), checkLists)
 }
 
 func actionDesc(a string) string {

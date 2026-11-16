@@ -24,6 +24,7 @@ settings:
 
 # Order matters: REJECT rule-sets appear in the config in this order.
 categories:
+  - {name: ir-injected,  action: reject, enabled: true}  # rejected before private-IP rules
   - {name: malware,      action: reject, enabled: true}
   - {name: phishing,     action: reject, enabled: true}
   - {name: cryptominers, action: reject, enabled: true}
@@ -35,6 +36,10 @@ categories:
   - {name: social,       action: none,   enabled: true}
   - {name: nsfw,         action: none,   enabled: true}
   - {name: tracking,     action: none,   enabled: true}
+  - {name: ads-lite,     action: none,   enabled: true}  # small ads list for memory-limited devices
+  - {name: arvancloud,   action: none,   enabled: true}  # Iranian CDNs, also included in ir-cidr
+  - {name: parspack,     action: none,   enabled: true}
+  - {name: derak,        action: none,   enabled: true}
   - {name: cloudflare,   action: none,   enabled: true}
   - {name: cloudfront,   action: none,   enabled: true}
   - {name: fastly,       action: none,   enabled: true}
@@ -96,6 +101,26 @@ sources:
     category: ir-cidr
     enabled: true
     license: Published by ParsPack, no license stated
+  - name: derak-v4
+    url: https://api.derak.cloud/public/ipv4
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: Published by Derak Cloud, no license stated
+    # Includes Derak edge nodes hosted abroad (Hetzner, DigitalOcean, Vultr); they serve
+    # Iranian sites, so they go DIRECT like the other Iranian CDNs.
+  - name: derak-v6
+    url: https://api.derak.cloud/public/ipv6
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: Published by Derak Cloud, no license stated
+  - name: ir-injected
+    url: file:///ir-injected.txt
+    format: cidr
+    category: ir-injected
+    enabled: true
+    license: This repository (values from Chocolate4U/Iran-v2ray-rules)
   - name: ipverse-ir-v4
     url: https://raw.githubusercontent.com/ipverse/country-ip-blocks/master/country/ir/ipv4-aggregated.txt
     format: cidr
@@ -117,6 +142,74 @@ sources:
     license: CC BY 4.0 (DB-IP Lite; attribution "IP Geolocation by DB-IP" with a link to https://db-ip.com required)
     # Monthly file: {YYYY-MM} is the current UTC month, falling back to the previous month.
     # Geolocation-based (where ranges are used), unlike the registry-based sources above.
+
+  # ---------- Iranian CDN lists (optional; the same ranges are in ir-cidr) ----------
+  - name: arvancloud-list
+    url: https://www.arvancloud.ir/en/ips.txt
+    format: cidr
+    category: arvancloud
+    enabled: true
+    license: Published by ArvanCloud, no license stated
+  - name: parspack-list
+    url: https://parspack.com/cdnips.txt
+    format: cidr
+    category: parspack
+    enabled: true
+    license: Published by ParsPack, no license stated
+  - name: derak-list-v4
+    url: https://api.derak.cloud/public/ipv4
+    format: cidr
+    category: derak
+    enabled: true
+    license: Published by Derak Cloud, no license stated
+  - name: derak-list-v6
+    url: https://api.derak.cloud/public/ipv6
+    format: cidr
+    category: derak
+    enabled: true
+    license: Published by Derak Cloud, no license stated
+
+  # ---------- Ads lite (optional): curated small sources only, ~5k rules ----------
+  - name: lite-persianblocker
+    url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerHosts.txt
+    format: domains
+    match: exact
+    category: ads-lite
+    enabled: true
+    license: AGPL-3.0 (MasterKia/PersianBlocker)
+  - name: lite-persianblocker-trackers
+    url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerTrackers-Domains.txt
+    format: domains
+    match: suffix
+    category: ads-lite
+    enabled: true
+    license: AGPL-3.0 (MasterKia/PersianBlocker)
+  - name: lite-v2fly-category-ads-ir
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ads-ir
+    format: v2fly
+    category: ads-lite
+    enabled: true
+    license: MIT (v2fly/domain-list-community)
+  - name: lite-local-ir-ads
+    url: file:///ir-ads.txt
+    format: domains
+    match: suffix
+    category: ads-lite
+    enabled: true
+    license: This repository
+  - name: lite-peterlowe
+    url: https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext
+    format: hosts
+    match: exact
+    category: ads-lite
+    enabled: true
+    license: Peter Lowe's ad server list (pgl.yoyo.org); no explicit license stated
+  - name: lite-v2fly-category-ads-all
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ads-all
+    format: v2fly
+    category: ads-lite
+    enabled: true
+    license: MIT (v2fly/domain-list-community)
 
   # ---------- Ads ----------
   - name: persianblocker

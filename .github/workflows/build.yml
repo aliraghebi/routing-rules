@@ -181,9 +181,9 @@ jobs:
           - Always download from https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/<file>"
           gh release upload "$tag" "$REL"/*
           gh release edit "$tag" --draft=false --latest
-          # Keep the 3 newest releases (also removes drafts left by failed runs).
+          # Keep the 7 newest releases (also removes drafts left by failed runs).
           gh release list --limit 200 --json tagName,createdAt \
-            --jq 'sort_by(.createdAt) | reverse | .[3:] | .[].tagName' |
+            --jq 'sort_by(.createdAt) | reverse | .[7:] | .[].tagName' |
           while read -r old; do
             gh release delete "$old" --yes --cleanup-tag || echo "::warning::could not delete release $old"
           done

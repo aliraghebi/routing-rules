@@ -78,7 +78,7 @@ iOS حافظه برنامه‌های VPN را محدود می‌کند و `ads.l
   `DOMAIN-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/ads-domainset.txt,REJECT`. فایل‌های DOMAIN-SET فقط دامنه دارند، پس برای فهرست‌هایی که
   بازه IP هم دارند (`malware`، `phishing`) همان `RULE-SET` را نگه دارید.
 - **ads-lite**: حدود ۵ هزار قانون از منابع کوچک و دست‌چین‌شده (شبکه‌های تبلیغاتی و ردیاب‌های ایرانی، فهرست
-  Peter Lowe، v2fly) به‌جای ۱۰۵ هزار. به‌جای `ads.list` از `ads-lite.list` (یا `ads-lite-domainset.txt`)
+  Peter Lowe، v2fly) به‌جای حدود ۱۷۶ هزار. به‌جای `ads.list` از `ads-lite.list` (یا `ads-lite-domainset.txt`)
   استفاده کنید.
 
 !!! note "یادداشت"

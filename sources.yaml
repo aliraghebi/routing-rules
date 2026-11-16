@@ -1,0 +1,318 @@
+# Source registry for cmd/build. Every URL below was fetched and its format
+# checked on 2026-11-16 unless it is enabled: false with a TODO.
+#
+# format:  hosts | domains | abp | v2fly | cidr | html-cidr | json | maxmind-csv | ip2location
+# match:   suffix | exact  (hosts/domains only; how plain domains become rules)
+# filter:  json only; skip objects whose key has a different value
+# requires_env: source is skipped (not failed) when any of these env vars is empty;
+#          ${VAR} in url is expanded from the environment and never logged.
+
+settings:
+  user_agent: "shadowrocket-config-builder/1.0 (+https://github.com/)"
+  timeout: 90s
+  concurrency: 8
+  retries: 3
+  max_bytes: 67108864        # per-source default size cap (64 MiB)
+  max_shrink: 0.30           # fail if a list loses more than 30% vs the committed one
+  list_cap_warn: 200000      # warn above this many rules in one list (iOS NE memory)
+
+# Order matters: REJECT rule-sets appear in the config in this order.
+categories:
+  - {name: malware,      action: reject, enabled: true,  min_rules: 1000}
+  - {name: phishing,     action: reject, enabled: true,  min_rules: 1000}
+  - {name: cryptominers, action: reject, enabled: true,  min_rules: 30}
+  - {name: ads,          action: reject, enabled: true,  min_rules: 20000}
+  - {name: sanctioned,   action: proxy,  enabled: true,  min_rules: 100}
+  - {name: ir-domains,   action: direct, enabled: true,  min_rules: 10000}
+  - {name: ir-cidr,      action: direct, enabled: true,  min_rules: 500}
+  # Optional lists: built and published, not referenced by shadowrocket.conf.
+  - {name: social,       action: none,   enabled: true,  min_rules: 100}
+  - {name: nsfw,         action: none,   enabled: true,  min_rules: 10000}
+  - {name: cloudflare,   action: none,   enabled: true,  min_rules: 5}
+  - {name: cloudfront,   action: none,   enabled: true,  min_rules: 50}
+  - {name: fastly,       action: none,   enabled: true,  min_rules: 5}
+  - {name: gcore,        action: none,   enabled: true,  min_rules: 50}
+  - {name: telegram,     action: none,   enabled: true,  min_rules: 5}
+  - {name: tor-exit,     action: none,   enabled: true,  min_rules: 300}
+  - {name: netflix,      action: none,   enabled: true,  min_rules: 20}
+
+sources:
+  # ---------- Iran domains ----------
+  - name: bootmortis-domains
+    url: https://github.com/bootmortis/iran-hosted-domains/releases/latest/download/surge_domainset_other.txt
+    format: domains
+    match: suffix
+    category: ir-domains
+    enabled: true
+    license: MIT (bootmortis/iran-hosted-domains)
+    # "other" excludes bootmortis' ads category (domains.txt mixes both, which would
+    # make the REJECT-vs-DIRECT conflict check strip Iranian ad networks from ads.list).
+  - name: v2fly-category-ir
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ir
+    format: v2fly
+    skip_includes: [category-ads-ir]
+    category: ir-domains
+    enabled: true
+    license: MIT (v2fly/domain-list-community)
+    # data/ir does not exist upstream (404); category-ir includes all *-ir sub-lists.
+    # category-ads-ir is skipped: ad networks belong in ads.list, not DIRECT.
+
+  # ---------- Iran IPs ----------
+  - name: ipdeny-ir-v4
+    url: https://www.ipdeny.com/ipblocks/data/aggregated/ir-aggregated.zone
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: ipdeny.com (free use; see ipdeny.com/usagelimits.php)
+  - name: ipdeny-ir-v6
+    url: https://www.ipdeny.com/ipv6/ipaddresses/aggregated/ir-aggregated.zone
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: ipdeny.com (free use; see ipdeny.com/usagelimits.php)
+  - name: ripestat-ir
+    url: https://stat.ripe.net/data/country-resource-list/data.json?resource=IR
+    format: json
+    category: ir-cidr
+    enabled: true
+    license: RIPEstat Data API terms (RIPE NCC)
+  - name: arvancloud
+    url: https://www.arvancloud.ir/en/ips.txt
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: Published by ArvanCloud, no license stated
+    # /en/dev/ips is a JS-rendered page with no CIDRs in the HTML; ips.txt is the raw feed.
+  - name: parspack
+    url: https://parspack.com/cdnips.txt
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: Published by ParsPack, no license stated
+  - name: ito-messenger
+    url: https://eservices.ito.gov.ir/Page/IPListMessenger
+    format: html-cidr
+    category: ir-cidr
+    enabled: false
+    license: Published by ITO (gov.ir), no license stated
+    # TODO: connection times out from outside Iran (and from GitHub runners); enable only on an Iran-hosted runner.
+  - name: derak-cloud
+    url: https://derak.cloud/لیست-بازه-های-ip
+    format: html-cidr
+    category: ir-cidr
+    enabled: false
+    license: Published by Derak Cloud, no license stated
+    # TODO: page returns 200 but contains no CIDRs in HTML or wp-json (likely rendered client-side or geo-gated).
+  - name: iranserver-cdn
+    url: https://docs.iranserver.com/irserver-cloud/cdn/allow-iranserver-ip-addresses
+    format: html-cidr
+    category: ir-cidr
+    enabled: false
+    license: Published by IranServer, no license stated
+    # TODO: URL returns 404; no replacement page with CDN ranges found on docs.iranserver.com.
+  - name: maxmind-geolite2-ir
+    url: https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country-CSV&license_key=${MAXMIND_LICENSE_KEY}&suffix=zip
+    format: maxmind-csv
+    country: IR
+    category: ir-cidr
+    enabled: true
+    requires_env: [MAXMIND_LICENSE_KEY]
+    max_bytes: 134217728
+    license: GeoLite2 EULA (CC BY-SA 4.0, attribution to MaxMind required)
+    # Format implemented from MaxMind's documented CSV layout; not fetched (no key available locally).
+  - name: ip2location-lite-ir
+    url: https://www.ip2location.com/download/?token=${IP2LOCATION_TOKEN}&file=DB1LITECSVIPV6
+    format: ip2location
+    country: IR
+    category: ir-cidr
+    enabled: true
+    requires_env: [IP2LOCATION_TOKEN]
+    max_bytes: 134217728
+    license: IP2Location LITE (CC BY-SA 4.0, attribution to IP2Location required)
+    # Format implemented from IP2Location's documented DB1 CSV layout; not fetched (no token available locally).
+
+  # ---------- Ads / tracking ----------
+  - name: persianblocker
+    url: https://raw.githubusercontent.com/MasterKia/PersianBlocker/main/PersianBlockerHosts.txt
+    format: domains  # despite the name, the file is one domain per line
+    match: exact
+    category: ads
+    enabled: true
+    license: AGPL-3.0 (MasterKia/PersianBlocker)
+  - name: hagezi-pro-mini
+    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.mini-onlydomains.txt
+    format: domains
+    match: suffix
+    category: ads
+    enabled: true
+    license: GPL-3.0 (hagezi/dns-blocklists)
+    # pro.mini is hagezi's size-optimized list for memory-limited devices; full pro is ~2x larger.
+  - name: goodbyeads
+    url: https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Hosts/GoodbyeAds.txt
+    format: hosts
+    match: exact
+    category: ads
+    enabled: false
+    license: MIT (jerryn70/GoodbyeAds)
+    # Disabled by default: adds ~200k exact hosts and pushes ads.list past the iOS memory budget.
+  - name: adguard-sdns
+    url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+    format: abp
+    category: ads
+    enabled: false
+    license: GPL-3.0 (AdguardTeam/AdGuardSDNSFilter)
+    # Disabled by default: ~190k rules, ads.list grows to ~257k rules / 8.9 MB (over list_cap_warn).
+    # hagezi pro.mini already aggregates AdGuard's DNS filter among its sources.
+  - name: v2fly-category-ads-all
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ads-all
+    format: v2fly
+    category: ads
+    enabled: true
+    license: MIT (v2fly/domain-list-community)
+
+  # ---------- Malware ----------
+  - name: urlhaus-hosts
+    url: https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-hosts.txt
+    format: hosts
+    match: exact
+    category: malware
+    enabled: true
+    license: URLhaus data CC0 via malware-filter/urlhaus-filter (MIT)
+    # urlhaus.abuse.ch/downloads/hostfile/ now returns 410 Gone; malware-filter mirrors the URLhaus API.
+  - name: urlhaus-ips
+    url: https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-dnscrypt-blocked-ips-online.txt
+    format: cidr
+    category: malware
+    enabled: true
+    license: URLhaus data CC0 via malware-filter/urlhaus-filter (MIT)
+
+  # ---------- Phishing ----------
+  - name: phishing-filter-hosts
+    url: https://malware-filter.gitlab.io/malware-filter/phishing-filter-hosts.txt
+    format: hosts
+    match: exact
+    category: phishing
+    enabled: true
+    license: malware-filter/phishing-filter (MIT code; upstream feeds under their own terms)
+  - name: phishing-filter-ips
+    url: https://malware-filter.gitlab.io/malware-filter/phishing-filter-dnscrypt-blocked-ips.txt
+    format: cidr
+    category: phishing
+    enabled: true
+    license: malware-filter/phishing-filter (MIT code; upstream feeds under their own terms)
+
+  # ---------- Cryptominers ----------
+  - name: nocoin
+    url: https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt
+    format: abp
+    category: cryptominers
+    enabled: true
+    license: MIT (hoshsadiq/adblock-nocoin-list)
+
+  # ---------- Social / NSFW (optional) ----------
+  - name: stevenblack-social
+    url: https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/social-only/hosts
+    format: hosts
+    match: exact
+    category: social
+    enabled: true
+    license: MIT (StevenBlack/hosts)
+  - name: v2fly-category-social-media-non-cn
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-social-media-!cn
+    format: v2fly
+    category: social
+    enabled: true
+    license: MIT (v2fly/domain-list-community)
+  - name: stevenblack-porn
+    url: https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts
+    format: hosts
+    match: exact
+    category: nsfw
+    enabled: true
+    license: MIT (StevenBlack/hosts)
+  - name: v2fly-category-porn
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-porn
+    format: v2fly
+    category: nsfw
+    enabled: true
+    license: MIT (v2fly/domain-list-community)
+
+  # ---------- Sanctioned (domains that block Iranian IPs) ----------
+  - name: dynx-antiban
+    url: https://raw.githubusercontent.com/MrDevAnony/DynX-AntiBan-Domains/main/DynX-AntiBan-list.lst
+    format: domains
+    match: suffix
+    category: sanctioned
+    enabled: true
+    license: MIT (MrDevAnony/DynX-AntiBan-Domains)
+  - name: filteryab-sanctioned
+    url: https://raw.githubusercontent.com/filteryab/ir-sanctioned-domain/main/data/ir-sanctioned-domain
+    format: domains
+    match: suffix
+    category: sanctioned
+    enabled: true
+    license: No license file upstream (filteryab/ir-sanctioned-domain); attribution given
+
+  # ---------- Provider IP ranges (optional) ----------
+  - name: cloudflare-v4
+    url: https://www.cloudflare.com/ips-v4
+    format: cidr
+    category: cloudflare
+    enabled: true
+    license: Published by Cloudflare
+  - name: cloudflare-v6
+    url: https://www.cloudflare.com/ips-v6
+    format: cidr
+    category: cloudflare
+    enabled: true
+    license: Published by Cloudflare
+  - name: aws-cloudfront
+    url: https://ip-ranges.amazonaws.com/ip-ranges.json
+    format: json
+    filter: {service: CLOUDFRONT}
+    category: cloudfront
+    enabled: true
+    license: Published by AWS
+  - name: fastly
+    url: https://api.fastly.com/public-ip-list
+    format: json
+    category: fastly
+    enabled: true
+    license: Published by Fastly
+  - name: gcore
+    url: https://api.gcore.com/cdn/public-ip-list
+    format: json
+    category: gcore
+    enabled: true
+    license: Published by G-Core Labs
+  - name: telegram
+    url: https://core.telegram.org/resources/cidr.txt
+    format: cidr
+    category: telegram
+    enabled: true
+    license: Published by Telegram
+  - name: tor-exit
+    url: https://check.torproject.org/torbulkexitlist
+    format: cidr
+    category: tor-exit
+    enabled: true
+    license: Published by The Tor Project
+  - name: netflix-as2906
+    url: https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS2906
+    format: json
+    category: netflix
+    enabled: true
+    license: RIPEstat Data API terms (RIPE NCC)
+    # lord-alfred/ipranges has no netflix/ directory (checked tree); prefixes announced by Netflix's AS2906 instead.
+  - name: lord-alfred-cloudflare
+    url: https://raw.githubusercontent.com/lord-alfred/ipranges/main/cloudflare/ipv4_merged.txt
+    format: cidr
+    category: cloudflare
+    enabled: true
+    license: CC0-1.0 (lord-alfred/ipranges)
+  - name: lord-alfred-telegram
+    url: https://raw.githubusercontent.com/lord-alfred/ipranges/main/telegram/ipv4_merged.txt
+    format: cidr
+    category: telegram
+    enabled: true
+    license: CC0-1.0 (lord-alfred/ipranges)

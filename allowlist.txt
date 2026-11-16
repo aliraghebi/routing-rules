@@ -1,0 +1,18 @@
+# Domains (and their subdomains) that must never appear in a REJECT list.
+# A REJECT rule that would match one of these (including a parent
+# DOMAIN-SUFFIX or a DOMAIN-KEYWORD) is removed and reported as a warning.
+# One domain per line; comments start with #.
+
+# Connectivity / captive portal checks: blocking these breaks Wi-Fi join on iOS.
+captive.apple.com
+connectivitycheck.gstatic.com
+www.msftconnecttest.com
+
+# Apple push/activation and App Store.
+push.apple.com
+albert.apple.com
+apps.apple.com
+
+# GitHub raw content and jsDelivr: the rule lists themselves are fetched from here.
+raw.githubusercontent.com
+cdn.jsdelivr.net

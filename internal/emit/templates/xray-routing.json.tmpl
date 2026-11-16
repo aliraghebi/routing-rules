@@ -5,6 +5,9 @@
 {{- if .EarlyIP}}
       { "type": "field", "ip": [{{range $i, $t := .EarlyIP}}{{if $i}}, {{end}}"geoip:{{$t}}"{{end}}], "outboundTag": "block" },
 {{- end}}
+{{- if .PrivateSite}}
+      { "type": "field", "domain": [{{range $i, $t := .PrivateSite}}{{if $i}}, {{end}}"geosite:{{$t}}"{{end}}], "outboundTag": "direct" },
+{{- end}}
       { "type": "field", "ip": ["geoip:private"], "outboundTag": "direct" },
       { "type": "field", "domain": [{{range $i, $t := .RejectSite}}{{if $i}}, {{end}}"geosite:{{$t}}"{{end}}], "outboundTag": "block" },
 {{- if .RejectIP}}

@@ -15,6 +15,12 @@ ipv6 = true
 update-url = {{.BaseURL}}/{{.Self}}
 
 [Rule]
+{{- range .Early}}
+RULE-SET,{{$.BaseURL}}/{{.}}.list,REJECT
+{{- end}}
+{{- if .On.private}}
+RULE-SET,{{.BaseURL}}/private.list,DIRECT
+{{- end}}
 {{- range .Reject}}
 RULE-SET,{{$.BaseURL}}/{{.}}.list,REJECT
 {{- end}}

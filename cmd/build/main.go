@@ -63,6 +63,7 @@ type Source struct {
 	MaxRules    int               `yaml:"max_rules"`
 	MaxBytes    int64             `yaml:"max_bytes"`
 	SkipInclude []string          `yaml:"skip_includes"`
+	AllowTLD    bool              `yaml:"allow_tld"`
 	// OverrideDirect (REJECT sources only): this source's rules win over
 	// ir-domains; matching ir-domains entries are dropped instead of the rule.
 	OverrideDirect bool   `yaml:"override_direct"`
@@ -84,7 +85,7 @@ func main() {
 	cfgPath := flag.String("config", "sources.yaml", "source registry")
 	dist := flag.String("dist", "dist", "output directory")
 	cache := flag.String("cache", ".cache", "HTTP + last-known-good cache directory")
-	allowPath := flag.String("allowlist", "allowlist.txt", "domains never to REJECT")
+	allowPath := flag.String("allowlist", "data/allowlist.txt", "domains never to REJECT")
 	out := flag.String("out", "out", "directory for binary release assets (geosite.dat, geoip.dat); not committed")
 	docs := flag.String("docs", "docs", "docs root (docs/<lang>/) for the generated URL and sources pages and the checker's lists")
 	flag.Parse()
@@ -170,7 +171,8 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 		b.domains = merge.Domains(b.domains)
 		var broad []netip.Prefix
 		b.cidrs = slices.DeleteFunc(merge.CIDRs(b.cidrs), func(p netip.Prefix) bool {
-			if p.Bits() < minBits[p.Addr().Is4()] {
+			// The private list legitimately holds broad blocks (224.0.0.0/4, fc00::/7).
+			if b.cat.Name != "private" && p.Bits() < minBits[p.Addr().Is4()] {
 				broad = append(broad, p)
 				return true
 			}
@@ -285,10 +287,6 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 			files[c.Name+".list"] = b.body
 		}
 	}
-	// Private and local ranges, which every config sends DIRECT (sing-box
-	// ip_is_private, geoip:private, Shadowrocket skip-proxy). Published for custom
-	// rules and the domain checker.
-	files["private.list"] = emit.List("private", nil, emit.Private)
 	sets := map[string]catRules{}
 	for name, b := range byCat {
 		sets[name] = catRules{b.cat, b.domains, b.cidrs}
@@ -334,14 +332,12 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 	}
 	files["sing-box-route.json"] = route
 	// Karing has no PROXY group here: unmatched traffic already uses the selected proxy.
-	karing, err := emit.Karing(base, g.route.Reject, append(slices.Clone(g.route.Direct), "geoip-private"))
+	karing, err := emit.Karing(base, g.route.Reject, slices.Concat(g.route.Private, g.route.Direct))
 	if err != nil {
 		return err
 	}
 	files["karing.json"] = karing
-	clashRoute := g.route
-	clashRoute.All = append(slices.Clone(g.route.All), "geoip-private")
-	files["clash.yaml"] = emit.ClashConfig(base, clashRoute)
+	files["clash.yaml"] = emit.ClashConfig(base, g.route)
 
 	// DNS blocks for the cores (merge with the matching route/rules file).
 	files["sing-box-dns.json"] = emit.SingBoxDNS()
@@ -349,8 +345,12 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 	files["clash-dns.yaml"] = emit.ClashDNS()
 
 	// Networks: WireGuard split tunnel, routers, ipset/nftables.
+	var private []netip.Prefix
+	if p := byCat["private"]; p != nil {
+		private = p.cidrs
+	}
 	if ir := byCat["ir-cidr"]; ir != nil {
-		files["wireguard-allowedips.txt"] = emit.WireGuardAllowedIPs(merge.Complement(append(slices.Clone(ir.cidrs), emit.Private...)))
+		files["wireguard-allowedips.txt"] = emit.WireGuardAllowedIPs(merge.Complement(append(slices.Clone(ir.cidrs), private...)))
 		// Lite: IPv4 only, excluding Iranian blocks of /20 or larger (~1.7k entries,
 		// ~90% of Iranian IPv4 space still direct), all IPv6 through the tunnel.
 		// ponytail: fixed /20 cut-off; make it configurable if mobile clients need fewer entries.
@@ -361,7 +361,7 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir string) error {
 			}
 		}
 		var lite []netip.Prefix
-		for _, p := range merge.Complement(append(big, emit.Private...)) {
+		for _, p := range merge.Complement(append(big, private...)) {
 			if p.Addr().Is4() {
 				lite = append(lite, p)
 			}
@@ -472,6 +472,11 @@ func buildGeo(cats []Category, sets map[string]catRules) geo {
 				d = merge.Domains(append(slices.Clone(d), parse.Domain{Kind: parse.Suffix, Name: "ir"}, parse.Domain{Kind: parse.Suffix, Name: "xn--mgba3a4f16a"}))
 			}
 			g.sites = append(g.sites, emit.Tag{Name: tag, Domains: d})
+			if c.Name == "private" {
+				rd.Private = append(rd.Private, "geosite-"+tag)
+				rd.PrivateSite = append(rd.PrivateSite, tag)
+				goto ips
+			}
 			switch c.Action {
 			case "reject":
 				rd.Reject = append(rd.Reject, "geosite-"+tag)
@@ -483,8 +488,14 @@ func buildGeo(cats []Category, sets map[string]catRules) geo {
 				rd.Direct = append(rd.Direct, "geosite-"+tag)
 			}
 		}
+	ips:
 		if len(r.cidrs) > 0 {
 			g.ips = append(g.ips, emit.Tag{Name: tag, CIDRs: r.cidrs})
+			if c.Name == "private" {
+				rd.Private = append(rd.Private, "geoip-"+tag)
+				rd.PrivateIP = append(rd.PrivateIP, tag)
+				continue
+			}
 			if c.Name == "ir-injected" {
 				rd.Early = append(rd.Early, "geoip-"+tag)
 				rd.EarlyIP = append(rd.EarlyIP, tag)
@@ -501,8 +512,7 @@ func buildGeo(cats []Category, sets map[string]catRules) geo {
 		}
 	}
 	// The route only declares the rule-sets its rules reference.
-	rd.All = slices.Concat(rd.Reject, rd.Proxy, rd.Direct)
-	g.ips = append(g.ips, emit.Tag{Name: "private", CIDRs: emit.Private})
+	rd.All = slices.Concat(rd.Private, rd.Reject, rd.Proxy, rd.Direct)
 	byName := func(a, b emit.Tag) int { return strings.Compare(a.Name, b.Name) }
 	slices.SortFunc(g.sites, byName)
 	slices.SortFunc(g.ips, byName)
@@ -542,7 +552,6 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 			checkLists[c.Name+".list"] = b
 		}
 	}
-	checkLists["private.list"] = files["private.list"]
 	return syncDir(filepath.Join(en, "dl", "lists"), checkLists)
 }
 
@@ -562,7 +571,6 @@ func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[stri
 			lists.Rows = append(lists.Rows, row(c.Name+".list", fmt.Sprintf("%s (%s)", c.Name, T(actionDesc(c.Action)))))
 		}
 	}
-	lists.Rows = append(lists.Rows, row("private.list", T("private and local networks (DIRECT in every config)")))
 	sb = emit.DocSection{ID: emit.Slug("sing-box rule-sets (binary)"), Title: T("sing-box rule-sets (binary)"), Note: T("Use with `\"type\": \"remote\", \"format\": \"binary\"`. Rule-set format version 1, readable by sing-box 1.8+ and apps built on it.")}
 	sbSrc = emit.DocSection{ID: emit.Slug("sing-box rule-sets (JSON source)"), Title: T("sing-box rule-sets (JSON source)"), Note: T("Same rules as JSON, for `\"format\": \"source\"`.")}
 	sb.Rows = append(sb.Rows, row("sing-box-route.json", T("Example `route` block (sing-box 1.11+)")))
@@ -696,6 +704,10 @@ func confData[T any](cats []Category, on map[string]T) emit.ConfData {
 		switch c.Name {
 		case "sanctioned":
 			d.On["sanctioned"] = true
+		case "private":
+			d.On["private"] = true
+		case "ir-injected": // Iran's block-page range is inside 10.0.0.0/8
+			d.Early = append(d.Early, c.Name)
 		case "ir-domains":
 			d.On["irdomains"] = true
 		case "ir-cidr":
@@ -751,7 +763,7 @@ func fetchAll(f *fetch.Fetcher, cfg Config, cats map[string]Category, cacheDir s
 }
 
 // transport adds file:// support so sources can point at files in this repo
-// (file:///ir-ads.txt resolves relative to the working directory).
+// (file:///data/ir-ads.txt resolves relative to the working directory).
 func transport() http.RoundTripper {
 	t := http.DefaultTransport.(*http.Transport).Clone()
 	t.RegisterProtocol("file", http.NewFileTransport(http.Dir(".")))
@@ -787,7 +799,7 @@ func fetchOne(f *fetch.Fetcher, s Source) (parse.Result, error) {
 	if err != nil {
 		return parse.Result{}, err
 	}
-	opt := parse.Options{Match: parse.Exact, Filter: s.Filter, Country: s.Country}
+	opt := parse.Options{Match: parse.Exact, Filter: s.Filter, Country: s.Country, AllowTLD: s.AllowTLD}
 	if s.Match == "suffix" {
 		opt.Match = parse.Suffix
 	}

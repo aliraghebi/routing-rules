@@ -138,8 +138,8 @@ function FindProxyForURL(url, host) {
 	return b.Bytes()
 }
 
-// SingBoxDNS renders a "dns" block (sing-box 1.12+ server format): Iranian
-// domains use the device's DNS, everything else DNS-over-HTTPS through the proxy.
+// SingBoxDNS renders a "dns" block (sing-box 1.12+ server format): local names
+// (geosite-private) and Iranian domains use the device's DNS, everything else DNS-over-HTTPS through the proxy.
 // route.default_domain_resolver (required since 1.14) resolves outbound server
 // hostnames with the device's DNS; the DoH server is only reachable through the
 // proxy, so it cannot resolve the proxy's own address.
@@ -154,7 +154,7 @@ func SingBoxDNS() []byte {
       { "type": "local", "tag": "local" }
     ],
     "rules": [
-      { "rule_set": ["geosite-ir"], "server": "local" }
+      { "rule_set": ["geosite-private", "geosite-ir"], "server": "local" }
     ],
     "final": "remote"
   }
@@ -169,7 +169,7 @@ func XrayDNS() []byte {
   "dns": {
     "servers": [
       "https://1.1.1.1/dns-query",
-      { "address": "localhost", "domains": ["geosite:ir"], "skipFallback": true }
+      { "address": "localhost", "domains": ["geosite:private", "geosite:ir"], "skipFallback": true }
     ],
     "queryStrategy": "UseIP"
   }
@@ -189,6 +189,7 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter:
+    - "rule-set:geosite-private"
     - "rule-set:geosite-ir"
     - "+.lan"
     - "+.local"
@@ -196,6 +197,7 @@ dns:
     - "https://1.1.1.1/dns-query#PROXY"
     - "https://8.8.8.8/dns-query#PROXY"
   nameserver-policy:
+    "rule-set:geosite-private": system
     "rule-set:geosite-ir": system
   proxy-server-nameserver:
     - system

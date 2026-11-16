@@ -112,7 +112,8 @@ func TestClash(t *testing.T) {
 		t.Fatalf("ip text %q", got)
 	}
 	conf := string(ClashConfig("https://x/release", RouteData{
-		Reject: []string{"geosite-ads", "geoip-malware"}, Proxy: []string{"geosite-sanctioned"}, Direct: []string{"geosite-ir", "geoip-ir"},
+		Private: []string{"geosite-private", "geoip-private"},
+		Reject:  []string{"geosite-ads", "geoip-malware"}, Proxy: []string{"geosite-sanctioned"}, Direct: []string{"geosite-ir", "geoip-ir"},
 		All: []string{"geosite-ads", "geoip-malware", "geosite-sanctioned", "geosite-ir", "geoip-ir", "geoip-private"}}))
 	var doc struct {
 		Providers map[string]struct {
@@ -123,7 +124,7 @@ func TestClash(t *testing.T) {
 	if err := yaml.Unmarshal([]byte(conf), &doc); err != nil {
 		t.Fatalf("invalid YAML: %v\n%s", err, conf)
 	}
-	want := []string{"RULE-SET,geoip-private,DIRECT,no-resolve", "RULE-SET,geosite-ads,REJECT", "RULE-SET,geoip-malware,REJECT,no-resolve",
+	want := []string{"RULE-SET,geosite-private,DIRECT", "RULE-SET,geoip-private,DIRECT,no-resolve", "RULE-SET,geosite-ads,REJECT", "RULE-SET,geoip-malware,REJECT,no-resolve",
 		"RULE-SET,geosite-sanctioned,PROXY", "RULE-SET,geosite-ir,DIRECT", "RULE-SET,geoip-ir,DIRECT", "MATCH,PROXY"}
 	if strings.Join(doc.Rules, "|") != strings.Join(want, "|") {
 		t.Fatalf("rules\n got %v\nwant %v", doc.Rules, want)

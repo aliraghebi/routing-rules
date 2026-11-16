@@ -47,6 +47,9 @@ type Options struct {
 	Country string
 	// Include resolves v2fly "include:" targets.
 	Include func(name string) ([]byte, error)
+	// AllowTLD keeps single-label names such as "lan" or "localhost" (only for
+	// sources that list special-use TLDs; block lists must never match a TLD).
+	AllowTLD bool
 }
 
 // Func parses one source body.
@@ -67,7 +70,9 @@ var idnaProfile = idna.New(idna.MapForLookup(), idna.Transitional(false), idna.S
 
 // NormalizeDomain lowercases, punycodes and validates a hostname.
 // It rejects IP literals, single-label names and invalid labels.
-func NormalizeDomain(s string) (string, bool) {
+func NormalizeDomain(s string) (string, bool) { return normalizeDomain(s, false) }
+
+func normalizeDomain(s string, allowTLD bool) (string, bool) {
 	s = strings.TrimSuffix(strings.TrimSpace(s), ".")
 	if s == "" || len(s) > 253 {
 		return "", false
@@ -90,7 +95,7 @@ func NormalizeDomain(s string) (string, bool) {
 		}
 	}
 	labels := strings.Split(s, ".")
-	if len(labels) < 2 {
+	if len(labels) < 2 && !allowTLD {
 		return "", false
 	}
 	for _, l := range labels {
@@ -131,13 +136,13 @@ func lines(data []byte, fn func(string)) {
 	}
 }
 
-func (r *Result) addDomain(k Kind, raw string) {
+func (r *Result) addDomain(k Kind, raw string, allowTLD bool) {
 	if strings.HasPrefix(raw, "*.") {
 		raw, k = raw[2:], Suffix
 	} else if strings.HasPrefix(raw, ".") {
 		raw, k = raw[1:], Suffix
 	}
-	if d, ok := NormalizeDomain(raw); ok {
+	if d, ok := normalizeDomain(raw, allowTLD); ok {
 		r.Domains = append(r.Domains, Domain{k, d})
 	}
 }
@@ -154,7 +159,7 @@ func Hosts(data []byte, opt Options) (Result, error) {
 			return
 		}
 		for _, h := range f[1:] {
-			r.addDomain(opt.Match, h)
+			r.addDomain(opt.Match, h, opt.AllowTLD)
 		}
 	})
 	return r, nil
@@ -164,7 +169,7 @@ func Hosts(data []byte, opt Options) (Result, error) {
 func Domains(data []byte, opt Options) (Result, error) {
 	var r Result
 	lines(data, func(l string) {
-		r.addDomain(opt.Match, strings.Fields(l)[0])
+		r.addDomain(opt.Match, strings.Fields(l)[0], opt.AllowTLD)
 	})
 	return r, nil
 }
@@ -189,7 +194,7 @@ func ABP(data []byte, opt Options) (Result, error) {
 		if !ok || strings.ContainsAny(host, "*/|^:") {
 			continue
 		}
-		r.addDomain(Suffix, host)
+		r.addDomain(Suffix, host, false)
 	}
 	return r, nil
 }
@@ -280,7 +285,7 @@ func v2flyEntries(data []byte, opt Options, seen map[string]bool, depth int) ([]
 				}
 				return
 			}
-			if d, ok := NormalizeDomain(v); ok {
+			if d, ok := normalizeDomain(v, opt.AllowTLD); ok {
 				out = append(out, v2entry{Domain{k, d}, attrs})
 			}
 		}

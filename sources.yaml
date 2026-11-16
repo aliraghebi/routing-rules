@@ -8,6 +8,7 @@
 # override_direct: REJECT sources only. Rules from this source win over ir-domains:
 #          matching ir-domains entries are removed instead of the REJECT rule.
 #          Only for curated Iran-focused ad lists; a bad list here can block Iranian sites.
+# allow_tld: keep single-label names ("lan", "localhost"); only for special-use TLD lists.
 # url:     {YYYY-MM} is replaced by the current UTC month (previous month as fallback).
 
 settings:
@@ -24,7 +25,8 @@ settings:
 
 # Order matters: REJECT rule-sets appear in the config in this order.
 categories:
-  - {name: ir-injected,  action: reject, enabled: true}  # rejected before private-IP rules
+  - {name: ir-injected,  action: reject, enabled: true}  # rejected before the private rule
+  - {name: private,      action: direct, enabled: true}  # local names and ranges, direct before all other rules
   - {name: malware,      action: reject, enabled: true}
   - {name: phishing,     action: reject, enabled: true}
   - {name: cryptominers, action: reject, enabled: true}
@@ -115,8 +117,23 @@ sources:
     category: ir-cidr
     enabled: true
     license: Published by Derak Cloud, no license stated
+  - name: v2fly-private
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/private
+    format: v2fly
+    category: private
+    allow_tld: true
+    enabled: true
+    license: MIT (v2fly/domain-list-community)
+    # Special-use TLDs (lan, local, localhost, home.arpa, internal…), reverse zones of
+    # private ranges, and router/LAN service domains. regexp: entries are skipped.
+  - name: private-ips
+    url: file:///data/private.txt
+    format: cidr
+    category: private
+    enabled: true
+    license: This repository (IANA special-purpose address registries)
   - name: ir-injected
-    url: file:///ir-injected.txt
+    url: file:///data/ir-injected.txt
     format: cidr
     category: ir-injected
     enabled: true
@@ -191,7 +208,7 @@ sources:
     enabled: true
     license: MIT (v2fly/domain-list-community)
   - name: lite-local-ir-ads
-    url: file:///ir-ads.txt
+    url: file:///data/ir-ads.txt
     format: domains
     match: suffix
     category: ads-lite
@@ -228,7 +245,7 @@ sources:
     override_direct: true
     license: MIT (v2fly/domain-list-community)
   - name: local-ir-ads
-    url: file:///ir-ads.txt
+    url: file:///data/ir-ads.txt
     format: domains
     match: suffix
     category: ads

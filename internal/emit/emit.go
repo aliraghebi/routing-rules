@@ -57,6 +57,7 @@ type ConfData struct {
 	Repo    string
 	BaseURL string          // base URL the RULE-SET URLs use
 	Self    string          // this config's own file name, for update-url
+	Early   []string        // REJECT rule-sets that must precede the private DIRECT rule
 	Reject  []string        // REJECT rule-set names, in order
 	On      map[string]bool // sanctioned, irdomains, ircidr
 }
@@ -91,6 +92,10 @@ type RouteData struct {
 	// (Iran's DNS block-page range is inside 10.0.0.0/8). EarlyIP is the same
 	// as bare geo tag names for v2ray/Xray.
 	Early, EarlyIP []string
+	// Private holds the rule-sets for local names and ranges, sent DIRECT right
+	// after Early and before everything else; PrivateSite/PrivateIP are the bare
+	// geo tag names for v2ray/Xray.
+	Private, PrivateSite, PrivateIP []string
 }
 
 func SingBoxRoute(d RouteData) ([]byte, error) { return execJSON(sbRoute, d) }

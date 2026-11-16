@@ -27,6 +27,9 @@ func V2rayNRouting(d RouteData) ([]byte, error) {
 	if len(d.EarlyIP) > 0 {
 		rules = append(rules, v2raynRule{Remarks: "DNS block-page IPs - block", OutboundTag: "block", IP: tags("geoip:", d.EarlyIP), Enabled: true})
 	}
+	if len(d.PrivateSite) > 0 {
+		rules = append(rules, v2raynRule{Remarks: "Local names (lan, local, localhost, routers) - direct", OutboundTag: "direct", Domain: tags("geosite:", d.PrivateSite), Enabled: true})
+	}
 	rules = append(rules, v2raynRule{Remarks: "Private IPs - direct", OutboundTag: "direct", IP: []string{"geoip:private"}, Enabled: true})
 	rules = append(rules, v2raynRule{Remarks: "Ads, malware, phishing, cryptominers - block", OutboundTag: "block", Domain: tags("geosite:", d.RejectSite), Enabled: true})
 	if len(d.RejectIP) > 0 {

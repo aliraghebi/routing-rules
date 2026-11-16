@@ -43,7 +43,6 @@
   "domains: %s": "دامنه‌ها: %s",
   "mihomo `dns` block (fake-ip), merge with `clash.yaml`": "بلوک `dns` برای mihomo (fake-ip)، همراه `clash.yaml` ادغام شود",
   "optional, not in the config": "اختیاری، در پیکربندی نیست",
-  "private and local networks (DIRECT in every config)": "شبکه‌های خصوصی و محلی (در همه پیکربندی‌ها DIRECT)",
   "sing-box `dns` block (1.12+), merge with `sing-box-route.json`": "بلوک `dns` برای sing-box (نسخه ۱.۱۲ به بعد)، همراه `sing-box-route.json` ادغام شود",
   "sing-box rule-sets (JSON source)": "rule-setهای sing-box (منبع JSON)",
   "sing-box rule-sets (binary)": "rule-setهای sing-box (باینری)",

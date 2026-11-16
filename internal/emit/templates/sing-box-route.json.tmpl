@@ -6,6 +6,9 @@
 {{- if .Early}}
       { "rule_set": [{{range $i, $t := .Early}}{{if $i}}, {{end}}"{{$t}}"{{end}}], "action": "reject" },
 {{- end}}
+{{- if .Private}}
+      { "rule_set": [{{range $i, $t := .Private}}{{if $i}}, {{end}}"{{$t}}"{{end}}], "outbound": "direct" },
+{{- end}}
       { "ip_is_private": true, "outbound": "direct" },
       {
         "rule_set": [{{range $i, $t := .Reject}}{{if $i}}, {{end}}"{{$t}}"{{end}}],

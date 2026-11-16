@@ -41,6 +41,7 @@ func TestTextFormats(t *testing.T) {
 
 func TestEarlyRejectBeforePrivate(t *testing.T) {
 	d := RouteData{BaseURL: "https://x", Early: []string{"geoip-ir-injected"}, EarlyIP: []string{"ir-injected"},
+		Private: []string{"geosite-private", "geoip-private"}, PrivateSite: []string{"private"}, PrivateIP: []string{"private"},
 		Reject: []string{"geosite-ads"}, RejectSite: []string{"ads"}, Direct: []string{"geosite-ir"},
 		All: []string{"geoip-ir-injected", "geosite-ads", "geosite-ir"}}
 	order := func(name, s, early, private string) {
@@ -51,9 +52,11 @@ func TestEarlyRejectBeforePrivate(t *testing.T) {
 	}
 	sb, _ := SingBoxRoute(d)
 	order("sing-box", string(sb), `"rule_set": ["geoip-ir-injected"], "action": "reject"`, `"ip_is_private"`)
+	order("sing-box private before ads", string(sb), `"rule_set": ["geosite-private", "geoip-private"], "outbound": "direct"`, `"geosite-ads"`)
 	xr, _ := XrayRouting(d)
-	order("xray", string(xr), `"geoip:ir-injected"`, `"geoip:private"`)
+	order("xray", string(xr), `"geoip:ir-injected"`, `"geosite:private"`)
+	order("xray private before ads", string(xr), `"geosite:private"`, `"geosite:ads"`)
 	vn, _ := V2rayNRouting(d)
-	order("v2rayn", string(vn), `"geoip:ir-injected"`, `"geoip:private"`)
+	order("v2rayn", string(vn), `"geoip:ir-injected"`, `"geosite:private"`)
 	order("clash", string(ClashConfig("https://x", d)), "RULE-SET,geoip-ir-injected,REJECT", "RULE-SET,geoip-private,DIRECT")
 }

@@ -95,6 +95,18 @@ func TestNormalizeDomain(t *testing.T) {
 	}
 }
 
+func TestAllowTLD(t *testing.T) {
+	body := []byte("lan\nlocalhost\nhome.arpa\n10.in-addr.arpa\nfull:router.asus.com\nregexp:^x$\n")
+	strict, _ := V2Fly(body, Options{})
+	loose, _ := V2Fly(body, Options{AllowTLD: true})
+	if got := rules(strict); strings.Join(got, ",") != "E:router.asus.com,S:10.in-addr.arpa,S:home.arpa" {
+		t.Fatalf("without AllowTLD single labels must be dropped: %v", got)
+	}
+	if got := rules(loose); strings.Join(got, ",") != "E:router.asus.com,S:10.in-addr.arpa,S:home.arpa,S:lan,S:localhost" {
+		t.Fatalf("with AllowTLD: %v", got)
+	}
+}
+
 func TestRangeToPrefixes(t *testing.T) {
 	tests := []struct {
 		a, b string

@@ -99,8 +99,8 @@ All sources are in [`sources.yaml`](sources.yaml) with their URL, format, catego
 | ir-cidr | [ipdeny.com](https://www.ipdeny.com) IR aggregated zones (v4, v6) | ipdeny usage terms |
 | ir-cidr | [RIPEstat](https://stat.ripe.net) country-resource-list IR | RIPEstat terms |
 | ir-cidr | [ArvanCloud](https://www.arvancloud.ir/en/ips.txt), [ParsPack](https://parspack.com/cdnips.txt) CDN ranges | published by vendor |
-| ir-cidr | MaxMind GeoLite2 Country (needs `MAXMIND_LICENSE_KEY` secret) | GeoLite2 EULA, CC BY-SA 4.0: "This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com" |
-| ir-cidr | IP2Location LITE DB1 (needs `IP2LOCATION_TOKEN` secret) | CC BY-SA 4.0: "This site or product includes IP2Location LITE data available from https://lite.ip2location.com" |
+| ir-cidr | [ipverse/country-ip-blocks](https://github.com/ipverse/country-ip-blocks) IR aggregated (v4, v6) | CC0-1.0 |
+| ir-cidr | [IP Geolocation by DB-IP](https://db-ip.com) (DB-IP Lite country, monthly) | CC BY 4.0 |
 | ads | [MasterKia/PersianBlocker](https://github.com/MasterKia/PersianBlocker) | AGPL-3.0 |
 | ads | v2fly `category-ads-ir`, bootmortis `surge_domainset_ads.txt`, local `ir-ads.txt` | MIT / this repo |
 | ads | [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) Pro mini | GPL-3.0 |
@@ -125,7 +125,7 @@ or disable those sources.
 
 ```
 sources.yaml ─► fetch (bounded concurrency, retries, size cap, ETag cache in .cache/)
-             ─► parse (hosts | domains | abp | v2fly | cidr | html-cidr | json | maxmind-csv | ip2location)
+             ─► parse (hosts | domains | abp | v2fly | cidr | html-cidr | json | dbip-csv)
              ─► merge (IDNA, validate, dedupe, drop DOMAIN-SUFFIX-covered entries, aggregate CIDRs)
              ─► safety checks ─► emit dist/*.list, dist/shadowrocket.conf,
                                        dist/sing-box/*.json, dist/xray/routing.json,
@@ -164,7 +164,7 @@ Safety checks (they guard REJECT and DIRECT rules):
    ```yaml
    - name: my-source            # unique; also the last-known-good cache key
      url: https://example.com/list.txt   # or file:///local.txt (repo root)
-     format: domains            # hosts | domains | abp | v2fly | cidr | html-cidr | json | maxmind-csv | ip2location
+     format: domains            # hosts | domains | abp | v2fly | cidr | html-cidr | json | dbip-csv
      match: suffix              # hosts/domains only: suffix (DOMAIN-SUFFIX) or exact (DOMAIN, default)
      category: ads
      enabled: true
@@ -173,9 +173,9 @@ Safety checks (they guard REJECT and DIRECT rules):
      license: MIT (owner/repo)
    ```
 
-   Extra keys: `filter: {service: CLOUDFRONT}` (json), `country: IR` (GeoIP formats),
-   `requires_env: [SECRET]` (skip when unset; `${SECRET}` in `url` is expanded and never logged),
-   `skip_includes: [name]` (v2fly), `max_bytes` (size cap).
+   Extra keys: `filter: {service: CLOUDFRONT}` (json), `country: IR` (dbip-csv),
+   `skip_includes: [name]` (v2fly), `max_bytes` (size cap). `{YYYY-MM}` in `url` becomes the current month,
+   with the previous month as fallback.
 3. If it needs a new parser, add it to `internal/parse`, register it in `parse.Formats`, and add a fixture
    under `testdata/` plus a row in `TestParsers`.
 4. `go test ./... && go run ./cmd/build` and check the summary table.
@@ -188,7 +188,7 @@ BASE_URL=https://raw.githubusercontent.com/aliraghebi/vpn-routing/main/dist go r
 ```
 
 `BASE_URL` overrides `settings.base_url` in `sources.yaml`, so local and CI builds produce the same config.
-Optional secrets: `MAXMIND_LICENSE_KEY`, `IP2LOCATION_TOKEN`.
+No secrets or API keys are needed: every source is free and keyless.
 
 ## GitHub Actions
 
@@ -197,6 +197,6 @@ It tests, builds, commits `dist/` only when something changed, and then updates 
 A keepalive job pushes an empty commit when the repo has had no commits for 50 days, because GitHub disables
 scheduled workflows after 60 days of inactivity.
 
-Set the secrets `MAXMIND_LICENSE_KEY` / `IP2LOCATION_TOKEN` (optional) and the variable `BASE_URL` (optional).
+Optionally set the repository variable `BASE_URL` to serve the lists from a mirror.
 The workflow pushes to `main` with `GITHUB_TOKEN`; if `main` is protected, allow GitHub Actions to bypass.
 Bot commits use `BOT_NAME` / `BOT_EMAIL` from the workflow's `env:` block.

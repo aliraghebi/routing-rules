@@ -2,14 +2,13 @@
 # Every remote URL below was fetched and its format
 # checked on 2026-11-16 unless it is enabled: false with a TODO.
 #
-# format:  hosts | domains | abp | v2fly | cidr | html-cidr | json | maxmind-csv | ip2location
+# format:  hosts | domains | abp | v2fly | cidr | html-cidr | json | dbip-csv
 # match:   suffix | exact  (hosts/domains only; how plain domains become rules)
 # filter:  json only; skip objects whose key has a different value
 # override_direct: REJECT sources only. Rules from this source win over ir-domains:
 #          matching ir-domains entries are removed instead of the REJECT rule.
 #          Only for curated Iran-focused ad lists; a bad list here can block Iranian sites.
-# requires_env: source is skipped (not failed) when any of these env vars is empty;
-#          ${VAR} in url is expanded from the environment and never logged.
+# url:     {YYYY-MM} is replaced by the current UTC month (previous month as fallback).
 
 settings:
   user_agent: "vpn-routing-builder/1.0 (+https://github.com/aliraghebi/vpn-routing)"
@@ -116,26 +115,27 @@ sources:
     enabled: false
     license: Published by IranServer, no license stated
     # TODO: URL returns 404; no replacement page with CDN ranges found on docs.iranserver.com.
-  - name: maxmind-geolite2-ir
-    url: https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country-CSV&license_key=${MAXMIND_LICENSE_KEY}&suffix=zip
-    format: maxmind-csv
+  - name: ipverse-ir-v4
+    url: https://raw.githubusercontent.com/ipverse/country-ip-blocks/master/country/ir/ipv4-aggregated.txt
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: CC0-1.0 (ipverse/country-ip-blocks)
+  - name: ipverse-ir-v6
+    url: https://raw.githubusercontent.com/ipverse/country-ip-blocks/master/country/ir/ipv6-aggregated.txt
+    format: cidr
+    category: ir-cidr
+    enabled: true
+    license: CC0-1.0 (ipverse/country-ip-blocks)
+  - name: dbip-lite-ir
+    url: https://download.db-ip.com/free/dbip-country-lite-{YYYY-MM}.csv.gz
+    format: dbip-csv
     country: IR
     category: ir-cidr
     enabled: true
-    requires_env: [MAXMIND_LICENSE_KEY]
-    max_bytes: 134217728
-    license: GeoLite2 EULA (CC BY-SA 4.0, attribution to MaxMind required)
-    # Format implemented from MaxMind's documented CSV layout; not fetched (no key available locally).
-  - name: ip2location-lite-ir
-    url: https://www.ip2location.com/download/?token=${IP2LOCATION_TOKEN}&file=DB1LITECSVIPV6
-    format: ip2location
-    country: IR
-    category: ir-cidr
-    enabled: true
-    requires_env: [IP2LOCATION_TOKEN]
-    max_bytes: 134217728
-    license: IP2Location LITE (CC BY-SA 4.0, attribution to IP2Location required)
-    # Format implemented from IP2Location's documented DB1 CSV layout; not fetched (no token available locally).
+    license: CC BY 4.0 (DB-IP Lite; attribution "IP Geolocation by DB-IP" with a link to https://db-ip.com required)
+    # Monthly file: {YYYY-MM} is the current UTC month, falling back to the previous month.
+    # Geolocation-based (where ranges are used), unlike the registry-based sources above.
 
   # ---------- Ads / tracking ----------
   - name: persianblocker

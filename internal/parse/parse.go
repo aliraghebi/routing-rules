@@ -44,7 +44,7 @@ type Options struct {
 	Match Kind
 	// Filter keeps only JSON objects whose key equals the value (e.g. service=CLOUDFRONT).
 	Filter map[string]string
-	// Country is the ISO code for country databases (maxmind/ip2location).
+	// Country is the ISO code for country databases (dbip-csv).
 	Country string
 	// Include resolves v2fly "include:" targets.
 	Include func(name string) ([]byte, error)
@@ -55,15 +55,14 @@ type Func func(data []byte, opt Options) (Result, error)
 
 // Formats maps the sources.yaml format name to its parser.
 var Formats = map[string]Func{
-	"hosts":       Hosts,
-	"domains":     Domains,
-	"abp":         ABP,
-	"v2fly":       V2Fly,
-	"cidr":        CIDRText,
-	"html-cidr":   HTMLCIDR,
-	"json":        JSON,
-	"maxmind-csv": MaxMind,
-	"ip2location": IP2Location,
+	"hosts":     Hosts,
+	"domains":   Domains,
+	"abp":       ABP,
+	"v2fly":     V2Fly,
+	"cidr":      CIDRText,
+	"html-cidr": HTMLCIDR,
+	"json":      JSON,
+	"dbip-csv":  DBIP,
 }
 
 var idnaProfile = idna.New(idna.MapForLookup(), idna.Transitional(false), idna.StrictDomainName(false))

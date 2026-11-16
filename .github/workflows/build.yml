@@ -63,8 +63,6 @@ jobs:
 
       - name: Build lists
         env:
-          MAXMIND_LICENSE_KEY: ${{ secrets.MAXMIND_LICENSE_KEY }}
-          IP2LOCATION_TOKEN: ${{ secrets.IP2LOCATION_TOKEN }}
           BASE_URL: ${{ vars.BASE_URL }}
           ALLOW_SHRINK: ${{ github.event.inputs.allow_shrink || '0' }}
         run: go run ./cmd/build

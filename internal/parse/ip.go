@@ -1,13 +1,11 @@
 package parse
 
 import (
-	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"encoding/csv"
 	"encoding/json"
-	"fmt"
 	"io"
-	"math/big"
 	"math/bits"
 	"net/netip"
 	"strings"
@@ -165,141 +163,38 @@ func JSON(data []byte, opt Options) (Result, error) {
 	return r, nil
 }
 
-// zipFiles returns the files in a zip (or the raw body as one file if it is not a zip).
-func zipFiles(data []byte) (map[string][]byte, error) {
-	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
-	if err != nil {
-		return map[string][]byte{"": data}, nil
-	}
-	out := map[string][]byte{}
-	for _, f := range zr.File {
-		if !strings.HasSuffix(strings.ToLower(f.Name), ".csv") {
-			continue
-		}
-		rc, err := f.Open()
+// DBIP parses a DB-IP Lite country CSV ("start,end,country", optionally
+// gzipped) and returns the ranges for opt.Country as CIDRs.
+func DBIP(data []byte, opt Options) (Result, error) {
+	if len(data) > 2 && data[0] == 0x1f && data[1] == 0x8b {
+		zr, err := gzip.NewReader(bytes.NewReader(data))
 		if err != nil {
-			return nil, err
+			return Result{}, err
 		}
-		b, err := io.ReadAll(io.LimitReader(rc, 512<<20))
-		rc.Close()
-		if err != nil {
-			return nil, err
+		if data, err = io.ReadAll(io.LimitReader(zr, 1<<30)); err != nil {
+			return Result{}, err
 		}
-		out[f.Name] = b
-	}
-	return out, nil
-}
-
-// MaxMind parses a GeoLite2-Country-CSV zip and returns networks whose
-// geoname_id (falling back to registered_country_geoname_id) is opt.Country.
-func MaxMind(data []byte, opt Options) (Result, error) {
-	files, err := zipFiles(data)
-	if err != nil {
-		return Result{}, err
-	}
-	ids := map[string]bool{}
-	for name, b := range files {
-		if !strings.Contains(name, "Locations-en") {
-			continue
-		}
-		recs, err := csv.NewReader(bytes.NewReader(b)).ReadAll()
-		if err != nil {
-			return Result{}, fmt.Errorf("%s: %w", name, err)
-		}
-		col := index(recs, "country_iso_code")
-		for _, rec := range recs[1:] {
-			if col >= 0 && col < len(rec) && strings.EqualFold(rec[col], opt.Country) {
-				ids[rec[0]] = true
-			}
-		}
-	}
-	if len(ids) == 0 {
-		return Result{}, fmt.Errorf("maxmind: country %q not found in locations", opt.Country)
 	}
 	var r Result
-	for name, b := range files {
-		if !strings.Contains(name, "Blocks-IPv") {
+	cr := csv.NewReader(bytes.NewReader(data))
+	cr.FieldsPerRecord = -1
+	cr.ReuseRecord = true
+	for {
+		rec, err := cr.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return Result{}, err
+		}
+		if len(rec) < 3 || !strings.EqualFold(rec[2], opt.Country) {
 			continue
 		}
-		recs, err := csv.NewReader(bytes.NewReader(b)).ReadAll()
-		if err != nil {
-			return Result{}, fmt.Errorf("%s: %w", name, err)
-		}
-		gid, rid := index(recs, "geoname_id"), index(recs, "registered_country_geoname_id")
-		for _, rec := range recs[1:] {
-			id := rec[gid]
-			if id == "" && rid >= 0 {
-				id = rec[rid]
-			}
-			if ids[id] {
-				r.CIDRs = append(r.CIDRs, ParsePrefixish(rec[0])...)
-			}
-		}
-	}
-	return r, nil
-}
-
-func index(recs [][]string, col string) int {
-	if len(recs) == 0 {
-		return -1
-	}
-	for i, h := range recs[0] {
-		if h == col {
-			return i
-		}
-	}
-	return -1
-}
-
-var mapped = netip.MustParsePrefix("::ffff:0:0/96")
-
-// IP2Location parses an IP2Location LITE DB1 CSV (IPv4 or IPv6 edition, zipped
-// or raw): "ip_from","ip_to","country_code","country_name" with decimal integers.
-func IP2Location(data []byte, opt Options) (Result, error) {
-	files, err := zipFiles(data)
-	if err != nil {
-		return Result{}, err
-	}
-	var r Result
-	for _, b := range files {
-		cr := csv.NewReader(bytes.NewReader(b))
-		cr.FieldsPerRecord = -1
-		for {
-			rec, err := cr.Read()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return Result{}, err
-			}
-			if len(rec) < 3 || !strings.EqualFold(rec[2], opt.Country) {
-				continue
-			}
-			a, ok1 := decAddr(rec[0])
-			b, ok2 := decAddr(rec[1])
-			if !ok1 || !ok2 {
-				continue
-			}
-			if mapped.Contains(a) && mapped.Contains(b) {
-				a, b = a.Unmap(), b.Unmap()
-			}
+		a, err1 := netip.ParseAddr(rec[0])
+		b, err2 := netip.ParseAddr(rec[1])
+		if err1 == nil && err2 == nil {
 			r.CIDRs = append(r.CIDRs, RangeToPrefixes(a, b)...)
 		}
 	}
 	return r, nil
-}
-
-func decAddr(s string) (netip.Addr, bool) {
-	n, ok := new(big.Int).SetString(strings.TrimSpace(s), 10)
-	if !ok || n.Sign() < 0 || n.BitLen() > 128 {
-		return netip.Addr{}, false
-	}
-	if n.IsUint64() && n.Uint64() <= 0xffffffff {
-		// IPv4 edition stores plain 32-bit integers.
-		v := uint32(n.Uint64())
-		return netip.AddrFrom4([4]byte{byte(v >> 24), byte(v >> 16), byte(v >> 8), byte(v)}), true
-	}
-	var b [16]byte
-	n.FillBytes(b[:])
-	return netip.AddrFrom16(b), true
 }

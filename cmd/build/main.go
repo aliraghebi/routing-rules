@@ -61,7 +61,6 @@ type Source struct {
 	Match       string            `yaml:"match"`
 	Filter      map[string]string `yaml:"filter"`
 	Country     string            `yaml:"country"`
-	RequiresEnv []string          `yaml:"requires_env"`
 	MaxRules    int               `yaml:"max_rules"`
 	MaxBytes    int64             `yaml:"max_bytes"`
 	SkipInclude []string          `yaml:"skip_includes"`
@@ -486,11 +485,6 @@ func fetchAll(f *fetch.Fetcher, cfg Config, cats map[string]Category, cacheDir s
 			out[i].status = "disabled"
 			continue
 		}
-		if missing := missingEnv(s.RequiresEnv); missing != "" {
-			out[i].status = "skipped"
-			out[i].err = fmt.Errorf("%s not set", missing)
-			continue
-		}
 		wg.Add(1)
 		go func(o *outcome) {
 			defer wg.Done()
@@ -530,20 +524,32 @@ func transport() http.RoundTripper {
 	return t
 }
 
-func missingEnv(vars []string) string {
-	for _, v := range vars {
-		if os.Getenv(v) == "" {
-			return v
-		}
+// monthPlaceholder in a source URL is replaced by the current UTC month
+// ("2026-11"), falling back to the previous month while the new file is not
+// published yet (DB-IP names its monthly dumps this way).
+const monthPlaceholder = "{YYYY-MM}"
+
+func getMonthly(ctx context.Context, f *fetch.Fetcher, url string, maxBytes int64) ([]byte, error) {
+	if !strings.Contains(url, monthPlaceholder) {
+		return f.Get(ctx, url, maxBytes)
 	}
-	return ""
+	now := time.Now().UTC()
+	b, err := f.Get(ctx, strings.ReplaceAll(url, monthPlaceholder, now.Format("2006-01")), maxBytes)
+	if err == nil {
+		return b, nil
+	}
+	prev := time.Date(now.Year(), now.Month()-1, 1, 0, 0, 0, 0, time.UTC)
+	if b, perr := f.Get(ctx, strings.ReplaceAll(url, monthPlaceholder, prev.Format("2006-01")), maxBytes); perr == nil {
+		return b, nil
+	}
+	return nil, err
 }
 
 func fetchOne(f *fetch.Fetcher, s Source) (parse.Result, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	url := os.ExpandEnv(s.URL)
-	body, err := f.Get(ctx, url, s.MaxBytes)
+	url := s.URL
+	body, err := getMonthly(ctx, f, url, s.MaxBytes)
 	if err != nil {
 		return parse.Result{}, err
 	}

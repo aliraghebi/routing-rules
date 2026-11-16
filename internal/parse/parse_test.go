@@ -58,12 +58,10 @@ func TestParsers(t *testing.T) {
 			[]string{"151.101.0.0/16", "23.235.32.0/20", "2a04:4e40::/32"}},
 		{"ripe", "json", "ripe.json", Options{},
 			[]string{"2.144.0.0/14", "2a01:5ec0::/32", "5.22.0.0/23"}},
-		{"maxmind", "maxmind-csv", "maxmind.zip", Options{Country: "IR"},
-			[]string{"2.144.0.0/14", "2a01:5ec0::/32", "5.160.0.0/16"}},
-		{"ip2location-v4", "ip2location", "ip2location.csv", Options{Country: "IR"},
-			[]string{"2.148.0.0/14"}},
-		{"ip2location-v6", "ip2location", "ip2location6.csv", Options{Country: "ir"},
-			[]string{"2.148.0.0/14", "2a01:5ec0::/32"}},
+		{"dbip", "dbip-csv", "dbip.csv", Options{Country: "IR"},
+			[]string{"2.144.0.0/14", "2.148.0.1/32", "2.148.0.2/31", "2.148.0.4/31", "2.148.0.6/32", "2001:470:482d::/48"}},
+		{"dbip-gzip", "dbip-csv", "dbip.csv.gz", Options{Country: "ir"},
+			[]string{"2.144.0.0/14", "2.148.0.1/32", "2.148.0.2/31", "2.148.0.4/31", "2.148.0.6/32", "2001:470:482d::/48"}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

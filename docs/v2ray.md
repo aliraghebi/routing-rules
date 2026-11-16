@@ -50,9 +50,10 @@ Opening these URLs in a browser downloads the files.
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
+      { "type": "field", "ip": ["geoip:ir-injected"], "outboundTag": "block" },
       { "type": "field", "ip": ["geoip:private"], "outboundTag": "direct" },
       { "type": "field", "domain": ["geosite:malware", "geosite:phishing", "geosite:cryptominers", "geosite:ads"], "outboundTag": "block" },
-      { "type": "field", "ip": ["geoip:malware", "geoip:phishing"], "outboundTag": "block" },
+      { "type": "field", "ip": ["geoip:ir-injected", "geoip:malware", "geoip:phishing"], "outboundTag": "block" },
       { "type": "field", "domain": ["geosite:sanctioned"], "outboundTag": "proxy" },
       { "type": "field", "domain": ["geosite:ir"], "outboundTag": "direct" },
       { "type": "field", "ip": ["geoip:ir"], "outboundTag": "direct" },
@@ -62,8 +63,18 @@ Opening these URLs in a browser downloads the files.
 }
 ```
 
-It expects outbounds tagged `proxy`, `direct` and `block` (blackhole). `IPIfNonMatch` resolves domains that
+It expects outbounds tagged `proxy`, `direct` and `block` (blackhole). The first rule blocks Iran's DNS
+block-page addresses before the private-IP rule, because they sit inside `10.0.0.0/8`. `IPIfNonMatch` resolves domains that
 no domain rule matched, so `geoip:ir` also catches Iranian sites missing from `geosite:ir`.
+
+## DNS
+
+`xray-dns.json` is a `dns` block: Iranian domains (`geosite:ir`) use the system resolver, everything else
+DNS-over-HTTPS (`https://1.1.1.1/dns-query`), which the routing above sends through the proxy.
+
+[:material-download: Download xray-dns.json](dl/xray-dns.json){ .md-button .md-button--primary download="xray-dns.json" }
+
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/xray-dns.json).
 
 ## v2rayN / v2rayNG
 

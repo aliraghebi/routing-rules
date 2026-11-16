@@ -25,7 +25,7 @@ don't need to re-import. To refresh, swipe left on the config in the **Config** 
 
 | # | Rule | Action |
 |---|------|--------|
-| 1 | `malware.list`, `phishing.list`, `cryptominers.list`, `ads.list` | REJECT |
+| 1 | `ir-injected.list` (Iran's DNS block-page addresses), `malware.list`, `phishing.list`, `cryptominers.list`, `ads.list` | REJECT |
 | 2 | `sanctioned.list` | PROXY |
 | 3 | `DOMAIN-SUFFIX,ir`, `ir-domains.list` | DIRECT |
 | 4 | `ir-cidr.list` | DIRECT |
@@ -47,3 +47,18 @@ RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/tele
     config and only reference these lists with `RULE-SET` lines.
 
 All list URLs: [File URLs](urls.md#shadowrocket-rule-lists).
+
+## Lighter lists
+
+iOS limits how much memory a VPN app may use, and `ads.list` is large. Two lighter options:
+
+- **DOMAIN-SET**: the same domains in a format Shadowrocket and Surge load more efficiently. Replace a
+  domain list's `RULE-SET` line with a `DOMAIN-SET` line, e.g.
+  `DOMAIN-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/ads-domainset.txt,REJECT`. DOMAIN-SET files hold only domains, so keep the `RULE-SET`
+  lines for lists that also contain IP ranges (`malware`, `phishing`).
+- **ads-lite**: about 5k rules from small curated sources (Iranian ad networks and trackers, Peter Lowe's
+  list, v2fly) instead of 105k. Use `ads-lite.list` (or `ads-lite-domainset.txt`) in place of `ads.list`.
+
+!!! note
+    The default config keeps `RULE-SET` with the full `ads.list`. These options haven't been tested on every
+    device; switch if the app reports memory problems or reconnects often.

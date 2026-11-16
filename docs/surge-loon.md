@@ -16,6 +16,7 @@ below to your own config.
 Add these lines to the `[Rule]` section, above `FINAL`:
 
 ```
+RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-injected.list,REJECT
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/malware.list,REJECT
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/phishing.list,REJECT
 RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/cryptominers.list,REJECT
@@ -35,6 +36,7 @@ Replace `PROXY` with the name of your proxy or policy group.
 Add these lines to the `[Remote Rule]` section:
 
 ```
+https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-injected.list, policy=REJECT, tag=ir-injected, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/malware.list, policy=REJECT, tag=malware, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/phishing.list, policy=REJECT, tag=phishing, enabled=true
 https://github.com/aliraghebi/vpn-routing/releases/latest/download/cryptominers.list, policy=REJECT, tag=cryptominers, enabled=true
@@ -46,3 +48,14 @@ https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-cidr.list,
 
 Then add `DOMAIN-SUFFIX,ir,DIRECT` and `GEOIP,IR,DIRECT` in `[Rule]`, and set `FINAL` to your proxy policy.
 Replace `PROXY` with your policy group's name.
+
+## Lighter lists
+
+Surge can load domain lists as `DOMAIN-SET`, which uses less memory than `RULE-SET`:
+
+```
+DOMAIN-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/ads-domainset.txt,REJECT
+```
+
+Every domain list has a `-domainset.txt` version; see [File URLs](urls.md#surge-shadowrocket-domain-set).
+`ads-lite.list` is a ~5k-rule alternative to the full `ads.list`.

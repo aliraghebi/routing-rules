@@ -20,6 +20,16 @@ Merge both sections into your config. In Clash Verge Rev you can paste them into
 (extend config) file, so your subscription stays untouched. The rules need a proxy group named **`PROXY`**;
 rename it in the file if your group has a different name.
 
+## DNS
+
+`clash-dns.yaml` is a `dns` block for mihomo: fake-ip for everything except Iranian domains, which resolve
+through the system DNS (`nameserver-policy`), and DNS-over-HTTPS through the `PROXY` group for the rest.
+Merge it together with `clash.yaml`, which defines the `geosite-ir` rule-provider it uses.
+
+[:material-download: Download clash-dns.yaml](dl/clash-dns.yaml){ .md-button .md-button--primary download="clash-dns.yaml" }
+
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash-dns.yaml).
+
 ## Or add rule-sets yourself
 
 ```yaml

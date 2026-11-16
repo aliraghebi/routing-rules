@@ -1,0 +1,55 @@
+---
+icon: material/router-network
+---
+
+# WireGuard and routers
+
+For VPNs that aren't proxy apps: keep Iranian traffic outside the tunnel by IP range.
+
+## WireGuard (split tunnel)
+
+WireGuard sends a destination through the tunnel if it matches `AllowedIPs`. These files list **every
+address except Iran's ranges and private networks**, so Iranian sites stay direct and everything else uses
+the VPN. Paste the file's content after `AllowedIPs =` in the `[Peer]` section.
+
+| File | Entries | Use it for |
+|------|---------|------------|
+| `wireguard-allowedips.txt` | ~16k, IPv4 and IPv6 | Desktop clients |
+| `wireguard-allowedips-lite.txt` | ~1.7k IPv4, plus `::/0` | Phones. Excludes only Iranian blocks of `/20` or larger (about 90% of Iranian IPv4 addresses) and sends all IPv6 through the tunnel. |
+
+[:material-download: Download wireguard-allowedips-lite.txt](dl/wireguard-allowedips-lite.txt){ .md-button .md-button--primary download="wireguard-allowedips-lite.txt" } [:material-download: Download wireguard-allowedips.txt](dl/wireguard-allowedips.txt){ .md-button download="wireguard-allowedips.txt" }
+
+!!! warning "DNS"
+    Split tunneling by IP doesn't decide where DNS goes. Set the WireGuard `DNS =` to a resolver inside the
+    tunnel, or Iranian DNS may return tampered answers for blocked sites.
+
+## MikroTik (RouterOS)
+
+`mikrotik-ir.rsc` creates the address list `IR` (IPv4 and IPv6). Running it again replaces the list.
+
+[:material-download: Download mikrotik-ir.rsc](dl/mikrotik-ir.rsc){ .md-button .md-button--primary download="mikrotik-ir.rsc" }
+
+```
+/tool fetch url="https://github.com/aliraghebi/vpn-routing/releases/latest/download/mikrotik-ir.rsc" dst-path=mikrotik-ir.rsc
+/import file-name=mikrotik-ir.rsc
+```
+
+Then use `dst-address-list=IR` in your mangle or routing rules, for example to mark everything **not** in
+`IR` for your VPN routing table. Add a scheduler entry to refresh it daily.
+
+## OpenWrt, ipset and nftables
+
+`ir-cidr4.txt` and `ir-cidr6.txt` hold one range per line:
+
+```sh
+ipset create ir hash:net
+curl -sL https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-cidr4.txt | while read -r n; do ipset add ir "$n"; done
+```
+
+```sh
+nft add set inet fw4 ir '{ type ipv4_addr; flags interval; }'
+nft add element inet fw4 ir "{ $(curl -sL https://github.com/aliraghebi/vpn-routing/releases/latest/download/ir-cidr4.txt | paste -sd, -) }"
+```
+
+Apps on OpenWrt that use v2ray/Xray (PassWall, ShadowSocksR Plus+) can use `geosite.dat` / `geoip.dat`
+instead; see the [v2ray / Xray guide](v2ray.md).

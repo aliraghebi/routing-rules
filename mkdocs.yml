@@ -76,6 +76,9 @@ extra:
 extra_css:
   - assets/extra.css
 
+extra_javascript:
+  - assets/check.js
+
 nav:
   - Home: index.md
   - Cores:
@@ -87,6 +90,11 @@ nav:
       - Surge & Loon: surge-loon.md
       - Karing: karing.md
       - v2rayN / v2rayNG: v2rayn.md
+  - More:
+      - WireGuard & routers: networks.md
+      - Browsers (PAC): pac.md
+      - AdGuard Home & Pi-hole: dns-filters.md
+  - Check a domain: check.md
   - Reference:
       - File URLs: urls.md
       - Sources and licenses: sources.md

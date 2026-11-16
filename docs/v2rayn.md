@@ -33,12 +33,13 @@ Open the app's routing settings, add a new custom rule set, and import the downl
 
 | # | Match | Outbound |
 |---|-------|----------|
-| 1 | `geoip:private` | direct |
-| 2 | `geosite:malware`, `geosite:phishing`, `geosite:cryptominers`, `geosite:ads` | block |
-| 3 | `geoip:malware`, `geoip:phishing` | block |
-| 4 | `geosite:sanctioned` | proxy |
-| 5 | `geosite:ir` | direct |
-| 6 | `geoip:ir` | direct |
-| 7 | everything else | proxy |
+| 1 | `geoip:ir-injected` (Iran's DNS block-page addresses) | block |
+| 2 | `geoip:private` | direct |
+| 3 | `geosite:malware`, `geosite:phishing`, `geosite:cryptominers`, `geosite:ads` | block |
+| 4 | `geoip:malware`, `geoip:phishing` | block |
+| 5 | `geosite:sanctioned` | proxy |
+| 6 | `geosite:ir` | direct |
+| 7 | `geoip:ir` | direct |
+| 8 | everything else | proxy |
 
 The outbound tags are the standard `proxy`, `direct` and `block` that both apps use.

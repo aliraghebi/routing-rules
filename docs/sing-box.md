@@ -20,6 +20,18 @@ If the button doesn't work, download it from [GitHub Releases](https://github.co
 Copy its `route` object into your config. It expects outbounds tagged `proxy` and `direct`. Rule-sets are
 downloaded through `proxy` (`download_detour`) and refreshed automatically.
 
+## DNS
+
+`sing-box-dns.json` is a `dns` block (sing-box 1.12+ server format) that pairs with the route above:
+Iranian domains (`geosite-ir`) resolve through the device's own DNS, so Iranian sites get their domestic
+addresses, and everything else uses DNS-over-HTTPS (`1.1.1.1`) through the proxy, so lookups are neither
+leaked nor tampered with.
+
+[:material-download: Download sing-box-dns.json](dl/sing-box-dns.json){ .md-button .md-button--primary download="sing-box-dns.json" }
+
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-dns.json). Merge it next to the `route` block; it uses the `geosite-ir` rule-set the
+route defines and the `proxy` outbound.
+
 ## Or reference rule-sets yourself
 
 ```json

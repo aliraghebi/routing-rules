@@ -13,6 +13,7 @@ domains and IP ranges, and blocks ads, trackers, phishing, malware, and other ma
 multiple proxy clients. Rebuilt daily from public lists.
 
 [:material-rocket-launch-outline: Get started](#pick-your-client){ .md-button .md-button--primary }
+[:material-magnify: Check a domain](check.md){ .md-button }
 [:material-download: Latest release](https://github.com/aliraghebi/vpn-routing/releases/latest){ .md-button }
 
 </div>
@@ -21,7 +22,7 @@ multiple proxy clients. Rebuilt daily from public lists.
 
 ```mermaid
 flowchart LR
-    A([Connection]) --> B{Malware, phishing,<br/>cryptominer, ad or tracker?}
+    A([Connection]) --> B{DNS block page, malware,<br/>phishing, cryptominer, ad<br/>or tracker?}
     B -- yes --> R[[Block]]
     B -- no --> C{Site that blocks<br/>Iranian IPs?}
     C -- yes --> P[[Proxy]]
@@ -54,7 +55,7 @@ flowchart LR
 
     ---
 
-    Rebuilt from upstream lists and validated with sing-box, Xray and mihomo before publishing.
+    Rebuilt from upstream lists and validated with sing-box, Xray and mihomo. Each release lists what changed.
 
 </div>
 
@@ -132,6 +133,44 @@ For your own config, or apps that load rule-sets or geo files.
 
 </div>
 
+### More
+
+<div class="grid cards" markdown>
+
+-   :material-router-network:{ .lg .middle } **WireGuard & routers**
+
+    ---
+
+    Split-tunnel `AllowedIPs`, MikroTik address lists, ipset and nftables.
+
+    [:octicons-arrow-right-24: Guide](networks.md)
+
+-   :material-web:{ .lg .middle } **Browsers (PAC)**
+
+    ---
+
+    Iranian sites direct, everything else through your local proxy.
+
+    [:octicons-arrow-right-24: Guide](pac.md)
+
+-   :material-shield-search:{ .lg .middle } **AdGuard Home & Pi-hole**
+
+    ---
+
+    The block lists as DNS blocklists.
+
+    [:octicons-arrow-right-24: Guide](dns-filters.md)
+
+-   :material-magnify:{ .lg .middle } **Check a domain**
+
+    ---
+
+    See whether a domain or IP is blocked, direct or proxied.
+
+    [:octicons-arrow-right-24: Open](check.md)
+
+</div>
+
 Every file and its URL: [File URLs](urls.md). Where the data comes from: [Sources and licenses](sources.md).
 
 ## Where the files are hosted
@@ -160,6 +199,8 @@ them.
 | `social` | Social media domains |
 | `nsfw` | Adult content |
 | `tracking` | Device and OS telemetry: Apple, Samsung, Xiaomi, Huawei, Vivo, Amazon, LG, Roku, Windows/Office, TikTok. Can break some vendor features. |
+| `ads-lite` | ~5k-rule alternative to `ads` (Iranian ad networks and trackers, Peter Lowe, v2fly) for memory-limited devices |
+| `arvancloud`, `parspack`, `derak` | Iranian CDN IP ranges (already part of `ir-cidr`) |
 | `cloudflare`, `cloudfront`, `fastly`, `gcore` | CDN IP ranges |
 | `telegram`, `tor-exit`, `netflix` | Service IP ranges (`tor-exit` is the `tor` tag in geo files and rule-sets) |
 

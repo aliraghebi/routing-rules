@@ -59,3 +59,38 @@
 .md-search__output {
   border-radius: var(--vr-radius-sm);
 }
+
+/* Check a domain */
+.vr-check {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.vr-check__input {
+  flex: 1 1 16rem;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  color: var(--md-default-fg-color);
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: var(--vr-radius-sm);
+}
+.vr-check__input:focus {
+  outline: none;
+  border-color: var(--md-accent-fg-color);
+}
+.vr-check .md-button {
+  margin: 0;
+}
+.vr-check__verdict {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--vr-radius-sm);
+  font-weight: 700;
+  color: #fff;
+}
+.vr-check__verdict--block { background: #c62828; }
+.vr-check__verdict--proxy { background: #3949ab; }
+.vr-check__verdict--direct { background: #2e7d32; }
+.vr-check__error { color: #c62828; }

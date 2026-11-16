@@ -40,12 +40,16 @@
   "`.mrs` rule-sets for mihomo (`format: mrs`; `behavior: domain` for geosite, `ipcidr` for geoip).": "rule-setهای `.mrs` برای mihomo (`format: mrs`؛ `behavior: domain` برای geosite و `ipcidr` برای geoip).",
   "`RULE-SET` text lists in Shadowrocket (Surge-style) syntax.": "فهرست‌های متنی `RULE-SET` با نحو Shadowrocket (سبک Surge).",
   "`rule-providers` and `rules` to merge into a mihomo config (needs a `PROXY` group)": "`rule-providers` و `rules` برای ادغام با پیکربندی mihomo (به گروه `PROXY` نیاز دارد)",
+  "disabled": "غیرفعال",
   "domains: %s": "دامنه‌ها: %s",
+  "failing": "ناموفق",
+  "healthy": "سالم",
   "mihomo `dns` block (fake-ip), merge with `clash.yaml`": "بلوک `dns` برای mihomo (fake-ip)، همراه `clash.yaml` ادغام شود",
   "optional, not in the config": "اختیاری، در پیکربندی نیست",
   "sing-box `dns` block (1.12+), merge with `sing-box-route.json`": "بلوک `dns` برای sing-box (نسخه ۱.۱۲ به بعد)، همراه `sing-box-route.json` ادغام شود",
   "sing-box rule-sets (JSON source)": "rule-setهای sing-box (منبع JSON)",
   "sing-box rule-sets (binary)": "rule-setهای sing-box (باینری)",
+  "stale (last good copy)": "قدیمی (آخرین نسخه سالم)",
   "v2ray / Xray": "v2ray / Xray",
   "v2rayN / v2rayNG custom routing rules (needs this project's geo files)": "قوانین مسیریابی سفارشی v2rayN / v2rayNG (به فایل‌های geo این پروژه نیاز دارد)"
 }

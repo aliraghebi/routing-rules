@@ -43,6 +43,8 @@ type URLDocs struct {
 type DocSource struct {
 	Name, URL, Category, Format, License string
 	Enabled                              bool
+	Health                               string // localized status label
+	Fetched, Changed                     string // YYYY-MM-DD or "—"
 }
 
 //go:embed templates/*.md.tmpl

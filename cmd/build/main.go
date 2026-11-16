@@ -7,6 +7,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -71,10 +73,12 @@ type Source struct {
 }
 
 type outcome struct {
-	src    Source
-	res    parse.Result
-	status string // ok | stale | skipped | FAILED
-	err    error
+	src     Source
+	res     parse.Result
+	status  string // ok | stale | skipped | FAILED | disabled
+	err     error
+	fetched time.Time // last successful fetch (now, or from the last-known-good copy)
+	changed time.Time // last time the source's rules changed
 }
 
 // minBits rejects absurdly broad prefixes from any feed (a scraped 0.0.0.0/0
@@ -430,7 +434,11 @@ func run(cfgPath, dist, cacheDir, allowPath, outDir, docsDir, canaryPath string)
 	if err := syncDir(filepath.Join(outDir, "clash"), clash); err != nil {
 		return err
 	}
-	return writeDocs(docsDir, cfg, g, files)
+	health := map[string]outcome{}
+	for _, o := range outcomes {
+		health[o.src.Name] = o
+	}
+	return writeDocs(docsDir, cfg, g, files, health)
 }
 
 // dnsBlocklist marks optional categories that also make sense as DNS blocklists.
@@ -594,13 +602,13 @@ var docLangs = []string{"en", "fa"}
 
 // writeDocs generates the URL and sources pages for every docs language, plus
 // the checker's lists (English folder only; other languages load them from there).
-func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
+func writeDocs(dir string, cfg Config, g geo, files map[string][]byte, health map[string]outcome) error {
 	for _, lang := range docLangs {
 		l, err := emit.LoadLocale(lang)
 		if err != nil {
 			return err
 		}
-		if err := writeDocPages(filepath.Join(dir, lang), l, cfg, g, files); err != nil {
+		if err := writeDocPages(filepath.Join(dir, lang), l, cfg, g, files, health); err != nil {
 			return err
 		}
 		if m := l.Missing(); len(m) > 0 {
@@ -625,7 +633,7 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 }
 
 // writeDocPages writes urls.md and sources.md for one language.
-func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[string][]byte) error {
+func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[string][]byte, health map[string]outcome) error {
 	st := cfg.Settings
 	T, Tf := l.T, l.Tf
 	row := func(name, desc string) emit.DocRow {
@@ -703,7 +711,17 @@ func writeDocPages(dir string, l *emit.Locale, cfg Config, g geo, files map[stri
 	}
 	var srcs []emit.DocSource
 	for _, s := range cfg.Sources {
-		srcs = append(srcs, emit.DocSource{Name: s.Name, URL: s.URL, Category: s.Category, Format: s.Format, License: s.License, Enabled: s.Enabled && catEnabled(cfg, s.Category)})
+		o := health[s.Name]
+		day := func(t time.Time) string {
+			if t.IsZero() {
+				return "—"
+			}
+			return t.UTC().Format("2006-01-02")
+		}
+		label := map[string]string{"ok": "✅ " + T("healthy"), "stale": "⚠️ " + T("stale (last good copy)"),
+			"FAILED": "❌ " + T("failing"), "disabled": T("disabled"), "skipped": T("disabled")}[o.status]
+		srcs = append(srcs, emit.DocSource{Name: s.Name, URL: s.URL, Category: s.Category, Format: s.Format, License: s.License,
+			Enabled: s.Enabled && catEnabled(cfg, s.Category), Health: label, Fetched: day(o.fetched), Changed: day(o.changed)})
 	}
 	sources, err := emit.SourcesPage(l.Lang, srcs)
 	if err != nil {
@@ -812,14 +830,16 @@ func fetchAll(f *fetch.Fetcher, cfg Config, cats map[string]Category, cacheDir s
 			}
 			if err == nil {
 				o.res, o.status = res, "ok"
-				if werr := saveLKG(lkg, res); werr != nil {
+				fetched, changed, werr := saveLKG(lkg, res, time.Now().UTC())
+				if werr != nil {
 					log.Printf("::warning::%s: saving last-known-good: %v", o.src.Name, werr)
 				}
+				o.fetched, o.changed = fetched, changed
 				return
 			}
 			o.err = err
-			if res, lerr := loadLKG(lkg); lerr == nil {
-				o.res, o.status = res, "stale"
+			if res, meta, lerr := loadLKG(lkg); lerr == nil {
+				o.res, o.status, o.fetched, o.changed = res, "stale", meta.FetchedAt, meta.ChangedAt
 				log.Printf("::warning::%s: %v; using last-known-good", o.src.Name, err)
 			} else {
 				o.status = "FAILED"
@@ -919,11 +939,17 @@ func truncate(r parse.Result, n int) parse.Result {
 }
 
 type lkgFile struct {
-	Domains []string `json:"domains"`
-	CIDRs   []string `json:"cidrs"`
+	Domains   []string  `json:"domains"`
+	CIDRs     []string  `json:"cidrs"`
+	Hash      string    `json:"hash,omitempty"`       // sha256 of the rules, to detect upstream changes
+	FetchedAt time.Time `json:"fetched_at,omitempty"` // last successful fetch
+	ChangedAt time.Time `json:"changed_at,omitempty"` // last fetch whose rules differed
 }
 
-func saveLKG(path string, r parse.Result) error {
+// saveLKG stores a source's rules as its last-known-good copy and returns when
+// they were fetched and when they last changed (carried over from the previous
+// copy if the rules are identical).
+func saveLKG(path string, r parse.Result, now time.Time) (fetched, changed time.Time, err error) {
 	var l lkgFile
 	for _, d := range r.Domains {
 		l.Domains = append(l.Domains, ruleString(d))
@@ -931,28 +957,41 @@ func saveLKG(path string, r parse.Result) error {
 	for _, p := range r.CIDRs {
 		l.CIDRs = append(l.CIDRs, p.String())
 	}
+	h := sha256.New()
+	for _, s := range slices.Sorted(slices.Values(slices.Concat(l.Domains, l.CIDRs))) {
+		h.Write([]byte(s + "\n"))
+	}
+	l.Hash, l.FetchedAt, l.ChangedAt = hex.EncodeToString(h.Sum(nil)), now, now
+	if prev, err := readLKGFile(path); err == nil && prev.Hash == l.Hash && !prev.ChangedAt.IsZero() {
+		l.ChangedAt = prev.ChangedAt
+	}
 	b, err := json.Marshal(l)
 	if err != nil {
-		return err
+		return
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return err
+	if err = os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return
 	}
 	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, b, 0o644); err != nil {
-		return err
+	if err = os.WriteFile(tmp, b, 0o644); err != nil {
+		return
 	}
-	return os.Rename(tmp, path)
+	return l.FetchedAt, l.ChangedAt, os.Rename(tmp, path)
 }
 
-func loadLKG(path string) (parse.Result, error) {
+func readLKGFile(path string) (lkgFile, error) {
+	var l lkgFile
 	b, err := os.ReadFile(path)
 	if err != nil {
-		return parse.Result{}, err
+		return l, err
 	}
-	var l lkgFile
-	if err := json.Unmarshal(b, &l); err != nil {
-		return parse.Result{}, err
+	return l, json.Unmarshal(b, &l)
+}
+
+func loadLKG(path string) (parse.Result, lkgFile, error) {
+	l, err := readLKGFile(path)
+	if err != nil {
+		return parse.Result{}, l, err
 	}
 	var r parse.Result
 	kinds := map[string]parse.Kind{"DOMAIN-SUFFIX": parse.Suffix, "DOMAIN": parse.Exact, "DOMAIN-KEYWORD": parse.Keyword}
@@ -968,9 +1007,9 @@ func loadLKG(path string) (parse.Result, error) {
 		}
 	}
 	if len(r.Domains)+len(r.CIDRs) == 0 {
-		return r, errors.New("empty last-known-good")
+		return r, l, errors.New("empty last-known-good")
 	}
-	return r, nil
+	return r, l, nil
 }
 
 func ruleString(d parse.Domain) string {

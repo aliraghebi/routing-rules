@@ -9,10 +9,15 @@ icon: material/scale-balance
 Every list is built from these upstream sources. Disabled sources are configured but not used, usually
 because they could not be verified or are too large for mobile clients.
 
-| Source | Category | Format | Status | License |
-|--------|----------|--------|--------|---------|
+**Health** is the result of the latest build: *healthy* sources were fetched in that build; *stale* ones
+failed and the last good copy was used instead; *failing* ones had no copy to fall back on. **Last fetched**
+is the last successful download, and **Last changed** is when the source's rules last differed, which shows
+whether an upstream is still maintained. Dates are UTC.
+
+| Source | Category | Format | Health | Last fetched | Last changed | License |
+|--------|----------|--------|--------|--------------|--------------|---------|
 {{- range .}}
-| [{{.Name}}]({{.URL}}) | {{.Category}} | {{.Format}} | {{if .Enabled}}enabled{{else}}disabled{{end}} | {{.License}} |
+| [{{.Name}}]({{.URL}}) | {{.Category}} | {{.Format}} | {{.Health}} | {{.Fetched}} | {{.Changed}} | {{.License}} |
 {{- end}}
 
 IP geolocation data for `ir-cidr` includes [IP Geolocation by DB-IP](https://db-ip.com) (CC BY 4.0).

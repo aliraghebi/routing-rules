@@ -5,23 +5,16 @@
 
 ## Get the rules file
 
-Pick the mirror you can reach. Each copy loads its rule-sets from the same mirror.
+Download one file. Pick the one whose rule-sets your device can reach.
 
-=== "jsDelivr"
+[:material-download: karing-jsdelivr.json](dl/karing-jsdelivr.json){ .md-button .md-button--primary download="karing-jsdelivr.json" } [:material-download: karing.json](dl/karing.json){ .md-button download="karing.json" }
 
-    ```
-    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/karing-jsdelivr.json
-    ```
-
-=== "GitHub"
-
-    ```
-    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/karing.json
-    ```
+The first file loads its rule-sets from jsDelivr, the second from GitHub. If the buttons don't work, download from GitHub Releases: [karing-jsdelivr.json](https://github.com/aliraghebi/vpn-routing/releases/latest/download/karing-jsdelivr.json) · [karing.json](https://github.com/aliraghebi/vpn-routing/releases/latest/download/karing.json).
 
 ## Import it
 
-1. Download the file to your device.
+1. Download the file with a button above. Don't copy the text from a browser tab: a partial selection
+   breaks the file (Karing reports `FormatException: Unterminated string`).
 2. In Karing, open the custom diversion rules screen and import the file. This is the same screen Karing
    exports `diversion_rules_custom.json` from.
 3. Make sure both rule groups are switched on.

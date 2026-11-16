@@ -3,6 +3,10 @@
 `v2rayn-routing.json` is a set of custom routing rules in the JSON format v2rayN and v2rayNG import. It uses
 this project's `geosite:` / `geoip:` tags.
 
+[:material-download: v2rayn-routing.json](dl/v2rayn-routing.json){ .md-button .md-button--primary download="v2rayn-routing.json" }
+
+To import by URL instead, use one of these:
+
 ```
 https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/v2rayn-routing.json
 https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/v2rayn-routing.json
@@ -16,8 +20,7 @@ the rules; otherwise the rules fail to load or match nothing.
 
 ## 2. Import the rules
 
-Open the app's routing settings, add a new custom rule set, and import the rules from the URL above (or
-download the file and import it). Then select that rule set as the active routing.
+Open the app's routing settings, add a new custom rule set, and import the downloaded file (or the URL above). Then select that rule set as the active routing.
 
 !!! note
     Menu names differ between app versions and platforms. Look for **Routing setting** and an

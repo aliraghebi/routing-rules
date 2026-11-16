@@ -8,17 +8,9 @@ Works with sing-box 1.11+ and apps built on it. Rule-sets are named like
 
 `sing-box-route.json` is a complete `route` block, in the same order as the Shadowrocket config:
 
-=== "jsDelivr"
+[:material-download: sing-box-route-jsdelivr.json](dl/sing-box-route-jsdelivr.json){ .md-button .md-button--primary download="sing-box-route-jsdelivr.json" } [:material-download: sing-box-route.json](dl/sing-box-route.json){ .md-button download="sing-box-route.json" }
 
-    ```
-    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/sing-box-route-jsdelivr.json
-    ```
-
-=== "GitHub"
-
-    ```
-    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/sing-box-route.json
-    ```
+The first file loads its rule-sets from jsDelivr, the second from GitHub. If the buttons don't work, download from GitHub Releases: [sing-box-route-jsdelivr.json](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route-jsdelivr.json) · [sing-box-route.json](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route.json).
 
 Copy its `route` object into your config. It expects outbounds tagged `proxy` and `direct`. Rule-sets are
 downloaded through `proxy` (`download_detour`) and refreshed automatically.

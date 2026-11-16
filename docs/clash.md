@@ -8,17 +8,9 @@ Clash Meta for Android and similar apps. The rule-sets here use mihomo's compact
 
 `clash.yaml` contains `rule-providers` and `rules` in the same order as the Shadowrocket config:
 
-=== "jsDelivr"
+[:material-download: clash-jsdelivr.yaml](dl/clash-jsdelivr.yaml){ .md-button .md-button--primary download="clash-jsdelivr.yaml" } [:material-download: clash.yaml](dl/clash.yaml){ .md-button download="clash.yaml" }
 
-    ```
-    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/clash-jsdelivr.yaml
-    ```
-
-=== "GitHub"
-
-    ```
-    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/clash.yaml
-    ```
+The first file loads its rule-sets from jsDelivr, the second from GitHub. If the buttons don't work, download from GitHub Releases: [clash-jsdelivr.yaml](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash-jsdelivr.yaml) · [clash.yaml](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash.yaml).
 
 Merge both sections into your config. In Clash Verge Rev you can paste them into the profile's **Merge**
 (extend config) file, so your subscription stays untouched. The rules need a proxy group named **`PROXY`**;

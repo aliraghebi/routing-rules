@@ -52,5 +52,5 @@ your VPN and what goes direct.
 4. Iranian IP ranges → **direct**
 5. Everything else → **proxy**
 
-Optional lists that are not in the default configs: social media, adult content, and IP ranges for
+Optional lists that are not in the default configs: social media, adult content, Windows telemetry, and IP ranges for
 Cloudflare, CloudFront, Fastly, G-Core, Telegram, Tor exit nodes and Netflix.

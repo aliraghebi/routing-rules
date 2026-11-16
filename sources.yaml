@@ -34,6 +34,7 @@ categories:
   # Optional lists: built and published, not referenced by shadowrocket.conf.
   - {name: social,       action: none,   enabled: true}
   - {name: nsfw,         action: none,   enabled: true}
+  - {name: windows-telemetry, action: none, enabled: true}
   - {name: cloudflare,   action: none,   enabled: true}
   - {name: cloudfront,   action: none,   enabled: true}
   - {name: fastly,       action: none,   enabled: true}
@@ -176,6 +177,29 @@ sources:
     license: GPL-3.0 (AdguardTeam/AdGuardSDNSFilter)
     # Disabled by default: ~190k rules, ads.list grows to ~257k rules / 8.9 MB (over list_cap_warn).
     # hagezi pro.mini already aggregates AdGuard's DNS filter among its sources.
+  - name: peterlowe
+    url: https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext
+    format: hosts
+    match: exact
+    category: ads
+    enabled: true
+    license: Peter Lowe's ad server list (pgl.yoyo.org); no explicit license stated
+    # Small, hand-curated, low false-positive list; adds ~1.7k hosts not in the other sources.
+  - name: easylist
+    url: https://easylist.to/easylist/easylist.txt
+    format: abp
+    category: ads
+    enabled: false
+    license: GPL-3.0 or CC BY-SA 3.0 (EasyList)
+    # Disabled by default: adds ~26k domains (+25% to ads.list), mostly short-lived ad redirect hosts.
+  - name: danpollock
+    url: https://someonewhocares.org/hosts/hosts
+    format: hosts
+    match: exact
+    category: ads
+    enabled: false
+    license: Dan Pollock's hosts (someonewhocares.org); free for personal use
+    # Disabled by default: adds ~9k hosts, older list with more false positives.
   - name: v2fly-category-ads-all
     url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ads-all
     format: v2fly
@@ -249,6 +273,16 @@ sources:
     category: nsfw
     enabled: true
     license: MIT (v2fly/domain-list-community)
+
+  # ---------- Windows telemetry (optional) ----------
+  - name: windowsspyblocker-spy
+    url: https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
+    format: hosts
+    match: exact
+    category: windows-telemetry
+    enabled: true
+    license: MIT (crazy-max/WindowsSpyBlocker)
+    # Only the "spy" list: "update" and "extra" block Windows Update and other functionality.
 
   # ---------- Sanctioned (domains that block Iranian IPs) ----------
   - name: dynx-antiban

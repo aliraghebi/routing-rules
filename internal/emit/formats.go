@@ -140,8 +140,14 @@ function FindProxyForURL(url, host) {
 
 // SingBoxDNS renders a "dns" block (sing-box 1.12+ server format): Iranian
 // domains use the device's DNS, everything else DNS-over-HTTPS through the proxy.
+// route.default_domain_resolver (required since 1.14) resolves outbound server
+// hostnames with the device's DNS; the DoH server is only reachable through the
+// proxy, so it cannot resolve the proxy's own address.
 func SingBoxDNS() []byte {
 	return []byte(`{
+  "route": {
+    "default_domain_resolver": "local"
+  },
   "dns": {
     "servers": [
       { "type": "https", "tag": "remote", "server": "1.1.1.1", "detour": "proxy" },

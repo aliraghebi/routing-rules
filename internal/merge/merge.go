@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/OWNER/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/shadowrocket-config/internal/parse"
 )
 
 // parents calls fn for name and each parent suffix ("a.b.c" -> "a.b.c", "b.c", "c").
@@ -141,6 +141,33 @@ func RemoveConflicts(in, protected []parse.Domain) (kept, removed []parse.Domain
 			}
 		}
 		if bad {
+			removed = append(removed, d)
+		} else {
+			kept = append(kept, d)
+		}
+	}
+	return kept, removed
+}
+
+// RemoveMatched drops entries fully covered by a rule in by: any entry equal
+// to or under a suffix rule, or an exact entry equal to an exact rule. A suffix
+// entry is kept when by only has the exact name (its subdomains stay covered).
+func RemoveMatched(in, by []parse.Domain) (kept, removed []parse.Domain) {
+	exact, suffix := map[string]bool{}, map[string]bool{}
+	for _, d := range by {
+		switch d.Kind {
+		case parse.Exact:
+			exact[d.Name] = true
+		case parse.Suffix:
+			suffix[d.Name] = true
+		}
+	}
+	for _, d := range in {
+		hit := d.Kind == parse.Exact && exact[d.Name]
+		if !hit && d.Kind != parse.Keyword {
+			parents(d.Name, func(p string) bool { hit = suffix[p]; return hit })
+		}
+		if hit {
 			removed = append(removed, d)
 		} else {
 			kept = append(kept, d)

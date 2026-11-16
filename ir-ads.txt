@@ -1,0 +1,10 @@
+# Iranian ad / tracking networks missing from the trusted upstream lists.
+# Each line blocks the domain and all subdomains (DOMAIN-SUFFIX), even when
+# an Iran DIRECT list includes it. Add only ad services, never content sites.
+adro.co
+clickaval.com
+congoro.com
+daartads.com
+linkyar.com
+triboon.net
+yektabanner.com

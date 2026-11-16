@@ -16,3 +16,11 @@ apps.apple.com
 # GitHub raw content and jsDelivr: the rule lists themselves are fetched from here.
 raw.githubusercontent.com
 cdn.jsdelivr.net
+
+# Iranian sites that bootmortis' "ads" category tags but are not ad services
+# (bootmortis-ads is override_direct, so these need an explicit pin).
+zarin.link
+vatanshop.com
+kimiaonline.com
+salamatism.com
+mahshar.com

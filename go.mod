@@ -1,4 +1,4 @@
-module github.com/OWNER/shadowrocket-config
+module github.com/aliraghebi/shadowrocket-config
 
 go 1.26.0
 

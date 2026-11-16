@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/OWNER/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/shadowrocket-config/internal/parse"
 )
 
 func D(k parse.Kind, n string) parse.Domain { return parse.Domain{Kind: k, Name: n} }
@@ -64,5 +64,13 @@ func TestRemoveCIDRConflicts(t *testing.T) {
 	kept, removed := RemoveCIDRConflicts(P("2.144.1.1/32", "2.0.0.0/8", "5.22.0.0/24", "8.8.8.8/32"), prot)
 	if !reflect.DeepEqual(kept, P("2.144.1.1/32", "8.8.8.8/32")) || len(removed) != 2 {
 		t.Fatalf("kept %v removed %v", kept, removed)
+	}
+}
+
+func TestRemoveMatched(t *testing.T) {
+	in := []parse.Domain{D(S, "yektanet.com"), D(E, "cdn.yektanet.com"), D(S, "digikala.com"), D(E, "tapsell.ir"), D(S, "sabaidea.cloud"), D(K, "yektanet")}
+	kept, _ := RemoveMatched(in, []parse.Domain{D(S, "yektanet.com"), D(E, "tapsell.ir"), D(E, "sabaidea.cloud"), D(K, "digi")})
+	if want := []parse.Domain{D(S, "digikala.com"), D(S, "sabaidea.cloud"), D(K, "yektanet")}; !reflect.DeepEqual(kept, want) {
+		t.Fatalf("got %v want %v", kept, want)
 	}
 }

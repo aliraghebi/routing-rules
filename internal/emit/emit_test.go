@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/OWNER/shadowrocket-config/internal/parse"
+	"github.com/aliraghebi/shadowrocket-config/internal/parse"
 )
 
 func TestList(t *testing.T) {

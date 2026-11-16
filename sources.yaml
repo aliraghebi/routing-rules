@@ -1,14 +1,20 @@
-# Source registry for cmd/build. Every URL below was fetched and its format
+# Source registry for cmd/build. file:/// URLs are read from the repo root.
+# Every remote URL below was fetched and its format
 # checked on 2026-11-16 unless it is enabled: false with a TODO.
 #
 # format:  hosts | domains | abp | v2fly | cidr | html-cidr | json | maxmind-csv | ip2location
 # match:   suffix | exact  (hosts/domains only; how plain domains become rules)
 # filter:  json only; skip objects whose key has a different value
+# override_direct: REJECT sources only. Rules from this source win over ir-domains:
+#          matching ir-domains entries are removed instead of the REJECT rule.
+#          Only for curated Iran-focused ad lists; a bad list here can block Iranian sites.
 # requires_env: source is skipped (not failed) when any of these env vars is empty;
 #          ${VAR} in url is expanded from the environment and never logged.
 
 settings:
-  user_agent: "shadowrocket-config-builder/1.0 (+https://github.com/)"
+  user_agent: "shadowrocket-config-builder/1.0 (+https://github.com/aliraghebi/shadowrocket-config)"
+  base_url: https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist  # BASE_URL env overrides
+  repo_url: https://github.com/aliraghebi/shadowrocket-config
   timeout: 90s
   concurrency: 8
   retries: 3
@@ -138,7 +144,34 @@ sources:
     match: exact
     category: ads
     enabled: true
+    override_direct: true
     license: AGPL-3.0 (MasterKia/PersianBlocker)
+  - name: v2fly-category-ads-ir
+    url: https://raw.githubusercontent.com/v2fly/domain-list-community/master/data/category-ads-ir
+    format: v2fly
+    category: ads
+    enabled: true
+    override_direct: true
+    license: MIT (v2fly/domain-list-community)
+  - name: local-ir-ads
+    url: file:///ir-ads.txt
+    format: domains
+    match: suffix
+    category: ads
+    enabled: true
+    override_direct: true
+    license: This repository
+    # Iranian ad networks that no trusted upstream list covers; maintained by hand.
+  - name: bootmortis-ads
+    url: https://github.com/bootmortis/iran-hosted-domains/releases/latest/download/surge_domainset_ads.txt
+    format: domains
+    match: suffix
+    category: ads
+    enabled: true
+    override_direct: true
+    license: MIT (bootmortis/iran-hosted-domains)
+    # This category also tags some real sites (shops, magazines, payment links);
+    # those are pinned in allowlist.txt so they are never blocked.
   - name: hagezi-pro-mini
     url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/pro.mini-onlydomains.txt
     format: domains

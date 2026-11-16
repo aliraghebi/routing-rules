@@ -8,8 +8,8 @@ text rule-sets instead of `.dat` / `.srs` / `.db` files.
 ## Use it in Shadowrocket
 
 1. Shadowrocket → **Config** → **+** (top right) → paste the config URL:
-   - `https://raw.githubusercontent.com/OWNER/REPO/main/dist/shadowrocket.conf`
-   - or `https://github.com/OWNER/REPO/releases/latest/download/shadowrocket.conf`
+   - `https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist/shadowrocket.conf`
+   - or `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download/shadowrocket.conf`
 2. Tap the downloaded config → **Use Config**.
 3. Add your proxy server on the Home tab and set **Global Routing** to **Config**.
 
@@ -38,7 +38,7 @@ lists without a re-import (Config → long-press → Update, or enable auto-upda
 | `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor-exit`, `netflix` `.list` | no | Provider IP ranges |
 
 To use an optional list, add a line to your own config, for example
-`RULE-SET,https://raw.githubusercontent.com/OWNER/REPO/main/dist/nsfw.list,REJECT` or
+`RULE-SET,https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist/nsfw.list,REJECT` or
 `RULE-SET,.../telegram.list,PROXY`.
 
 ## Mirrors (raw.githubusercontent.com may be filtered in Iran)
@@ -48,10 +48,10 @@ a mirror, set the repository variable **Settings → Secrets and variables → A
 
 | Mirror | `BASE_URL` | Notes |
 |--------|-----------|-------|
-| GitHub raw (default) | `https://raw.githubusercontent.com/OWNER/REPO/main/dist` | Updates within minutes; often filtered in Iran |
-| jsDelivr | `https://cdn.jsdelivr.net/gh/OWNER/REPO@main/dist` | Caches branch URLs for up to 12 hours, so lists lag behind. Purge with `https://purge.jsdelivr.net/gh/OWNER/REPO@main/dist/<file>` |
-| jsDelivr alternate hosts | `https://fastly.jsdelivr.net/gh/OWNER/REPO@main/dist`, `https://gcore.jsdelivr.net/gh/...` | Same cache behavior; different CDN edges, sometimes reachable when the main one is not |
-| GitHub release assets | `https://github.com/OWNER/REPO/releases/latest/download` | Redirects to `objects.githubusercontent.com` |
+| GitHub raw (default) | `https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist` | Updates within minutes; often filtered in Iran |
+| jsDelivr | `https://cdn.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist` | Caches branch URLs for up to 12 hours, so lists lag behind. Purge with `https://purge.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist/<file>` |
+| jsDelivr alternate hosts | `https://fastly.jsdelivr.net/gh/aliraghebi/shadowrocket-config@main/dist`, `https://gcore.jsdelivr.net/gh/...` | Same cache behavior; different CDN edges, sometimes reachable when the main one is not |
+| GitHub release assets | `https://github.com/aliraghebi/shadowrocket-config/releases/latest/download` | Redirects to `objects.githubusercontent.com` |
 
 You can also import the config from one mirror and keep the lists on another: the config URL and `BASE_URL` are
 independent. Avoid untrusted "GitHub proxy" sites: they can rewrite the lists, and these lists control what goes
@@ -71,6 +71,7 @@ All sources are in [`sources.yaml`](sources.yaml) with their URL, format, catego
 | ir-cidr | MaxMind GeoLite2 Country (needs `MAXMIND_LICENSE_KEY` secret) | GeoLite2 EULA, CC BY-SA 4.0: "This product includes GeoLite2 data created by MaxMind, available from https://www.maxmind.com" |
 | ir-cidr | IP2Location LITE DB1 (needs `IP2LOCATION_TOKEN` secret) | CC BY-SA 4.0: "This site or product includes IP2Location LITE data available from https://lite.ip2location.com" |
 | ads | [MasterKia/PersianBlocker](https://github.com/MasterKia/PersianBlocker) | AGPL-3.0 |
+| ads | v2fly `category-ads-ir`, bootmortis `surge_domainset_ads.txt`, local `ir-ads.txt` | MIT / this repo |
 | ads | [hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists) Pro mini | GPL-3.0 |
 | ads | [v2fly](https://github.com/v2fly/domain-list-community) `category-ads-all` | MIT |
 | ads (off by default) | [jerryn70/GoodbyeAds](https://github.com/jerryn70/GoodbyeAds), [AdGuard DNS filter](https://github.com/AdguardTeam/AdGuardSDNSFilter) | MIT, GPL-3.0 |
@@ -107,7 +108,12 @@ Safety checks (they guard REJECT and DIRECT rules):
   (`max_shrink`) versus the committed file. Rerun with `ALLOW_SHRINK=1` (workflow_dispatch input) if intended.
 - REJECT rules that would match an `allowlist.txt` domain are removed and reported as warnings.
 - REJECT rules that would block a whole `ir-domains` entry, or REJECT CIDRs covering an `ir-cidr` range, are
-  removed and logged as `conflict:`. More specific rules (blocking `ads.site.com` while `site.com` is DIRECT) stay.
+  removed and logged as `filtered:`. More specific rules (blocking `ads.site.com` while `site.com` is DIRECT) stay.
+- Exception: sources marked `override_direct: true` (PersianBlocker, v2fly `category-ads-ir`, bootmortis ads,
+  and the hand-kept [`ir-ads.txt`](ir-ads.txt)) are trusted Iran ad lists. Their rules skip the check above, and
+  `ir-domains` entries they cover are dropped, so Iranian ad networks (Yektanet, Tapsell, Adivery, Najva…) are
+  blocked. Generic global lists still cannot block whole Iranian sites. To block another Iranian ad service, add it
+  to `ir-ads.txt`; to rescue a site a trusted list wrongly blocks, add it to `allowlist.txt`.
 - Prefixes broader than /8 (IPv4) or /16 (IPv6) are dropped from every list.
 - A warning is printed when a list exceeds `list_cap_warn` rules; the iOS network extension has a tight memory limit.
 
@@ -118,12 +124,13 @@ Safety checks (they guard REJECT and DIRECT rules):
 
    ```yaml
    - name: my-source            # unique; also the last-known-good cache key
-     url: https://example.com/list.txt
+     url: https://example.com/list.txt   # or file:///local.txt (repo root)
      format: domains            # hosts | domains | abp | v2fly | cidr | html-cidr | json | maxmind-csv | ip2location
      match: suffix              # hosts/domains only: suffix (DOMAIN-SUFFIX) or exact (DOMAIN, default)
      category: ads
      enabled: true
      max_rules: 0               # optional: keep only the first N rules (upstream order)
+     override_direct: false     # REJECT only: trusted Iran ad list, wins over ir-domains
      license: MIT (owner/repo)
    ```
 
@@ -138,10 +145,10 @@ Safety checks (they guard REJECT and DIRECT rules):
 
 ```sh
 go test ./...
-BASE_URL=https://raw.githubusercontent.com/OWNER/REPO/main/dist go run ./cmd/build
+BASE_URL=https://raw.githubusercontent.com/aliraghebi/shadowrocket-config/main/dist go run ./cmd/build
 ```
 
-Without `BASE_URL` or `GITHUB_REPOSITORY`, the config uses an `OWNER/REPO` placeholder and prints a warning.
+`BASE_URL` overrides `settings.base_url` in `sources.yaml`, so local and CI builds produce the same config.
 Optional secrets: `MAXMIND_LICENSE_KEY`, `IP2LOCATION_TOKEN`.
 
 ## GitHub Actions
@@ -152,4 +159,5 @@ A keepalive job pushes an empty commit when the repo has had no commits for 50 d
 scheduled workflows after 60 days of inactivity.
 
 Set the secrets `MAXMIND_LICENSE_KEY` / `IP2LOCATION_TOKEN` (optional) and the variable `BASE_URL` (optional).
-The workflow pushes to `main` with `GITHUB_TOKEN`; if `main` is protected, allow `github-actions[bot]` to bypass.
+The workflow pushes to `main` with `GITHUB_TOKEN`; if `main` is protected, allow GitHub Actions to bypass.
+Bot commits use `BOT_NAME` / `BOT_EMAIL` from the workflow's `env:` block.

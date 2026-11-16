@@ -80,15 +80,15 @@ func TestParsers(t *testing.T) {
 
 func TestNormalizeDomain(t *testing.T) {
 	tests := map[string]string{
-		"Example.COM.":  "example.com",
-		"bücher.de":     "xn--bcher-kva.de",
-		"_dmarc.ex.com": "_dmarc.ex.com",
-		"1.2.3.4":       "",
-		"[::1]":         "",
-		"localhost":     "",
-		"a..b":          "",
-		"-a.com":        "",
-		"a.123":         "",
+		"Example.COM.":                   "example.com",
+		"bücher.de":                      "xn--bcher-kva.de",
+		"_dmarc.ex.com":                  "_dmarc.ex.com",
+		"1.2.3.4":                        "",
+		"[::1]":                          "",
+		"localhost":                      "",
+		"a..b":                           "",
+		"-a.com":                         "",
+		"a.123":                          "",
 		strings.Repeat("a", 64) + ".com": "",
 	}
 	for in, want := range tests {

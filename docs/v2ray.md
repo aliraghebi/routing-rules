@@ -23,7 +23,7 @@ Opening these URLs in a browser downloads the files.
 
 | `geosite:` | `geoip:` |
 |------------|----------|
-| `ads`, `malware`, `phishing`, `cryptominers`, `sanctioned`, `ir`, `social`, `nsfw`, `windows-telemetry` | `ir`, `malware`, `phishing`, `private`, `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor`, `netflix` |
+| `ads`, `malware`, `phishing`, `cryptominers`, `sanctioned`, `ir`, `social`, `nsfw`, `tracking` | `ir`, `malware`, `phishing`, `private`, `cloudflare`, `cloudfront`, `fastly`, `gcore`, `telegram`, `tor`, `netflix` |
 
 !!! warning "These files only contain the tags above"
     If you replace your app's stock geo files with these, rules that use other tags (`geosite:google`,

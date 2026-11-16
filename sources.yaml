@@ -34,7 +34,7 @@ categories:
   # Optional lists: built and published, not referenced by shadowrocket.conf.
   - {name: social,       action: none,   enabled: true}
   - {name: nsfw,         action: none,   enabled: true}
-  - {name: windows-telemetry, action: none, enabled: true}
+  - {name: tracking,     action: none,   enabled: true}
   - {name: cloudflare,   action: none,   enabled: true}
   - {name: cloudfront,   action: none,   enabled: true}
   - {name: fastly,       action: none,   enabled: true}
@@ -274,12 +274,12 @@ sources:
     enabled: true
     license: MIT (v2fly/domain-list-community)
 
-  # ---------- Windows telemetry (optional) ----------
+  # ---------- Tracking and telemetry (optional) ----------
   - name: windowsspyblocker-spy
     url: https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
     format: hosts
     match: exact
-    category: windows-telemetry
+    category: tracking
     enabled: true
     license: MIT (crazy-max/WindowsSpyBlocker)
     # Only the "spy" list: "update" and "extra" block Windows Update and other functionality.

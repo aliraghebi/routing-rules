@@ -14,14 +14,17 @@ A collection of cross-platform proxy routing rules and configurations. Supports 
 | Core | Guide |
 |------|-------|
 | sing-box, and apps built on it (SFI, SFA, Hiddify, NekoBox…) | [sing-box guide](sing-box.md) |
-| v2ray / Xray, v2rayN, v2rayNG, and other Xray-based apps | [v2ray / Xray guide](v2ray.md) |
+| Clash / mihomo, and apps built on it (Clash Verge Rev, FlClash, Clash Meta for Android…) | [Clash / mihomo guide](clash.md) |
+| v2ray / Xray, and other Xray-based apps | [v2ray / Xray guide](v2ray.md) |
 
 **Apps**: ready-made configs in the app's own format.
 
 | App | Guide |
 |-----|-------|
 | Shadowrocket (iOS) | [Shadowrocket guide](shadowrocket.md) |
+| Surge, Loon (iOS) | [Surge & Loon guide](surge-loon.md) |
 | Karing (iOS, Android, desktop) | [Karing guide](karing.md) |
+| v2rayN (desktop), v2rayNG (Android) | [v2rayN / v2rayNG guide](v2rayn.md) |
 
 Every file and its URL: [File URLs](urls.md). Where the data comes from: [Sources and licenses](sources.md).
 

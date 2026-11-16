@@ -50,10 +50,5 @@ no domain rule matched, so `geoip:ir` also catches Iranian sites missing from `g
 
 ## v2rayN / v2rayNG
 
-- **v2rayNG**: Settings → **Geo asset files** → set the custom URLs for `geosite.dat` and `geoip.dat` to the
-  links above, then update. Use the `geosite:`/`geoip:` tags in your routing rules.
-- **v2rayN**: put the files in the app's `bin` folder (replacing the stock ones), or set custom geo file URLs
-  in the settings if your version has them. Then add routing rules with the tags above.
-
-!!! note
-    Menu names change between app versions; look for "geo files" or "asset files" in the settings.
+These apps also need custom routing rules that use the tags. A ready-made rules file and import steps are
+in the [v2rayN / v2rayNG guide](v2rayn.md).

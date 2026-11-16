@@ -55,10 +55,13 @@ nav:
   - Home: index.md
   - Cores:
       - sing-box: sing-box.md
+      - Clash / mihomo: clash.md
       - v2ray / Xray: v2ray.md
   - Apps:
       - Shadowrocket: shadowrocket.md
+      - Surge & Loon: surge-loon.md
       - Karing: karing.md
+      - v2rayN / v2rayNG: v2rayn.md
   - Reference:
       - File URLs: urls.md
       - Sources and licenses: sources.md

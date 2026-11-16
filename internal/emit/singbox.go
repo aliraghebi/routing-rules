@@ -3,7 +3,6 @@ package emit
 import (
 	"encoding/json"
 	"net/netip"
-	"slices"
 
 	"github.com/aliraghebi/routing-rules/internal/parse"
 )
@@ -26,10 +25,10 @@ type sbRuleSet struct {
 	Rules   []sbRule `json:"rules"`
 }
 
-// SingBoxDomains renders a geosite-style source rule-set. A suffix rule is
-// written as domain "x" plus domain_suffix ".x" (the same expansion sing-box's
-// own geosite converter uses), so matching does not depend on how a given
-// sing-box version treats a domain_suffix without a leading dot.
+// SingBoxDomains renders a geosite-style source rule-set. A suffix rule is a
+// single domain_suffix "x": sing-box matches it against x and its subdomains on
+// a label boundary (not "xx"), both in the legacy expansion used for format
+// version 1 and in the root-label form (sing/common/domain.NewMatcher).
 func SingBoxDomains(domains []parse.Domain) ([]byte, error) {
 	var r sbRule
 	for _, d := range domains {
@@ -37,13 +36,11 @@ func SingBoxDomains(domains []parse.Domain) ([]byte, error) {
 		case parse.Exact:
 			r.Domain = append(r.Domain, d.Name)
 		case parse.Suffix:
-			r.Domain = append(r.Domain, d.Name)
-			r.DomainSuffix = append(r.DomainSuffix, "."+d.Name)
+			r.DomainSuffix = append(r.DomainSuffix, d.Name)
 		case parse.Keyword:
 			r.DomainKeyword = append(r.DomainKeyword, d.Name)
 		}
 	}
-	slices.Sort(r.Domain) // suffix apexes and exact names interleave
 	return render(r)
 }
 
@@ -57,7 +54,8 @@ func SingBoxCIDRs(cidrs []netip.Prefix) ([]byte, error) {
 }
 
 func render(r sbRule) ([]byte, error) {
-	// One entry per line keeps git diffs readable.
-	b, err := json.MarshalIndent(sbRuleSet{SingBoxVersion, []sbRule{r}}, "", "  ")
+	// Compact: these files are machine-read and no longer committed, so
+	// indentation would only add size (it roughly doubled the larger files).
+	b, err := json.Marshal(sbRuleSet{SingBoxVersion, []sbRule{r}})
 	return append(b, '\n'), err
 }

@@ -113,6 +113,8 @@ jobs:
           must geoip-ir 2.144.0.1
           mustnot geosite-ir google.com
           mustnot geosite-ads digikala.com
+          mustnot geosite-ads xyektanet.com   # suffix rules match on a label boundary only
+          mustnot geosite-ir example.irx
           echo '{"outbounds":[{"type":"direct","tag":"direct"},{"type":"direct","tag":"proxy"}]}' > "$RUNNER_TEMP/sb-outbounds.json"
           sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box-route.json
           sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box-route.json -c dist/sing-box-dns.json

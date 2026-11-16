@@ -20,7 +20,7 @@ on:
       - ".github/workflows/build.yml"
 
 permissions:
-  contents: write # push the release branch and the GitHub release
+  contents: write # publish GitHub releases
   pages: write
   id-token: write
 
@@ -62,20 +62,19 @@ jobs:
           key: sources-${{ github.run_id }}
           restore-keys: sources-
 
-      # The current release is the baseline: what users have right now.
-      - name: Fetch previous release
+      # Checksums of the latest release: what users download right now.
+      - name: Fetch previous checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$RUNNER_TEMP/prev"
-          if git fetch -q --depth=1 origin release; then
-            git archive FETCH_HEAD | tar -x -C "$RUNNER_TEMP/prev"
-          else
-            echo "No release branch yet; this run publishes the first one."
-          fi
+          gh release download --pattern SHA256SUMS --dir "$RUNNER_TEMP/prev" \
+            || echo "No previous checksums; this run publishes a new release."
 
       - run: go test ./...
 
       - name: Build
-        run: go run ./cmd/build -prev "$RUNNER_TEMP/prev"
+        run: go run ./cmd/build
 
       - name: Install sing-box, Xray and mihomo
         run: |
@@ -153,62 +152,39 @@ jobs:
           rel="$RUNNER_TEMP/release"
           mkdir -p "$rel"
           cp dist/* out/geosite.dat out/geoip.dat out/srs/*.srs out/mrs/*.mrs "$rel/"
-          size=$(du -sm "$rel" | cut -f1)
-          echo "release files: $(ls "$rel" | wc -l), ${size} MB"
-          # jsDelivr refuses to serve GitHub packages above its size limit (50 MB at the time of writing).
-          if [ "$size" -gt 45 ]; then echo "::warning::release files are ${size} MB, close to jsDelivr's 50 MB package limit"; fi
-          echo "REL=$rel" >> "$GITHUB_ENV"
-          # Files added or changed vs the previous release (outputs are deterministic,
-          # so an unchanged source gives a byte-identical file).
-          changed="$RUNNER_TEMP/changed.txt"
-          : > "$changed"
-          for f in "$rel"/*; do
-            n=$(basename "$f")
-            cmp -s "$f" "$RUNNER_TEMP/prev/$n" || echo "$n" >> "$changed"
-          done
-          removed=$(cd "$RUNNER_TEMP/prev" && for f in *; do [ -e "$f" ] && [ ! -e "$rel/$f" ] && echo "$f"; done || true)
-          echo "changed: $(wc -l < "$changed"), removed: $(echo -n "$removed" | grep -c . || true)"
-          if [ -s "$changed" ] || [ -n "$removed" ]; then
+          echo "release files: $(ls "$rel" | wc -l), $(du -sm "$rel" | cut -f1) MB"
+          # Outputs are deterministic, so unchanged sources give identical checksums.
+          (cd "$rel" && sha256sum -- * | sort -k2) > "$RUNNER_TEMP/SHA256SUMS"
+          mv "$RUNNER_TEMP/SHA256SUMS" "$rel/SHA256SUMS"
+          if cmp -s "$rel/SHA256SUMS" "$RUNNER_TEMP/prev/SHA256SUMS"; then
+            echo "No changes since the latest release."
+          else
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+          echo "REL=$rel" >> "$GITHUB_ENV"
 
-      # The release branch holds exactly one commit with no history, rebuilt and
-      # force-pushed each time (like bootmortis/iran-hosted-domains), so outputs
-      # never accumulate in the repository. main is never touched.
-      - name: Publish release branch
+      # A new release per change: created as a draft, filled, then published, so
+      # .../releases/latest/download/<file> switches to the new set at once and
+      # never serves a half-uploaded release. Older releases are deleted.
+      - name: Publish GitHub release
         if: steps.assemble.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd "$REL"
-          git init -q -b release
-          git config user.name "$BOT_NAME"
-          git config user.email "$BOT_EMAIL"
-          git add -A
-          git commit -qm "release $(date -u +%Y-%m-%dT%H:%MZ) from ${GITHUB_SHA::7}"
-          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" release
-
-      # jsDelivr caches branch files for up to 12 hours; purge what changed.
-      - name: Purge jsDelivr cache
-        if: steps.assemble.outputs.changed == 'true'
-        run: |
-          while read -r f; do
-            curl -fsS -o /dev/null "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@release/${f}" \
-              || echo "::warning::jsDelivr purge failed for ${f}"
-          done < "$RUNNER_TEMP/changed.txt"
-
-      # Rolling GitHub release with the same files, for .../releases/latest/download/<file>.
-      # The "latest" release must stay the newest non-prerelease release.
-      - name: Publish rolling GitHub release
-        if: steps.assemble.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if ! gh release view latest >/dev/null 2>&1; then
-            gh release create latest --title "Latest rule files" \
-              --notes "Rebuilt automatically. The same files are on the release branch (GitHub raw and jsDelivr)."
-          fi
-          gh release upload latest --clobber "$REL"/*
+          # Tag and title are the UTC build time, e.g. 202611161306 (seconds added on a same-minute clash).
+          tag=$(date -u +%Y%m%d%H%M)
+          if gh release view "$tag" >/dev/null 2>&1; then tag=$(date -u +%Y%m%d%H%M%S); fi
+          gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$tag" \
+            --notes "- Updated on $(date -u '+%A %Y-%m-%d %H:%M:%S UTC') from ${GITHUB_SHA::7}
+          - Always download from https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/<file>"
+          gh release upload "$tag" "$REL"/*
+          gh release edit "$tag" --draft=false --latest
+          # Keep the 3 newest releases (also removes drafts left by failed runs).
+          gh release list --limit 200 --json tagName,createdAt \
+            --jq 'sort_by(.createdAt) | reverse | .[3:] | .[].tagName' |
+          while read -r old; do
+            gh release delete "$old" --yes --cleanup-tag || echo "::warning::could not delete release $old"
+          done
 
       # docs/urls.md and docs/sources.md were generated by the build step above.
       - uses: actions/setup-python@v5

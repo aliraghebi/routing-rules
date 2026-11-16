@@ -8,9 +8,9 @@ Clash Meta for Android and similar apps. The rule-sets here use mihomo's compact
 
 `clash.yaml` contains `rule-providers` and `rules` in the same order as the Shadowrocket config:
 
-[:material-download: Download from jsDelivr](dl/clash-jsdelivr.yaml){ .md-button .md-button--primary download="clash.yaml" } [:material-download: Download from GitHub](dl/clash.yaml){ .md-button download="clash.yaml" }
+[:material-download: Download clash.yaml](dl/clash.yaml){ .md-button .md-button--primary download="clash.yaml" }
 
-Both save as `clash.yaml`; they differ only in where the file downloads its rule-sets from. Pick jsDelivr if raw.githubusercontent.com is filtered for you. If the buttons don't work, download from GitHub Releases: [jsDelivr version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash-jsdelivr.yaml) · [GitHub version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash.yaml).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/clash.yaml).
 
 Merge both sections into your config. In Clash Verge Rev you can paste them into the profile's **Merge**
 (extend config) file, so your subscription stays untouched. The rules need a proxy group named **`PROXY`**;
@@ -24,14 +24,14 @@ rule-providers:
     type: http
     behavior: domain
     format: mrs
-    url: https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geosite-ads.mrs
+    url: https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite-ads.mrs
     path: ./rules/geosite-ads.mrs
     interval: 86400
   geoip-ir:
     type: http
     behavior: ipcidr
     format: mrs
-    url: https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geoip-ir.mrs
+    url: https://github.com/aliraghebi/vpn-routing/releases/latest/download/geoip-ir.mrs
     path: ./rules/geoip-ir.mrs
     interval: 86400
 

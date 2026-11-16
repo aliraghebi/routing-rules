@@ -8,9 +8,9 @@ Works with sing-box 1.11+ and apps built on it. Rule-sets are named like
 
 `sing-box-route.json` is a complete `route` block, in the same order as the Shadowrocket config:
 
-[:material-download: Download from jsDelivr](dl/sing-box-route-jsdelivr.json){ .md-button .md-button--primary download="sing-box-route.json" } [:material-download: Download from GitHub](dl/sing-box-route.json){ .md-button download="sing-box-route.json" }
+[:material-download: Download sing-box-route.json](dl/sing-box-route.json){ .md-button .md-button--primary download="sing-box-route.json" }
 
-Both save as `sing-box-route.json`; they differ only in where the file downloads its rule-sets from. Pick jsDelivr if raw.githubusercontent.com is filtered for you. If the buttons don't work, download from GitHub Releases: [jsDelivr version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route-jsdelivr.json) · [GitHub version](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route.json).
+If the button doesn't work, download it from [GitHub Releases](https://github.com/aliraghebi/vpn-routing/releases/latest/download/sing-box-route.json).
 
 Copy its `route` object into your config. It expects outbounds tagged `proxy` and `direct`. Rule-sets are
 downloaded through `proxy` (`download_detour`) and refreshed automatically.
@@ -25,14 +25,14 @@ downloaded through `proxy` (`download_detour`) and refreshed automatically.
         "tag": "geosite-ads",
         "type": "remote",
         "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geosite-ads.srs",
+        "url": "https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite-ads.srs",
         "download_detour": "proxy"
       },
       {
         "tag": "geosite-ir",
         "type": "remote",
         "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geosite-ir.srs",
+        "url": "https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite-ir.srs",
         "download_detour": "proxy"
       }
     ],

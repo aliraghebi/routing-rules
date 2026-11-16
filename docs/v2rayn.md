@@ -5,19 +5,11 @@ this project's `geosite:` / `geoip:` tags.
 
 [:material-download: Download v2rayn-routing.json](dl/v2rayn-routing.json){ .md-button .md-button--primary download="v2rayn-routing.json" }
 
-To import by URL instead, use one of these:
+To import by URL instead, use:
 
-=== "jsDelivr"
-
-    ```
-    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/v2rayn-routing.json
-    ```
-
-=== "GitHub"
-
-    ```
-    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/v2rayn-routing.json
-    ```
+```
+https://github.com/aliraghebi/vpn-routing/releases/latest/download/v2rayn-routing.json
+```
 
 ## 1. Install the geo files first
 

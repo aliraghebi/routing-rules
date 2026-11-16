@@ -5,37 +5,19 @@ and other Xray-based apps.
 
 Set these as the custom geo file URLs in your app:
 
-=== "jsDelivr"
+`geosite.dat`
 
-    `geosite.dat`
+```
+https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite.dat
+```
 
-    ```
-    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geosite.dat
-    ```
+`geoip.dat`
 
-    `geoip.dat`
+```
+https://github.com/aliraghebi/vpn-routing/releases/latest/download/geoip.dat
+```
 
-    ```
-    https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/geoip.dat
-    ```
-
-=== "GitHub"
-
-    `geosite.dat`
-
-    ```
-    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geosite.dat
-    ```
-
-    `geoip.dat`
-
-    ```
-    https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/geoip.dat
-    ```
-
-To download the files instead, use GitHub Releases:
-[geosite.dat](https://github.com/aliraghebi/vpn-routing/releases/latest/download/geosite.dat) ·
-[geoip.dat](https://github.com/aliraghebi/vpn-routing/releases/latest/download/geoip.dat).
+Opening these URLs in a browser downloads the files.
 
 ## Tags
 
@@ -58,7 +40,6 @@ To download the files instead, use GitHub Releases:
 `xray-routing.json` follows the same order as the Shadowrocket config:
 
 [:material-download: Download xray-routing.json](dl/xray-routing.json){ .md-button .md-button--primary download="xray-routing.json" }
-
 
 ```json
 {

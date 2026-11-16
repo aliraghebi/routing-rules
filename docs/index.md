@@ -28,16 +28,19 @@ A collection of cross-platform proxy routing rules and configurations. Supports 
 
 Every file and its URL: [File URLs](urls.md). Where the data comes from: [Sources and licenses](sources.md).
 
-## GitHub or jsDelivr?
+## Where the files are hosted
 
-Every file is published on two mirrors with the same file names:
+Every file is published as an asset of the latest [GitHub release](https://github.com/aliraghebi/vpn-routing/releases/latest),
+rebuilt whenever an upstream list changes:
 
-| Mirror | Base URL | Notes |
-|--------|----------|-------|
-| GitHub | `https://raw.githubusercontent.com/aliraghebi/vpn-routing/release` | Updated within minutes. Often filtered in Iran. |
-| jsDelivr | `https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release` | CDN, usually reachable. The build purges the cache after each update, but a stale copy can still be served for a while. |
+```
+https://github.com/aliraghebi/vpn-routing/releases/latest/download/<file>
+```
 
-If neither works, `fastly.jsdelivr.net` and `gcore.jsdelivr.net` serve the same paths as `cdn.jsdelivr.net`.
+This URL always points to the newest version. It redirects to GitHub's download servers
+(`release-assets.githubusercontent.com` / `objects.githubusercontent.com`), which may be filtered on some
+networks in Iran. Apps follow the redirect automatically.
+
 Avoid untrusted "GitHub proxy" sites: they can change the files, and these files decide what goes through
 your VPN and what goes direct.
 

@@ -2,25 +2,15 @@
 
 ## Import the config
 
-1. Copy one config URL. Use jsDelivr if raw.githubusercontent.com doesn't load.
+1. Copy the config URL:
 
-    === "jsDelivr"
-
-        ```
-        https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/shadowrocket-jsdelivr.conf
-        ```
-
-    === "GitHub"
-
-        ```
-        https://raw.githubusercontent.com/aliraghebi/vpn-routing/release/shadowrocket.conf
-        ```
+    ```
+    https://github.com/aliraghebi/vpn-routing/releases/latest/download/shadowrocket.conf
+    ```
 
 2. Shadowrocket → **Config** tab → **+** → paste the URL → **Download**.
 3. Tap the new config → **Use Config**.
 4. On the **Home** tab, add your server and set **Global Routing** to **Config**.
-
-Each config downloads its rule lists from the same mirror it came from.
 
 ## Keep it updated
 
@@ -40,12 +30,12 @@ don't need to re-import. To refresh, swipe left on the config in the **Config** 
 
 ## Add an optional list
 
-Edit the config (**Config** → tap the config → **Edit Config** → **Rule**) and add a line above `FINAL`, using
-the same mirror as your config. For example:
+Edit the config (**Config** → tap the config → **Edit Config** → **Rule**) and add a line above `FINAL`. For
+example:
 
 ```
-RULE-SET,https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/nsfw.list,REJECT
-RULE-SET,https://cdn.jsdelivr.net/gh/aliraghebi/vpn-routing@release/telegram.list,PROXY
+RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/nsfw.list,REJECT
+RULE-SET,https://github.com/aliraghebi/vpn-routing/releases/latest/download/telegram.list,PROXY
 ```
 
 !!! warning

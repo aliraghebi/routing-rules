@@ -8,9 +8,11 @@ import (
 	"github.com/aliraghebi/vpn-routing/internal/parse"
 )
 
-// SingBoxVersion is the source rule-set format version. Version 2 needs
-// sing-box 1.10+ and stores domain_suffix more compactly in compiled .srs.
-const SingBoxVersion = 2
+// SingBoxVersion is the source rule-set format version, which also sets the
+// compiled .srs version. Version 1 covers every rule type used here and is
+// read by all sing-box releases since 1.8; version 2 (sing-box 1.10+) only
+// stores domain_suffix more compactly, and Karing's bundled core rejects it.
+const SingBoxVersion = 1
 
 type sbRule struct {
 	Domain        []string `json:"domain,omitempty"`

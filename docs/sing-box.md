@@ -4,9 +4,10 @@ icon: material/cube-outline
 
 # sing-box
 
-Works with sing-box 1.11+ and apps built on it. Rule-sets are named like
-[Chocolate4U/Iran-sing-box-rules](https://github.com/Chocolate4U/Iran-sing-box-rules): `geosite-<tag>` and
-`geoip-<tag>`.
+Rule-sets use format version 1, so they work with sing-box 1.8+ and apps built on older cores (Karing,
+Hiddify, NekoBox…). The ready-made route block below uses rule actions and needs sing-box 1.11+. Rule-sets
+are named like [Chocolate4U/Iran-sing-box-rules](https://github.com/Chocolate4U/Iran-sing-box-rules):
+`geosite-<tag>` and `geoip-<tag>`.
 
 ## Use the ready route
 

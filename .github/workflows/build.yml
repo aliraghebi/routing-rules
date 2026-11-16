@@ -97,6 +97,10 @@ jobs:
           for f in dist/geo*.json; do
             sing-box rule-set compile --output "out/srs/$(basename "${f%.json}").srs" "$f"
           done
+          # Format version 1 ("SRS" + 0x01): older cores such as Karing's reject version 2.
+          for f in out/srs/*.srs; do
+            [ "$(head -c 4 "$f" | od -An -tx1 | tr -d ' \n')" = "53525301" ] || { echo "::error::$f is not rule-set format version 1"; exit 1; }
+          done
           # "rule-set match" logs "match rules.[N]: ..." to stderr for each matching rule.
           matches() { local out; out=$(sing-box rule-set match -f binary "out/srs/$1.srs" "$2" 2>&1); [[ $out == *"match rules"* ]]; }
           must()    { matches "$1" "$2" || { echo "::error::$1 should match $2"; exit 1; }; }

@@ -53,7 +53,7 @@ func TestSingBox(t *testing.T) {
 		t.Fatal(err)
 	}
 	r := rs.Rules[0]
-	if rs.Version != 2 || strings.Join(r["domain"], ",") != "a.io,z.io" || strings.Join(r["domain_suffix"], ",") != ".z.io" || strings.Join(r["domain_keyword"], ",") != "ad" {
+	if rs.Version != SingBoxVersion || strings.Join(r["domain"], ",") != "a.io,z.io" || strings.Join(r["domain_suffix"], ",") != ".z.io" || strings.Join(r["domain_keyword"], ",") != "ad" {
 		t.Fatalf("unexpected rule-set: %s", b)
 	}
 }

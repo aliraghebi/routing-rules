@@ -458,7 +458,7 @@ func writeDocs(dir string, cfg Config, g geo, files map[string][]byte) error {
 			lists.Rows = append(lists.Rows, row(c.Name+".list", fmt.Sprintf("%s (%s)", c.Name, actionDesc(c.Action))))
 		}
 	}
-	sb = emit.DocSection{Title: "sing-box rule-sets (binary)", Note: "Use with `\"type\": \"remote\", \"format\": \"binary\"`. Needs sing-box 1.10+."}
+	sb = emit.DocSection{Title: "sing-box rule-sets (binary)", Note: "Use with `\"type\": \"remote\", \"format\": \"binary\"`. Rule-set format version 1, readable by sing-box 1.8+ and apps built on it."}
 	sbSrc = emit.DocSection{Title: "sing-box rule-sets (JSON source)", Note: "Same rules as JSON, for `\"format\": \"source\"`."}
 	sb.Rows = append(sb.Rows, row("sing-box-route.json", "Example `route` block (sing-box 1.11+)"))
 	for _, t := range g.sites {

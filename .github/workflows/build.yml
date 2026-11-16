@@ -68,8 +68,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$RUNNER_TEMP/prev"
-          gh release download --pattern SHA256SUMS --dir "$RUNNER_TEMP/prev" \
-            || echo "No previous checksums; this run publishes a new release."
+          gh release download --pattern SHA256SUMS --pattern '*.list' --dir "$RUNNER_TEMP/prev" \
+            || echo "No previous release files; this run publishes a new release."
 
       - run: go test ./...
 
@@ -115,6 +115,7 @@ jobs:
           mustnot geosite-ads digikala.com
           echo '{"outbounds":[{"type":"direct","tag":"direct"},{"type":"direct","tag":"proxy"}]}' > "$RUNNER_TEMP/sb-outbounds.json"
           sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box-route.json
+          sing-box check -c "$RUNNER_TEMP/sb-outbounds.json" -c dist/sing-box-route.json -c dist/sing-box-dns.json
 
       - name: Check v2ray geo files with Xray
         run: |
@@ -126,6 +127,7 @@ jobs:
           JSON
           # Fails with "list not found" if a tag referenced by the routing is missing.
           XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray-routing.json
+          XRAY_LOCATION_ASSET=out xray run -test -c "$RUNNER_TEMP/outbounds.json" -c dist/xray-routing.json -c dist/xray-dns.json
 
       - name: Compile and check mihomo rule-sets
         run: |
@@ -148,6 +150,25 @@ jobs:
           dump ipcidr geoip-ir
           python3 -c 'import ipaddress,sys; a=ipaddress.ip_address("2.144.0.1"); sys.exit(0 if any(a in ipaddress.ip_network(l.strip()) for l in open(sys.argv[1]) if l.strip()) else 1)' "$RUNNER_TEMP/geoip-ir.dump" \
             || { echo "::error::geoip-ir.mrs should cover 2.144.0.1"; exit 1; }
+
+      - name: Check mihomo config
+        run: |
+          # clash.yaml + clash-dns.yaml + a stand-in PROXY group must form a valid config.
+          d="$RUNNER_TEMP/mihomo"; mkdir -p "$d"
+          { cat dist/clash.yaml; echo; cat dist/clash-dns.yaml; echo
+            echo 'proxy-groups:'; echo '  - {name: PROXY, type: select, proxies: [DIRECT]}'; } > "$d/config.yaml"
+          timeout 120 mihomo -t -d "$d" -f "$d/config.yaml"
+
+      - name: Check PAC file
+        run: |
+          node -e '
+            const src = require("fs").readFileSync("dist/proxy.pac", "utf8");
+            global.isPlainHostName = h => !h.includes(".");
+            eval(src);
+            const want = { "digikala.com": "DIRECT", "www.digikala.com": "DIRECT", "example.ir": "DIRECT", "192.168.1.1": "DIRECT" };
+            for (const [h, w] of Object.entries(want)) if (FindProxyForURL("https://" + h + "/", h) !== w) { console.error("::error::PAC " + h); process.exit(1); }
+            if (FindProxyForURL("https://google.com/", "google.com") === "DIRECT") { console.error("::error::PAC google.com must use the proxy"); process.exit(1); }
+          '
 
       # Everything users download, flat, under the same names the configs reference.
       - name: Assemble release files
@@ -180,11 +201,35 @@ jobs:
           now=$(date -u +%s)
           tag=$(date -u -d "@$now" +%Y%m%d%H%M)
           if gh release view "$tag" >/dev/null 2>&1; then tag=$(date -u -d "@$now" +%Y%m%d%H%M%S); fi
+          # Per-list changes vs the previous release (rules added / removed).
+          changes="$RUNNER_TEMP/changes.md"
+          if ls "$RUNNER_TEMP/prev/"*.list >/dev/null 2>&1; then
+            { echo "| List | Rules | Added | Removed |"; echo "|------|------:|------:|--------:|"; } > "$changes"
+            rows=0
+            for f in "$REL"/*.list; do
+              n=$(basename "$f")
+              grep -v '^#' "$f" | LC_ALL=C sort > "$RUNNER_TEMP/new.txt"
+              { grep -v '^#' "$RUNNER_TEMP/prev/$n" 2>/dev/null || true; } | LC_ALL=C sort > "$RUNNER_TEMP/old.txt"
+              add=$(( $(LC_ALL=C comm -13 "$RUNNER_TEMP/old.txt" "$RUNNER_TEMP/new.txt" | wc -l) ))
+              del=$(( $(LC_ALL=C comm -23 "$RUNNER_TEMP/old.txt" "$RUNNER_TEMP/new.txt" | wc -l) ))
+              if [ "$add" -gt 0 ] || [ "$del" -gt 0 ]; then
+                echo "| \`${n%.list}\` | $(( $(wc -l < "$RUNNER_TEMP/new.txt") )) | +$add | −$del |" >> "$changes"
+                rows=$((rows + 1))
+              fi
+            done
+            [ "$rows" -gt 0 ] || echo "Only non-list files changed (configs, formats or geo files)." > "$changes"
+          else
+            echo "First release in this format; no previous lists to compare." > "$changes"
+          fi
           # Notes are Markdown: <file> must sit in a code span or GitHub drops it as an HTML tag.
           updated=$(date -u -d "@$now" '+%A %Y-%m-%d %H:%M:%S UTC')
           notes=$(cat <<EOF
           - Updated on ${updated} from ${GITHUB_SHA::7}
           - Always download from \`https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/<file>\` to get latest version.
+
+          ### Changes
+
+          $(cat "$changes")
           EOF
           )
           gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$(date -u -d "@$now" '+%Y-%m-%d %H:%M UTC')" --notes "$notes"

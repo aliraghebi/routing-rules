@@ -25,6 +25,15 @@ func TestDomains(t *testing.T) {
 	}
 }
 
+func TestDomainsTLD(t *testing.T) {
+	// A single-label suffix must survive and still cover everything under it.
+	in := []parse.Domain{D(S, "ir"), D(S, "digikala.ir"), D(E, "a.example.ir"), D(S, "example.com")}
+	want := []parse.Domain{D(S, "example.com"), D(S, "ir")}
+	if got := Domains(in); !reflect.DeepEqual(got, want) {
+		t.Fatalf("got %v want %v", got, want)
+	}
+}
+
 func TestRemoveAllowed(t *testing.T) {
 	in := []parse.Domain{D(S, "google.com"), D(E, "mail.google.com"), D(S, "x.mail.google.com"), D(E, "ads.com"), D(K, "mail")}
 	kept, removed := RemoveAllowed(in, []string{"mail.google.com"})

@@ -45,9 +45,15 @@ func Domains(in []parse.Domain) []parse.Domain {
 			name := d.Name
 			if d.Kind == parse.Suffix { // a suffix is only covered by a strict parent
 				i := strings.IndexByte(name, '.')
-				name = name[i+1:]
+				if i < 0 { // single label (a TLD such as "ir") has no parent
+					name = ""
+				} else {
+					name = name[i+1:]
+				}
 			}
-			parents(name, func(p string) bool { covered = suffix[p]; return covered })
+			if name != "" {
+				parents(name, func(p string) bool { covered = suffix[p]; return covered })
+			}
 			if covered {
 				continue
 			}

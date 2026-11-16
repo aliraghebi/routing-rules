@@ -1,0 +1,27 @@
+/* Hero on the home page */
+.vr-hero {
+  padding: 1.2rem 0 0.4rem;
+}
+.vr-hero p {
+  font-size: 0.9rem;
+  max-width: 42rem;
+}
+
+/* Grid cards: lift on hover */
+.md-typeset .grid.cards > ul > li {
+  transition: border-color 125ms, box-shadow 125ms, transform 125ms;
+}
+.md-typeset .grid.cards > ul > li:hover {
+  transform: translateY(-2px);
+}
+
+/* Buttons next to each other wrap with some spacing */
+.md-typeset .md-button {
+  margin: 0 0.4rem 0.6rem 0;
+}
+
+/* Long URLs in code blocks wrap instead of scrolling sideways on phones */
+.md-typeset pre > code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

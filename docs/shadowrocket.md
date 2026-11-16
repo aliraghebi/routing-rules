@@ -1,3 +1,7 @@
+---
+icon: material/rocket-launch-outline
+---
+
 # Shadowrocket
 
 ## Import the config

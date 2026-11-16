@@ -1,3 +1,7 @@
+---
+icon: material/cat
+---
+
 # Clash / mihomo
 
 The original Clash core was discontinued in 2023. Its maintained successor is

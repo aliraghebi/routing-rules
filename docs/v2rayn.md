@@ -1,3 +1,7 @@
+---
+icon: material/alpha-v-circle-outline
+---
+
 # v2rayN / v2rayNG
 
 `v2rayn-routing.json` is a set of custom routing rules in the JSON format v2rayN and v2rayNG import. It uses

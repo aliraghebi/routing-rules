@@ -1,30 +1,136 @@
+---
+hide:
+  - navigation
+  - toc
+---
+
+<div class="vr-hero" markdown>
+
 # VPN Routing Config Files & Lists
 
-A collection of cross-platform proxy routing rules and configurations. Supports direct routing for Iranian domains and IP ranges, and blocks ads, trackers, phishing, malware, and other malicious traffic across multiple proxy clients.
+A collection of cross-platform proxy routing rules and configurations. Supports direct routing for Iranian
+domains and IP ranges, and blocks ads, trackers, phishing, malware, and other malicious traffic across
+multiple proxy clients. Rebuilt daily from public lists.
 
-- **Block** ads and trackers (including Iranian ad networks and trackers), malware, phishing and cryptominers.
-- **Proxy** sites that refuse Iranian IPs (sanctioned).
-- **Send Iranian sites and IP ranges direct**, so domestic services stay fast and don't see a foreign IP.
-- **Proxy everything else.**
+[:material-rocket-launch-outline: Get started](#pick-your-client){ .md-button .md-button--primary }
+[:material-download: Latest release](https://github.com/aliraghebi/vpn-routing/releases/latest){ .md-button }
+
+</div>
+
+## What the rules do
+
+```mermaid
+flowchart LR
+    A([Connection]) --> B{Malware, phishing,<br/>cryptominer, ad or tracker?}
+    B -- yes --> R[[Block]]
+    B -- no --> C{Site that blocks<br/>Iranian IPs?}
+    C -- yes --> P[[Proxy]]
+    C -- no --> D{Iranian domain<br/>or IP range?}
+    D -- yes --> X[[Direct]]
+    D -- no --> P
+```
+
+<div class="grid cards" markdown>
+
+-   :material-shield-check-outline:{ .lg .middle } **Block**
+
+    ---
+
+    Ads and trackers (including Iranian ad networks), malware, phishing and cryptominers.
+
+-   :material-earth:{ .lg .middle } **Proxy**
+
+    ---
+
+    Sites that refuse Iranian IPs, and everything not listed as Iranian.
+
+-   :material-home-outline:{ .lg .middle } **Direct**
+
+    ---
+
+    Iranian sites and IP ranges, so domestic services stay fast and don't see a foreign IP.
+
+-   :material-update:{ .lg .middle } **Updated daily**
+
+    ---
+
+    Rebuilt from upstream lists and validated with sing-box, Xray and mihomo before publishing.
+
+</div>
 
 ## Pick your client
 
-**Cores**: use these if you write your own config, or your app lets you load rule-sets / geo files.
+### Apps
 
-| Core | Guide |
-|------|-------|
-| sing-box, and apps built on it (SFI, SFA, Hiddify, NekoBox…) | [sing-box guide](sing-box.md) |
-| Clash / mihomo, and apps built on it (Clash Verge Rev, FlClash, Clash Meta for Android…) | [Clash / mihomo guide](clash.md) |
-| v2ray / Xray, and other Xray-based apps | [v2ray / Xray guide](v2ray.md) |
+Ready-made configs in the app's own format.
 
-**Apps**: ready-made configs in the app's own format.
+<div class="grid cards" markdown>
 
-| App | Guide |
-|-----|-------|
-| Shadowrocket (iOS) | [Shadowrocket guide](shadowrocket.md) |
-| Surge, Loon (iOS) | [Surge & Loon guide](surge-loon.md) |
-| Karing (iOS, Android, desktop) | [Karing guide](karing.md) |
-| v2rayN (desktop), v2rayNG (Android) | [v2rayN / v2rayNG guide](v2rayn.md) |
+-   :material-rocket-launch-outline:{ .lg .middle } **Shadowrocket**
+
+    ---
+
+    :material-apple: iOS. Import one URL.
+
+    [:octicons-arrow-right-24: Guide](shadowrocket.md)
+
+-   :material-waves:{ .lg .middle } **Surge & Loon**
+
+    ---
+
+    :material-apple: iOS. Paste rule lines into your config.
+
+    [:octicons-arrow-right-24: Guide](surge-loon.md)
+
+-   :material-vector-polyline:{ .lg .middle } **Karing**
+
+    ---
+
+    :material-apple: :material-android: :material-microsoft-windows: :material-linux: Import a rules file.
+
+    [:octicons-arrow-right-24: Guide](karing.md)
+
+-   :material-alpha-v-circle-outline:{ .lg .middle } **v2rayN / v2rayNG**
+
+    ---
+
+    :material-microsoft-windows: :material-android: Geo files plus a routing file.
+
+    [:octicons-arrow-right-24: Guide](v2rayn.md)
+
+</div>
+
+### Cores
+
+For your own config, or apps that load rule-sets or geo files.
+
+<div class="grid cards" markdown>
+
+-   :material-cube-outline:{ .lg .middle } **sing-box**
+
+    ---
+
+    Also SFI, SFA, Hiddify, NekoBox and other sing-box apps.
+
+    [:octicons-arrow-right-24: Guide](sing-box.md)
+
+-   :material-cat:{ .lg .middle } **Clash / mihomo**
+
+    ---
+
+    Also Clash Verge Rev, FlClash, Clash Meta for Android.
+
+    [:octicons-arrow-right-24: Guide](clash.md)
+
+-   :material-alpha-x-circle-outline:{ .lg .middle } **v2ray / Xray**
+
+    ---
+
+    `geosite.dat` and `geoip.dat` for Xray-based clients.
+
+    [:octicons-arrow-right-24: Guide](v2ray.md)
+
+</div>
 
 Every file and its URL: [File URLs](urls.md). Where the data comes from: [Sources and licenses](sources.md).
 
@@ -41,18 +147,20 @@ This URL always points to the newest version. It redirects to GitHub's download 
 (`release-assets.githubusercontent.com` / `objects.githubusercontent.com`), which may be filtered on some
 networks in Iran. Apps follow the redirect automatically.
 
-Avoid untrusted "GitHub proxy" sites: they can change the files, and these files decide what goes through
-your VPN and what goes direct.
+!!! warning "Avoid untrusted GitHub proxy sites"
+    They can change the files, and these files decide what goes through your VPN and what goes direct.
 
-## What the rules do, in order
+## Optional lists
 
-1. Malware, phishing, cryptominer and ad/tracker domains/IPs → **block**
-2. Sanctioned sites (that block Iranian IPs) → **proxy**
-3. `.ir` domains and Iranian sites → **direct**
-4. Iranian IP ranges → **direct**
-5. Everything else → **proxy**
+Published with everything else but not used by the default configs. Add them to your own rules if you want
+them.
 
-Optional lists that are not in the default configs: social media, adult content, device and OS telemetry
-(`tracking`: Apple, Samsung, Xiaomi, Huawei, Vivo, Amazon, LG, Roku, Windows/Office, TikTok; can break
-some vendor features), and IP ranges for
-Cloudflare, CloudFront, Fastly, G-Core, Telegram, Tor exit nodes and Netflix.
+| List | Contents |
+|------|----------|
+| `social` | Social media domains |
+| `nsfw` | Adult content |
+| `tracking` | Device and OS telemetry: Apple, Samsung, Xiaomi, Huawei, Vivo, Amazon, LG, Roku, Windows/Office, TikTok. Can break some vendor features. |
+| `cloudflare`, `cloudfront`, `fastly`, `gcore` | CDN IP ranges |
+| `telegram`, `tor-exit`, `netflix` | Service IP ranges (`tor-exit` is the `tor` tag in geo files and rule-sets) |
+
+See [File URLs](urls.md) for every format.

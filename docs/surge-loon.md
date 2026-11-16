@@ -1,3 +1,7 @@
+---
+icon: material/waves
+---
+
 # Surge and Loon
 
 Surge and Loon read the same `RULE-SET` list format as Shadowrocket (`DOMAIN-SUFFIX,…`, `IP-CIDR,…,no-resolve`),

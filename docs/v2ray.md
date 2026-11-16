@@ -1,3 +1,7 @@
+---
+icon: material/alpha-x-circle-outline
+---
+
 # v2ray / Xray
 
 `geosite.dat` and `geoip.dat` use the standard v2ray format, so they work in Xray, v2ray, v2rayN, v2rayNG

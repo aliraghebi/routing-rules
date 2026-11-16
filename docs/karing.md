@@ -1,3 +1,7 @@
+---
+icon: material/vector-polyline
+---
+
 # Karing
 
 [Karing](https://karing.app) is built on sing-box and has its own format for custom diversion (routing) rules.

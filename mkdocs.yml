@@ -3,6 +3,8 @@ site_description: A collection of cross-platform proxy routing rules and configu
 site_url: https://aliraghebi.github.io/vpn-routing/
 repo_url: https://github.com/aliraghebi/vpn-routing
 repo_name: aliraghebi/vpn-routing
+edit_uri: edit/main/docs/
+copyright: Code GPL-3.0 · Lists keep their upstream licenses · IP geolocation by <a href="https://db-ip.com">DB-IP</a>
 docs_dir: docs
 strict: true
 
@@ -11,6 +13,7 @@ theme:
   language: en
   features:
     - navigation.instant
+    - navigation.instant.progress
     - navigation.tracking
     - navigation.tabs
     - navigation.tabs.sticky
@@ -22,6 +25,9 @@ theme:
     - search.highlight
     - search.share
     - toc.follow
+    - navigation.path
+    - content.tooltips
+    - content.tabs.link
     - content.code.copy
     - content.code.annotate
     - content.action.edit
@@ -47,9 +53,28 @@ theme:
   font:
     text: Inter
     code: JetBrains Mono
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
   icon:
     repo: fontawesome/brands/github
     edit: material/pencil
+    admonition:
+      note: material/information-outline
+      warning: material/alert-outline
+      tip: material/lightbulb-on-outline
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/aliraghebi/vpn-routing
+      name: Source on GitHub
+    - icon: material/download
+      link: https://github.com/aliraghebi/vpn-routing/releases/latest
+      name: Latest release
+
+extra_css:
+  - assets/extra.css
 
 nav:
   - Home: index.md

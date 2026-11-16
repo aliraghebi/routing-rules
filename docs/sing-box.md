@@ -1,3 +1,7 @@
+---
+icon: material/cube-outline
+---
+
 # sing-box
 
 Works with sing-box 1.11+ and apps built on it. Rule-sets are named like

@@ -27,8 +27,8 @@ var PROXY = "SOCKS5 127.0.0.1:10808; SOCKS 127.0.0.1:10808";
 
 ## استفاده
 
-- **SwitchyOmega / ZeroOmega**: پروفایل جدید ← **PAC Profile** ← محتوای فایل را بچسبانید.
-- **Firefox**: تنظیمات ← Network Settings ← **Automatic proxy configuration URL** ← مسیر `file://` فایل
+- **SwitchyOmega / ZeroOmega**: پروفایل جدید ←‏ **PAC Profile** ←‏ محتوای فایل را بچسبانید.
+- **Firefox**: تنظیمات ←‏ Network Settings ←‏ **Automatic proxy configuration URL** ←‏ مسیر `file://` فایل
   ذخیره‌شده.
 - **پراکسی سیستم در Windows / macOS**: پیکربندی خودکار (PAC) را روی فایل ذخیره‌شده بگذارید.
 

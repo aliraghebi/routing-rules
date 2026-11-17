@@ -15,7 +15,7 @@ icon: material/shield-search
 
 ## AdGuard Home
 
-**Filters ← DNS blocklists ← Add blocklist ← Add a custom list** و سپس این را بچسبانید:
+**Filters ←‏ DNS blocklists ←‏ Add blocklist ←‏ Add a custom list** و سپس این را بچسبانید:
 
 ```
 https://github.com/aliraghebi/routing-rules/releases/latest/download/adguard-default.txt
@@ -23,7 +23,7 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/adguard-def
 
 ## Pi-hole
 
-**Adlists** (در v6: **Lists**) ← نشانی را اضافه کنید و سپس **Update Gravity** را اجرا کنید:
+**Adlists** (در v6: **Lists**) ←‏ نشانی را اضافه کنید و سپس **Update Gravity** را اجرا کنید:
 
 === "Pi-hole v6"
 

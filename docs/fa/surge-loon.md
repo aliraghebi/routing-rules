@@ -19,7 +19,7 @@ Surge و Loon همان قالب فهرست `RULE-SET` مربوط به Shadowrock
 https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule
 ```
 
-آن را از **Modules** ← **Install New Module** با همین نشانی نصب کنید. قوانین، سایت‌هایی را که IP ایران را
+آن را از **Modules** ←‏ **Install New Module** با همین نشانی نصب کنید. قوانین، سایت‌هایی را که IP ایران را
 مسدود می‌کنند به policy با نام `PROXY` می‌فرستند؛ یک policy group با همین نام بسازید، یا اگر نام گروه شما فرق
 دارد، نسخه‌ای از ماژول را ویرایش کنید.
 

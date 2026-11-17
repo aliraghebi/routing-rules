@@ -16,12 +16,12 @@ icon: material/vector-polyline
 
 1. فایل را با دکمه بالا دانلود کنید. متن را از زبانه مرورگر کپی نکنید: انتخاب ناقص فایل را خراب می‌کند
    (Karing خطای `FormatException: Unterminated string` می‌دهد).
-2. در Karing روی **Diversion** ← **Diversion Rules** ← نماد مداد (بالا سمت راست) بزنید. مطمئن شوید
+2. در Karing روی **Diversion** ←‏ **Diversion Rules** ←‏ نماد مداد (بالا سمت راست) بزنید. مطمئن شوید
    **Custom Diversion Group** روشن است.
 
     ![Karing: گزینه Diversion، سپس Diversion Rules، سپس نماد مداد](../assets/img/karing-open.webp){ width="720" loading=lazy }
 
-3. در صفحه **Custom Diversion Group** روی **⋮** ← **Import** بزنید و فایل دانلودشده را انتخاب کنید. گروه‌های
+3. در صفحه **Custom Diversion Group** روی **⋮** ←‏ **Import** بزنید و فایل دانلودشده را انتخاب کنید. گروه‌های
    **🚫 Block** و **✅ Direct** به فهرست اضافه می‌شوند.
 
     ![Karing: منو را باز کنید، Import را بزنید؛ گروه‌های Block و Direct اضافه می‌شوند](../assets/img/karing-import.webp){ width="720" loading=lazy }

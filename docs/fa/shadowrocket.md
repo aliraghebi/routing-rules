@@ -26,8 +26,8 @@ icon: material/rocket-launch-outline
     https://github.com/aliraghebi/routing-rules/releases/latest/download/shadowrocket.conf
     ```
 
-2. Shadowrocket ← زبانه **Config** ← **+** ← نشانی را بچسبانید ← **Download**.
-3. روی پیکربندی جدید بزنید ← **Use Config**. تیک نشان‌دهنده پیکربندی در حال استفاده است.
+2. Shadowrocket ←‏ زبانه **Config** ←‏ **+** ←‏ نشانی را بچسبانید ←‏ **Download**.
+3. روی پیکربندی جدید بزنید ←‏ **Use Config**. تیک نشان‌دهنده پیکربندی در حال استفاده است.
 
     ![زبانه Config: روی + بزنید، نشانی را بچسبانید، Download را بزنید، سپس روی پیکربندی بزنید و Use Config را انتخاب کنید](../assets/img/shadowrocket-import.webp){ width="720" loading=lazy }
 
@@ -38,7 +38,7 @@ icon: material/rocket-launch-outline
 ### به‌روز نگه داشتن
 
 فهرست‌ها هر روز تغییر می‌کنند. پیکربندی `update-url` دارد و همه فهرست‌ها `RULE-SET` راه دور هستند، پس
-لازم نیست دوباره وارد کنید. برای به‌روزرسانی فوری، در زبانه **Config** پیکربندی را لمس کنید و نگه دارید ← **Update**.
+لازم نیست دوباره وارد کنید. برای به‌روزرسانی فوری، در زبانه **Config** پیکربندی را لمس کنید و نگه دارید ←‏ **Update**.
 
 ![پیکربندی را لمس کنید و نگه دارید و Update را بزنید](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
 
@@ -58,7 +58,7 @@ icon: material/rocket-launch-outline
     https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule
     ```
 
-2. Shadowrocket ← زبانه **Config** ← **Modules** ← **+** ← نشانی را بچسبانید ← **Download**.
+2. Shadowrocket ←‏ زبانه **Config** ←‏ **Modules** ←‏ **+** ←‏ نشانی را بچسبانید ←‏ **Download**.
 3. مطمئن شوید ماژول روشن است.
 
 قوانین برای سایت‌هایی که IP ایران را مسدود می‌کنند از policy با نام `PROXY` (پراکسی داخلی Shadowrocket)
@@ -80,7 +80,7 @@ icon: material/rocket-launch-outline
 
 ## افزودن فهرست اختیاری
 
-پیکربندی را ویرایش کنید (**Config** ← پیکربندی را لمس کنید و نگه دارید ← **Edit Config** ← **Rule**) و یک خط بالای
+پیکربندی را ویرایش کنید (**Config** ←‏ پیکربندی را لمس کنید و نگه دارید ←‏ **Edit Config** ←‏ **Rule**) و یک خط بالای
 `FINAL` اضافه کنید. برای مثال:
 
 ```

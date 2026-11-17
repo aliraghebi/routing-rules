@@ -4,7 +4,21 @@ icon: material/rocket-launch-outline
 
 # Shadowrocket
 
-## Import the config
+## Install with one tap
+
+On your iPhone or iPad with Shadowrocket installed, tap the button. Shadowrocket opens, downloads the config
+and switches to it.
+
+[:material-rocket-launch: Install in Shadowrocket](shadowrocket://config/add/https://github.com/aliraghebi/routing-rules/releases/latest/download/shadowrocket.conf){ .md-button .md-button--primary }
+
+Then, on the **Home** tab, add your server and set **Global Routing** to **Config**.
+
+!!! note
+    The button works only on the device where Shadowrocket is installed. It replaces the config in use; to keep
+    your own config, use the [module](#keep-your-own-config-module) instead. If nothing happens, follow the
+    manual steps below.
+
+## Import manually
 
 1. Copy the config URL:
 
@@ -13,14 +27,28 @@ icon: material/rocket-launch-outline
     ```
 
 2. Shadowrocket → **Config** tab → **+** → paste the URL → **Download**.
+
+    ![Config tab: tap +, paste the config URL and tap Download](../assets/img/shadowrocket-import.webp){ width="600" loading=lazy }
+
 3. Tap the new config → **Use Config**. A checkmark marks the config in use.
 4. On the **Home** tab, add your server and set **Global Routing** to **Config**.
 
-## Or keep your own config (module)
+### Keep it updated
+
+The lists change daily. The config includes `update-url` and every rule list is a remote `RULE-SET`, so you
+don't need to re-import. To refresh now, long-press the config in the **Config** tab → **Update**.
+
+![Long-press the config and tap Update](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
+
+## Keep your own config (module)
 
 If you already have a config you like (your own servers, rules or settings), add these rules as a
 **module** instead of importing the config above. The module holds the same rules without the final
 catch-all, so your config keeps its servers and `FINAL`.
+
+[:material-puzzle-outline: Install module in Shadowrocket](shadowrocket://install?module=https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule){ .md-button }
+
+Or add it manually:
 
 1. Copy the module URL:
 
@@ -34,11 +62,6 @@ catch-all, so your config keeps its servers and `FINAL`.
 The rules use the policy `PROXY` (Shadowrocket's built-in proxy policy) for sites that block Iranian IPs.
 Modules update on their own like the config; to refresh now, update the module from the **Modules**
 screen.
-
-## Keep it updated
-
-The lists change daily. The config includes `update-url` and every rule list is a remote `RULE-SET`, so you
-don't need to re-import. To refresh now, long-press the config in the **Config** tab → **Update**.
 
 ## Rule order
 

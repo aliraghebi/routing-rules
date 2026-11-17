@@ -4,7 +4,21 @@ icon: material/rocket-launch-outline
 
 # Shadowrocket
 
-## وارد کردن پیکربندی
+## نصب با یک لمس
+
+روی آیفون یا آیپدی که Shadowrocket روی آن نصب است، روی دکمه بزنید. Shadowrocket باز می‌شود، پیکربندی را
+دانلود می‌کند و به آن تغییر می‌دهد.
+
+[:material-rocket-launch: نصب در Shadowrocket](shadowrocket://config/add/https://github.com/aliraghebi/routing-rules/releases/latest/download/shadowrocket.conf){ .md-button .md-button--primary }
+
+سپس در زبانه **Home** سرور خود را اضافه کنید و **Global Routing** را روی **Config** بگذارید.
+
+!!! note "یادداشت"
+    این دکمه فقط روی دستگاهی کار می‌کند که Shadowrocket روی آن نصب است. پیکربندی در حال استفاده را جایگزین
+    می‌کند؛ برای نگه داشتن پیکربندی خودتان از [ماژول](#keep-your-own-config-module) استفاده کنید. اگر اتفاقی
+    نیفتاد، مراحل دستی زیر را انجام دهید.
+
+## وارد کردن دستی
 
 1. نشانی پیکربندی را کپی کنید:
 
@@ -13,14 +27,28 @@ icon: material/rocket-launch-outline
     ```
 
 2. Shadowrocket ← زبانه **Config** ← **+** ← نشانی را بچسبانید ← **Download**.
+
+    ![زبانه Config: روی + بزنید، نشانی پیکربندی را بچسبانید و Download را بزنید](../assets/img/shadowrocket-import.webp){ width="600" loading=lazy }
+
 3. روی پیکربندی جدید بزنید ← **Use Config**. تیک نشان‌دهنده پیکربندی در حال استفاده است.
 4. در زبانه **Home** سرور خود را اضافه کنید و **Global Routing** را روی **Config** بگذارید.
 
-## یا پیکربندی خودتان را نگه دارید (ماژول)
+### به‌روز نگه داشتن
+
+فهرست‌ها هر روز تغییر می‌کنند. پیکربندی `update-url` دارد و همه فهرست‌ها `RULE-SET` راه دور هستند، پس
+لازم نیست دوباره وارد کنید. برای به‌روزرسانی فوری، در زبانه **Config** پیکربندی را لمس کنید و نگه دارید ← **Update**.
+
+![پیکربندی را لمس کنید و نگه دارید و Update را بزنید](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
+
+## پیکربندی خودتان را نگه دارید (ماژول) {#keep-your-own-config-module}
 
 اگر پیکربندی دلخواه خودتان را دارید (سرورها، قوانین یا تنظیمات خودتان)، به‌جای وارد کردن پیکربندی بالا این
 قوانین را به‌صورت **ماژول** اضافه کنید. ماژول همان قوانین را بدون قانون پایانی دارد، پس پیکربندی شما سرورها و
 `FINAL` خودش را نگه می‌دارد.
+
+[:material-puzzle-outline: نصب ماژول در Shadowrocket](shadowrocket://install?module=https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule){ .md-button }
+
+یا آن را دستی اضافه کنید:
 
 1. نشانی ماژول را کپی کنید:
 
@@ -34,11 +62,6 @@ icon: material/rocket-launch-outline
 قوانین برای سایت‌هایی که IP ایران را مسدود می‌کنند از policy با نام `PROXY` (پراکسی داخلی Shadowrocket)
 استفاده می‌کنند. ماژول‌ها مانند پیکربندی خودکار به‌روز می‌شوند؛ برای به‌روزرسانی فوری، ماژول را از صفحه
 **Modules** به‌روز کنید.
-
-## به‌روز نگه داشتن
-
-فهرست‌ها هر روز تغییر می‌کنند. پیکربندی `update-url` دارد و همه فهرست‌ها `RULE-SET` راه دور هستند، پس
-لازم نیست دوباره وارد کنید. برای به‌روزرسانی فوری، در زبانه **Config** پیکربندی را لمس کنید و نگه دارید ← **Update**.
 
 ## ترتیب قوانین
 

@@ -10,18 +10,18 @@ icon: material/cat
 
 ## استفاده از قوانین آماده
 
-`clash.yaml` بخش‌های `rule-providers` و `rules` را با همان ترتیب پیکربندی Shadowrocket دارد:
+`clash.yaml` بخش‌های `rule-providers` و `rules` را با همان ترتیب کانفیگ Shadowrocket دارد:
 
 [:material-download: دانلود clash.yaml](https://github.com/aliraghebi/routing-rules/releases/latest/download/clash.yaml){ .md-button .md-button--primary }
 
-هر دو بخش را با پیکربندی خود ادغام کنید. در Clash Verge Rev می‌توانید آن‌ها را در فایل **Merge** (پیکربندی
-تکمیلی) پروفایل بچسبانید تا اشتراک شما دست‌نخورده بماند. قوانین به یک proxy group با نام **`PROXY`** نیاز
+هر دو بخش را با کانفیگ خود ادغام کنید. در Clash Verge Rev می‌توانید آن‌ها را در فایل **Merge** (کانفیگ
+تکمیلی) پروفایل پیست کنید تا اشتراک شما دست‌نخورده بماند. قوانین به یک proxy group با نام **`PROXY`** نیاز
 دارند؛ اگر گروه شما نام دیگری دارد، آن را در فایل تغییر دهید.
 
 ## DNS
 
 `clash-dns.yaml` یک بلوک `dns` برای mihomo است: fake-ip برای همه دامنه‌ها به‌جز دامنه‌های ایرانی که با DNS
-سیستم ترجمه می‌شوند (`nameserver-policy`)، و DNS-over-HTTPS از طریق گروه `PROXY` برای بقیه. آن را همراه
+سیستم resolve می‌شوند (`nameserver-policy`)، و DNS-over-HTTPS از طریق گروه `PROXY` برای بقیه. آن را همراه
 `clash.yaml` ادغام کنید که rule-provider مربوط به `geosite-ir` را تعریف می‌کند.
 
 [:material-download: دانلود clash-dns.yaml](https://github.com/aliraghebi/routing-rules/releases/latest/download/clash-dns.yaml){ .md-button .md-button--primary }
@@ -57,13 +57,13 @@ rules:
 ## قوانین IP و DNS
 
 قوانین مسدودسازی و پراکسی که بر اساس IP تطبیق می‌دهند `no-resolve` دارند، پس هیچ دامنه‌ای فقط برای مقایسه با
-فهرست مسدودسازی ترجمه نمی‌شود. قانون DIRECT برای `geoip-ir` ترجمه را انجام می‌دهد، مانند `GEOIP,IR` در
+لیست مسدودسازی resolve نمی‌شود. قانون DIRECT برای `geoip-ir` resolve را انجام می‌دهد، مانند `GEOIP,IR` در
 Shadowrocket؛ این کار سایت‌های ایرانی را که در `geosite-ir` نیستند هم پوشش می‌دهد، اما آن درخواست‌های DNS
 را به DNS تنظیم‌شده شما می‌فرستد.
 
 !!! note "دیگر برنامه‌های سازگار با Clash"
     `.mrs` مخصوص mihomo است. برنامه‌هایی که پیاده‌سازی Clash خودشان را دارند (مثلاً Stash) ممکن است آن را
     نخوانند. فایل‌های `.list` مربوط به Shadowrocket از نحو کلاسیک `DOMAIN-SUFFIX,…` / `IP-CIDR,…` استفاده
-    می‌کنند که providerهای `behavior: classical` در Clash می‌خوانند، اما در آن برنامه‌ها آزموده نشده‌اند.
+    می‌کنند که providerهای `behavior: classical` در Clash می‌خوانند، اما در آن برنامه‌ها تست نشده‌اند.
 
-همه نشانی‌ها: [نشانی فایل‌ها](urls.md#clash-mihomo-rule-sets).
+همه لینک‌ها: [لینک فایل‌ها](urls.md#clash-mihomo-rule-sets).

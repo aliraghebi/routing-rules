@@ -9,8 +9,8 @@ icon: material/router-network
 ## WireGuard (تونل جداشده)
 
 WireGuard مقصدی را که با `AllowedIPs` تطبیق پیدا کند از تونل عبور می‌دهد. این فایل‌ها **همه آدرس‌ها به‌جز
-بازه‌های ایران و شبکه‌های خصوصی** را فهرست می‌کنند، پس سایت‌های ایرانی مستقیم می‌مانند و بقیه از VPN استفاده
-می‌کنند. محتوای فایل را بعد از `AllowedIPs =` در بخش `[Peer]` بچسبانید.
+بازه‌های ایران و شبکه‌های خصوصی** را دارند، پس سایت‌های ایرانی مستقیم می‌مانند و بقیه از VPN استفاده
+می‌کنند. محتوای فایل را بعد از `AllowedIPs =` در بخش `[Peer]` پیست کنید.
 
 | فایل | تعداد | مناسب برای |
 |------|-------|------------|
@@ -27,7 +27,7 @@ WireGuard مقصدی را که با `AllowedIPs` تطبیق پیدا کند از
 
 OpenVPN برعکس عمل می‌کند: تونل کامل سرور را نگه دارید و مسیرهایی اضافه کنید که بازه‌های ایران را **بیرون**
 از تونل و از طریق اتصال عادی شما بفرستند. خطوط فایل را در فایل `.ovpn` کلاینت (هر جایی بعد از `client`)
-بچسبانید:
+پیست کنید:
 
 ```
 route 2.144.0.0 255.252.0.0 net_gateway
@@ -42,14 +42,14 @@ route 2.144.0.0 255.252.0.0 net_gateway
 
 [:material-download: دانلود openvpn-ir-routes-lite.txt](https://github.com/aliraghebi/routing-rules/releases/latest/download/openvpn-ir-routes-lite.txt){ .md-button .md-button--primary } [:material-download: دانلود openvpn-ir-routes.txt](https://github.com/aliraghebi/routing-rules/releases/latest/download/openvpn-ir-routes.txt){ .md-button }
 
-!!! note "یادداشت"
+!!! note "نکته"
     مسیرها فقط IPv4 هستند، پس IPv6 در تونل می‌ماند. `net_gateway` نحو استاندارد OpenVPN 2.x است (دسکتاپ،
     OpenVPN for Android)؛ اگر مسیرها نادیده گرفته می‌شوند، پشتیبانی برنامه خود را بررسی کنید. مانند WireGuard،
     DNS را داخل تونل نگه دارید.
 
 ## MikroTik (RouterOS)
 
-`mikrotik-ir.rsc` فهرست آدرس `IR` (IPv4 و IPv6) را می‌سازد. اجرای دوباره آن فهرست را جایگزین می‌کند.
+`mikrotik-ir.rsc` لیست آدرس `IR` (IPv4 و IPv6) را می‌سازد. اجرای دوباره آن لیست را جایگزین می‌کند.
 
 [:material-download: دانلود mikrotik-ir.rsc](https://github.com/aliraghebi/routing-rules/releases/latest/download/mikrotik-ir.rsc){ .md-button .md-button--primary }
 
@@ -59,7 +59,7 @@ route 2.144.0.0 255.252.0.0 net_gateway
 ```
 
 سپس در قوانین mangle یا مسیریابی از `dst-address-list=IR` استفاده کنید؛ مثلاً هر چیزی را که در `IR` **نیست**
-برای جدول مسیریابی VPN علامت بزنید. یک scheduler اضافه کنید تا هر روز به‌روز شود.
+برای جدول مسیریابی VPN علامت بزنید. یک scheduler اضافه کنید تا هر روز آپدیت شود.
 
 ## OpenWrt، ipset و nftables
 

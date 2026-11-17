@@ -4,66 +4,66 @@ icon: material/rocket-launch-outline
 
 # Shadowrocket
 
-## نصب با یک لمس
+## نصب با یک کلیک
 
-روی آیفون یا آیپدی که Shadowrocket روی آن نصب است، روی دکمه بزنید. Shadowrocket باز می‌شود، پیکربندی را
+روی آیفون یا آیپدی که Shadowrocket روی آن نصب است، روی دکمه بزنید. Shadowrocket باز می‌شود، کانفیگ را
 دانلود می‌کند و به آن تغییر می‌دهد.
 
 [:material-rocket-launch: نصب در Shadowrocket](shadowrocket://config/add/https://github.com/aliraghebi/routing-rules/releases/latest/download/shadowrocket.conf){ .md-button .md-button--primary }
 
-سپس در زبانه **Home** سرور خود را اضافه کنید و **Global Routing** را روی **Config** بگذارید.
+سپس در تب **Home** سرور خود را اضافه کنید و **Global Routing** را روی **Config** بگذارید.
 
-!!! note "یادداشت"
-    این دکمه فقط روی دستگاهی کار می‌کند که Shadowrocket روی آن نصب است. پیکربندی در حال استفاده را جایگزین
-    می‌کند؛ برای نگه داشتن پیکربندی خودتان از [ماژول](#keep-your-own-config-module) استفاده کنید. اگر اتفاقی
+!!! note "نکته"
+    این دکمه فقط روی دستگاهی کار می‌کند که Shadowrocket روی آن نصب است. کانفیگ در حال استفاده را جایگزین
+    می‌کند؛ برای نگه داشتن کانفیگ خودتان از [ماژول](#keep-your-own-config-module) استفاده کنید. اگر اتفاقی
     نیفتاد، مراحل دستی زیر را انجام دهید.
 
-## وارد کردن دستی
+## ایمپورت دستی
 
-1. نشانی پیکربندی را کپی کنید:
+1. لینک کانفیگ را کپی کنید:
 
     ```
     https://github.com/aliraghebi/routing-rules/releases/latest/download/shadowrocket.conf
     ```
 
-2. Shadowrocket ←‏ زبانه **Config** ←‏ **+** ←‏ نشانی را بچسبانید ←‏ **Download**.
-3. روی پیکربندی جدید بزنید ←‏ **Use Config**. تیک نشان‌دهنده پیکربندی در حال استفاده است.
+2. Shadowrocket ←‏ تب **Config** ←‏ **+** ←‏ لینک را پیست کنید ←‏ **Download**.
+3. روی کانفیگ جدید بزنید ←‏ **Use Config**. تیک نشان‌دهنده کانفیگ در حال استفاده است.
 
-    ![زبانه Config: روی + بزنید، نشانی را بچسبانید، Download را بزنید، سپس روی پیکربندی بزنید و Use Config را انتخاب کنید](../assets/img/shadowrocket-import.webp){ width="720" loading=lazy }
+    ![تب Config: روی + بزنید، لینک را پیست کنید، Download را بزنید، سپس روی کانفیگ بزنید و Use Config را انتخاب کنید](../assets/img/shadowrocket-import.webp){ width="720" loading=lazy }
 
-4. در زبانه **Home** سرور خود را اضافه کنید و **Global Routing** را روی **Config** بگذارید.
+4. در تب **Home** سرور خود را اضافه کنید و **Global Routing** را روی **Config** بگذارید.
 
-    ![زبانه Home: گزینه Global Routing روی Config](../assets/img/shadowrocket-routing.webp){ width="480" loading=lazy }
+    ![تب Home: گزینه Global Routing روی Config](../assets/img/shadowrocket-routing.webp){ width="480" loading=lazy }
 
-### به‌روز نگه داشتن
+### آپدیت نگه داشتن
 
-فهرست‌ها هر روز تغییر می‌کنند. پیکربندی `update-url` دارد و همه فهرست‌ها `RULE-SET` راه دور هستند، پس
-لازم نیست دوباره وارد کنید. برای به‌روزرسانی فوری، در زبانه **Config** پیکربندی را لمس کنید و نگه دارید ←‏ **Update**.
+لیست‌ها هر روز تغییر می‌کنند. کانفیگ `update-url` دارد و همه لیست‌ها `RULE-SET` راه دور هستند، پس
+لازم نیست دوباره ایمپورت کنید. برای آپدیت فوری، در تب **Config** انگشتتان را چند لحظه روی کانفیگ نگه دارید ←‏ **Update**.
 
-![پیکربندی را لمس کنید و نگه دارید و Update را بزنید](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
+![انگشتتان را روی کانفیگ نگه دارید و Update را بزنید](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
 
-## پیکربندی خودتان را نگه دارید (ماژول) {#keep-your-own-config-module}
+## کانفیگ خودتان را نگه دارید (ماژول) {#keep-your-own-config-module}
 
-اگر پیکربندی دلخواه خودتان را دارید (سرورها، قوانین یا تنظیمات خودتان)، به‌جای وارد کردن پیکربندی بالا این
-قوانین را به‌صورت **ماژول** اضافه کنید. ماژول همان قوانین را بدون قانون پایانی دارد، پس پیکربندی شما سرورها و
+اگر کانفیگ دلخواه خودتان را دارید (سرورها، قوانین یا تنظیمات خودتان)، به‌جای ایمپورت کانفیگ بالا این
+قوانین را به‌صورت **ماژول** اضافه کنید. ماژول همان قوانین را بدون قانون پایانی دارد، پس کانفیگ شما سرورها و
 `FINAL` خودش را نگه می‌دارد.
 
 [:material-puzzle-outline: نصب ماژول در Shadowrocket](shadowrocket://install?module=https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule){ .md-button }
 
 یا آن را دستی اضافه کنید:
 
-1. نشانی ماژول را کپی کنید:
+1. لینک ماژول را کپی کنید:
 
     ```
     https://github.com/aliraghebi/routing-rules/releases/latest/download/routing-rules.sgmodule
     ```
 
-2. Shadowrocket ←‏ زبانه **Config** ←‏ **Modules** ←‏ **+** ←‏ نشانی را بچسبانید ←‏ **Download**.
-3. مطمئن شوید ماژول روشن است.
+2. Shadowrocket ←‏ تب **Config** ←‏ **Modules** ←‏ **+** ←‏ لینک را پیست کنید ←‏ **Download**.
+3. مطمئن شوید ماژول فعال است.
 
 قوانین برای سایت‌هایی که IP ایران را مسدود می‌کنند از policy با نام `PROXY` (پراکسی داخلی Shadowrocket)
-استفاده می‌کنند. ماژول‌ها مانند پیکربندی خودکار به‌روز می‌شوند؛ برای به‌روزرسانی فوری، ماژول را از صفحه
-**Modules** به‌روز کنید.
+استفاده می‌کنند. ماژول‌ها هم مثل کانفیگ، خودکار آپدیت می‌شوند؛ برای آپدیت فوری، ماژول را از صفحه
+**Modules** آپدیت کنید.
 
 ## ترتیب قوانین
 
@@ -78,9 +78,9 @@ icon: material/rocket-launch-outline
 | ۷ | `GEOIP,IR` | DIRECT |
 | ۸ | `FINAL` | PROXY |
 
-## افزودن فهرست اختیاری
+## افزودن لیست اختیاری
 
-پیکربندی را ویرایش کنید (**Config** ←‏ پیکربندی را لمس کنید و نگه دارید ←‏ **Edit Config** ←‏ **Rule**) و یک خط بالای
+کانفیگ را ویرایش کنید (**Config** ←‏ انگشتتان را روی کانفیگ نگه دارید ←‏ **Edit Config** ←‏ **Rule**) و یک خط بالای
 `FINAL` اضافه کنید. برای مثال:
 
 ```
@@ -89,23 +89,23 @@ RULE-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/te
 ```
 
 !!! warning "توجه"
-    ویرایش محلی با به‌روزرسانی پیکربندی از `update-url` از بین می‌رود. برای حفظ تغییرات، پیکربندی خودتان را
-    بسازید و فقط با خطوط `RULE-SET` به این فهرست‌ها ارجاع دهید.
+    ویرایش محلی با آپدیت کانفیگ از `update-url` از بین می‌رود. برای حفظ تغییرات، کانفیگ خودتان را
+    بسازید و فقط با خطوط `RULE-SET` به این لیست‌ها ارجاع دهید.
 
-نشانی همه فهرست‌ها: [نشانی فایل‌ها](urls.md#shadowrocket-rule-lists).
+لینک همه لیست‌ها: [لینک فایل‌ها](urls.md#shadowrocket-rule-lists).
 
-## فهرست‌های سبک‌تر
+## لیست‌های سبک‌تر
 
 iOS حافظه برنامه‌های VPN را محدود می‌کند و `ads.list` بزرگ است. دو گزینه سبک‌تر:
 
-- **DOMAIN-SET**: همان دامنه‌ها در قالبی که Shadowrocket و Surge بهینه‌تر بارگیری می‌کنند. خط `RULE-SET`
-  یک فهرست دامنه را با خط `DOMAIN-SET` جایگزین کنید، مثلاً
-  `DOMAIN-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/ads-domainset.txt,REJECT`. فایل‌های DOMAIN-SET فقط دامنه دارند، پس برای فهرست‌هایی که
+- **DOMAIN-SET**: همان دامنه‌ها در قالبی که Shadowrocket و Surge بهینه‌تر لود می‌کنند. خط `RULE-SET`
+  یک لیست دامنه را با خط `DOMAIN-SET` جایگزین کنید، مثلاً
+  `DOMAIN-SET,https://github.com/aliraghebi/routing-rules/releases/latest/download/ads-domainset.txt,REJECT`. فایل‌های DOMAIN-SET فقط دامنه دارند، پس برای لیست‌هایی که
   بازه IP هم دارند (`malware`، `phishing`) همان `RULE-SET` را نگه دارید.
-- **ads-lite**: حدود ۵ هزار قانون از منابع کوچک و دست‌چین‌شده (شبکه‌های تبلیغاتی و ردیاب‌های ایرانی، فهرست
+- **ads-lite**: حدود ۵ هزار قانون از منابع کوچک و دست‌چین‌شده (شبکه‌های تبلیغاتی و ردیاب‌های ایرانی، لیست
   Peter Lowe، v2fly) به‌جای حدود ۱۷۶ هزار. به‌جای `ads.list` از `ads-lite.list` (یا `ads-lite-domainset.txt`)
   استفاده کنید.
 
-!!! note "یادداشت"
-    پیکربندی پیش‌فرض `RULE-SET` با `ads.list` کامل را نگه می‌دارد. این گزینه‌ها روی همه دستگاه‌ها آزموده
+!!! note "نکته"
+    کانفیگ پیش‌فرض `RULE-SET` با `ads.list` کامل را نگه می‌دارد. این گزینه‌ها روی همه دستگاه‌ها تست
     نشده‌اند؛ اگر برنامه مشکل حافظه دارد یا مدام دوباره وصل می‌شود، از آن‌ها استفاده کنید.

@@ -7,7 +7,7 @@ icon: material/alpha-x-circle-outline
 `geosite.dat` و `geoip.dat` قالب استاندارد v2ray را دارند، پس در Xray، v2ray، v2rayN، v2rayNG و دیگر
 برنامه‌های مبتنی بر Xray کار می‌کنند.
 
-این نشانی‌ها را به‌عنوان نشانی سفارشی فایل‌های geo در برنامه خود تنظیم کنید:
+این لینک‌ها را به‌عنوان لینک سفارشی فایل‌های geo در برنامه خود تنظیم کنید:
 
 `geosite.dat`
 
@@ -21,7 +21,7 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/geosite.dat
 https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
 ```
 
-باز کردن این نشانی‌ها در مرورگر، فایل‌ها را دانلود می‌کند.
+باز کردن این لینک‌ها در مرورگر، فایل‌ها را دانلود می‌کند.
 
 ## برچسب‌ها
 
@@ -31,8 +31,8 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
 
 !!! warning "این فایل‌ها فقط برچسب‌های بالا را دارند"
     اگر فایل‌های geo پیش‌فرض برنامه را با این‌ها جایگزین کنید، قوانینی که از برچسب‌های دیگر استفاده می‌کنند
-    (`geosite:google`، `geoip:cn`، `geosite:category-ads-all`) دیگر کار نمی‌کنند. یا آن قوانین را به‌روز کنید،
-    یا فایل‌های پیش‌فرض را نگه دارید و این‌ها را با نام دیگری بارگیری کنید (فقط Xray):
+    (`geosite:google`، `geoip:cn`، `geosite:category-ads-all`) دیگر کار نمی‌کنند. یا آن قوانین را عوض کنید،
+    یا فایل‌های پیش‌فرض را نگه دارید و این‌ها را با نام دیگری لود کنید (فقط Xray):
 
     ```
     ext:iran-geosite.dat:ads
@@ -41,7 +41,7 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
 
 ## نمونه مسیریابی
 
-`xray-routing.json` همان ترتیب پیکربندی Shadowrocket را دارد:
+`xray-routing.json` همان ترتیب کانفیگ Shadowrocket را دارد:
 
 [:material-download: دانلود xray-routing.json](https://github.com/aliraghebi/routing-rules/releases/latest/download/xray-routing.json){ .md-button .md-button--primary }
 
@@ -66,7 +66,7 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
 
 به outboundهایی با برچسب `proxy`، `direct` و `block` (blackhole) نیاز دارد. قانون اول آدرس‌های صفحه
 مسدودسازی DNS ایران را قبل از قانون IP خصوصی مسدود می‌کند، چون در بازه `10.0.0.0/8` قرار دارند.
-`IPIfNonMatch` دامنه‌هایی را که با هیچ قانون دامنه‌ای تطبیق نیافتند ترجمه می‌کند، پس `geoip:ir` سایت‌های
+`IPIfNonMatch` دامنه‌هایی را که با هیچ قانون دامنه‌ای تطبیق پیدا نکردند resolve می‌کند، پس `geoip:ir` سایت‌های
 ایرانی‌ای را که در `geosite:ir` نیستند هم پوشش می‌دهد.
 
 ## DNS
@@ -79,4 +79,4 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/geoip.dat
 ## v2rayN / v2rayNG
 
 این برنامه‌ها به قوانین مسیریابی سفارشی هم نیاز دارند که از این برچسب‌ها استفاده کنند. فایل قوانین آماده و
-مراحل وارد کردن در [راهنمای v2rayN / v2rayNG](v2rayn.md) است.
+مراحل ایمپورت در [راهنمای v2rayN / v2rayNG](v2rayn.md) است.

@@ -8,7 +8,7 @@ hide:
 
 # قوانین مسیریابی
 
-قوانین مسیریابی و پیکربندی‌های آماده برای کلاینت‌های پراکسی و VPN که هر روز از فهرست‌های عمومی ساخته
+قوانین مسیریابی و کانفیگ‌های آماده برای کلاینت‌های پراکسی و VPN که هر روز از لیست‌های عمومی ساخته
 می‌شوند. سایت‌ها و بازه‌های IP داخلی (فعلاً برای **ایران**) مستقیم وصل می‌شوند، سایت‌هایی که IP داخلی را
 مسدود می‌کنند از پراکسی عبور می‌کنند، و تبلیغات، ردیاب‌ها، بدافزار، فیشینگ و استخراج‌کننده‌های رمزارز
 مسدود می‌شوند: در sing-box، Clash/mihomo، Xray، Shadowrocket، Karing، WireGuard، OpenVPN، مرورگرها و
@@ -45,7 +45,7 @@ flowchart LR
 
     ---
 
-    سایت‌هایی که IP ایران را نمی‌پذیرند، و هر چیزی که در فهرست سایت‌های ایرانی نیست.
+    سایت‌هایی که IP ایران را نمی‌پذیرند، و هر چیزی که در لیست سایت‌های ایرانی نیست.
 
 -   :material-home-outline:{ .lg .middle } **مستقیم**
 
@@ -53,11 +53,11 @@ flowchart LR
 
     سایت‌ها و بازه‌های IP ایران، تا سرویس‌های داخلی سریع بمانند و IP خارجی نبینند.
 
--   :material-update:{ .lg .middle } **به‌روزرسانی روزانه**
+-   :material-update:{ .lg .middle } **آپدیت روزانه**
 
     ---
 
-    از فهرست‌های منبع ساخته و با sing-box، Xray و mihomo بررسی می‌شود. هر نسخه تغییراتش را فهرست می‌کند.
+    از لیست‌های منبع ساخته و با sing-box، Xray و mihomo بررسی می‌شود. لیست تغییرات هر نسخه همراهش منتشر می‌شود.
 
 </div>
 
@@ -65,7 +65,7 @@ flowchart LR
 
 ### برنامه‌ها
 
-پیکربندی آماده در قالب خود برنامه.
+کانفیگ آماده در قالب خود برنامه.
 
 <div class="grid cards" markdown>
 
@@ -73,7 +73,7 @@ flowchart LR
 
     ---
 
-    :material-apple: iOS. وارد کردن یک نشانی.
+    :material-apple: iOS. ایمپورت یک لینک.
 
     [:octicons-arrow-left-24: راهنما](shadowrocket.md)
 
@@ -81,7 +81,7 @@ flowchart LR
 
     ---
 
-    :material-apple: iOS. افزودن خطوط قانون به پیکربندی.
+    :material-apple: iOS. افزودن خطوط قانون به کانفیگ.
 
     [:octicons-arrow-left-24: راهنما](surge-loon.md)
 
@@ -89,7 +89,7 @@ flowchart LR
 
     ---
 
-    :material-apple: :material-android: :material-microsoft-windows: :material-linux: وارد کردن فایل قوانین.
+    :material-apple: :material-android: :material-microsoft-windows: :material-linux: ایمپورت فایل قوانین.
 
     [:octicons-arrow-left-24: راهنما](karing.md)
 
@@ -105,7 +105,7 @@ flowchart LR
 
 ### هسته‌ها
 
-برای پیکربندی دستی، یا برنامه‌هایی که rule-set یا فایل geo بارگیری می‌کنند.
+برای کانفیگ دستی، یا برنامه‌هایی که rule-set یا فایل geo دانلود می‌کنند.
 
 <div class="grid cards" markdown>
 
@@ -143,7 +143,7 @@ flowchart LR
 
     ---
 
-    `AllowedIPs` برای تونل جداشده، مسیرهای OpenVPN، فهرست آدرس MikroTik، ipset و nftables.
+    `AllowedIPs` برای تونل جداشده، مسیرهای OpenVPN، لیست آدرس MikroTik، ipset و nftables.
 
     [:octicons-arrow-left-24: راهنما](networks.md)
 
@@ -159,7 +159,7 @@ flowchart LR
 
     ---
 
-    فهرست‌های مسدودسازی به شکل فهرست مسدودسازی DNS.
+    لیست‌های مسدودسازی به شکل لیست مسدودسازی DNS.
 
     [:octicons-arrow-left-24: راهنما](dns-filters.md)
 
@@ -173,18 +173,18 @@ flowchart LR
 
 </div>
 
-همه فایل‌ها و نشانی‌هایشان: [نشانی فایل‌ها](urls.md). منبع داده‌ها: [منابع و مجوزها](sources.md) (به انگلیسی).
+همه فایل‌ها و لینک‌هایشان: [لینک فایل‌ها](urls.md). منبع داده‌ها: [منابع و مجوزها](sources.md) (به انگلیسی).
 
 ## فایل‌ها کجا منتشر می‌شوند
 
 هر فایل به‌عنوان بخشی از [آخرین نسخه گیت‌هاب](https://github.com/aliraghebi/routing-rules/releases/latest)
-منتشر می‌شود و هر بار که یکی از فهرست‌های منبع تغییر کند دوباره ساخته می‌شود:
+منتشر می‌شود و هر بار که یکی از لیست‌های منبع تغییر کند دوباره ساخته می‌شود:
 
 ```
 https://github.com/aliraghebi/routing-rules/releases/latest/download/<file>
 ```
 
-این نشانی همیشه به جدیدترین نسخه اشاره می‌کند. گیت‌هاب آن را به سرورهای دانلود خود
+این لینک همیشه به جدیدترین نسخه اشاره می‌کند. گیت‌هاب آن را به سرورهای دانلود خود
 (`release-assets.githubusercontent.com` / `objects.githubusercontent.com`) هدایت می‌کند که ممکن است در
 برخی شبکه‌های ایران فیلتر باشند. برنامه‌ها این هدایت را خودکار دنبال می‌کنند.
 
@@ -192,12 +192,12 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/<file>
     آن‌ها می‌توانند فایل‌ها را تغییر دهند، و این فایل‌ها تعیین می‌کنند چه چیزی از پراکسی یا VPN عبور کند و چه
     چیزی مستقیم برود.
 
-## فهرست‌های اختیاری
+## لیست‌های اختیاری
 
-همراه بقیه منتشر می‌شوند اما پیکربندی‌های پیش‌فرض از آن‌ها استفاده نمی‌کنند. در صورت نیاز آن‌ها را به
+همراه بقیه منتشر می‌شوند اما کانفیگ‌های پیش‌فرض از آن‌ها استفاده نمی‌کنند. در صورت نیاز آن‌ها را به
 قوانین خود اضافه کنید.
 
-| فهرست | محتوا |
+| لیست | محتوا |
 |-------|-------|
 | `social` | دامنه‌های شبکه‌های اجتماعی |
 | `nsfw` | محتوای بزرگسالان |
@@ -207,4 +207,4 @@ https://github.com/aliraghebi/routing-rules/releases/latest/download/<file>
 | `cloudflare`، `cloudfront`، `fastly`، `gcore` | بازه‌های IP شبکه‌های CDN |
 | `telegram`، `tor-exit`، `netflix` | بازه‌های IP سرویس‌ها (`tor-exit` در فایل‌های geo و rule-setها برچسب `tor` دارد) |
 
-همه قالب‌ها در [نشانی فایل‌ها](urls.md).
+همه قالب‌ها در [لینک فایل‌ها](urls.md).

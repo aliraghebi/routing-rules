@@ -55,9 +55,16 @@
 .md-typeset code {
   border-radius: 0.25rem;
 }
-.md-search__form,
-.md-search__output {
+/* Search: a rounded box when closed; when open, the field and the results
+   read as one panel (square where they meet). */
+.md-search__form {
   border-radius: var(--vr-radius-sm);
+}
+[data-md-toggle="search"]:checked ~ .md-header .md-search__form {
+  border-radius: var(--vr-radius-sm) var(--vr-radius-sm) 0 0;
+}
+.md-search__output {
+  border-radius: 0 0 var(--vr-radius-sm) var(--vr-radius-sm);
 }
 
 /* Check a domain */

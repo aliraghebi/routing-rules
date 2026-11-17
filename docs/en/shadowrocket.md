@@ -38,8 +38,9 @@ Then, on the **Home** tab, add your server and set **Global Routing** to **Confi
 ### Keep it updated
 
 The lists change daily. The config includes `update-url` and every rule list is a remote `RULE-SET`, so you
-don't need to re-import. To refresh now, tap the config in the **Config** tab → **Update** (same menu as
-**Use Config** in the screenshot above).
+don't need to re-import. To refresh now, long-press the config in the **Config** tab → **Update**.
+
+![Long-press the config and tap Update](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
 
 ## Keep your own config (module)
 

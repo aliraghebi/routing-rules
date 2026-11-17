@@ -15,9 +15,17 @@ icon: material/vector-polyline
 
 1. Download the file with a button above. Don't copy the text from a browser tab: a partial selection
    breaks the file (Karing reports `FormatException: Unterminated string`).
-2. In Karing, open the custom diversion rules screen and import the file. This is the same screen Karing
-   exports `diversion_rules_custom.json` from.
-3. Make sure both rule groups are switched on.
+2. In Karing, tap **Diversion** → **Diversion Rules** → the pencil icon (top right). Make sure
+   **Custom Diversion Group** is switched on.
+
+    ![Karing: Diversion, then Diversion Rules, then the pencil icon](../assets/img/karing-open.webp){ width="720" loading=lazy }
+
+3. On the **Custom Diversion Group** screen, tap **⋮** → **Import** and pick the downloaded file. The
+   **🚫 Block** and **✅ Direct** groups appear in the list.
+
+    ![Karing: tap the menu, choose Import, and the Block and Direct groups appear](../assets/img/karing-import.webp){ width="720" loading=lazy }
+
+4. Make sure both groups are switched on.
 
 Karing downloads the rule-sets itself and refreshes them, so you don't need to re-import when the lists change.
 

@@ -16,9 +16,17 @@ icon: material/vector-polyline
 
 1. فایل را با دکمه بالا دانلود کنید. متن را از زبانه مرورگر کپی نکنید: انتخاب ناقص فایل را خراب می‌کند
    (Karing خطای `FormatException: Unterminated string` می‌دهد).
-2. در Karing صفحه قوانین مسیریابی سفارشی را باز کنید و فایل را وارد کنید؛ همان صفحه‌ای که Karing فایل
-   `diversion_rules_custom.json` را از آن خروجی می‌گیرد.
-3. مطمئن شوید هر دو گروه قوانین روشن هستند.
+2. در Karing روی **Diversion** ← **Diversion Rules** ← نماد مداد (بالا سمت راست) بزنید. مطمئن شوید
+   **Custom Diversion Group** روشن است.
+
+    ![Karing: گزینه Diversion، سپس Diversion Rules، سپس نماد مداد](../assets/img/karing-open.webp){ width="720" loading=lazy }
+
+3. در صفحه **Custom Diversion Group** روی **⋮** ← **Import** بزنید و فایل دانلودشده را انتخاب کنید. گروه‌های
+   **🚫 Block** و **✅ Direct** به فهرست اضافه می‌شوند.
+
+    ![Karing: منو را باز کنید، Import را بزنید؛ گروه‌های Block و Direct اضافه می‌شوند](../assets/img/karing-import.webp){ width="720" loading=lazy }
+
+4. مطمئن شوید هر دو گروه روشن هستند.
 
 Karing خودش rule-setها را دانلود و به‌روز می‌کند، پس با تغییر فهرست‌ها لازم نیست دوباره وارد کنید.
 

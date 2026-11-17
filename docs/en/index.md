@@ -146,6 +146,14 @@ For your own config, or apps that load rule-sets or geo files.
 
     [:octicons-arrow-right-24: Guide](networks.md)
 
+-   :material-call-split:{ .lg .middle } **macOS & Linux (splitroute)**
+
+    ---
+
+    A command-line tool that keeps Iranian IPs outside your VPN, next to any VPN app.
+
+    [:octicons-arrow-right-24: Guide](splitroute.md)
+
 -   :material-web:{ .lg .middle } **Browsers (PAC)**
 
     ---

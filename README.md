@@ -20,6 +20,7 @@ Inspired by [Chocolate4U/Iran-v2ray-rules](https://github.com/Chocolate4U/Iran-v
 | Shadowrocket, Surge, Loon | Full config, `RULE-SET` lists, `DOMAIN-SET` lists |
 | Karing, v2rayN / v2rayNG | Ready-made rule files |
 | WireGuard, OpenVPN, routers | Split-tunnel `AllowedIPs` and routes, MikroTik script, CIDR lists |
+| macOS, Linux | [`splitroute`](https://github.com/aliraghebi/splitroute): keeps Iranian IPs outside any VPN with system routes |
 | Browsers | PAC file |
 | AdGuard Home, Pi-hole | DNS blocklists |
 

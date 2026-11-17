@@ -147,6 +147,14 @@ flowchart LR
 
     [:octicons-arrow-left-24: راهنما](networks.md)
 
+-   :material-call-split:{ .lg .middle } **macOS و Linux (splitroute)**
+
+    ---
+
+    ابزار خط فرمانی که IPهای ایران را کنار هر برنامه VPN، بیرون از VPN نگه می‌دارد.
+
+    [:octicons-arrow-left-24: راهنما](splitroute.md)
+
 -   :material-web:{ .lg .middle } **مرورگرها (PAC)**
 
     ---

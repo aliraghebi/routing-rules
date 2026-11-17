@@ -91,6 +91,7 @@ nav:
       - v2rayN / v2rayNG: v2rayn.md
   - More:
       - WireGuard, OpenVPN & routers: networks.md
+      - macOS & Linux (splitroute): splitroute.md
       - Browsers (PAC): pac.md
       - AdGuard Home & Pi-hole: dns-filters.md
   - Check a domain: check.md
@@ -159,6 +160,7 @@ plugins:
             Surge & Loon: Surge و Loon
             More: بیشتر
             WireGuard, OpenVPN & routers: WireGuard، OpenVPN و روترها
+            macOS & Linux (splitroute): macOS و Linux (splitroute)
             Browsers (PAC): مرورگرها (PAC)
             AdGuard Home & Pi-hole: AdGuard Home و Pi-hole
             Check a domain: بررسی دامنه

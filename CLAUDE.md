@@ -59,6 +59,8 @@ mkdocs build --strict              # docs; deps pinned in requirements-docs.txt 
 
 ## Docs
 
+- `splitroute` lives in its own repo ([aliraghebi/splitroute](https://github.com/aliraghebi/splitroute)); only its docs page (`splitroute.md`) is here.
+
 - Every page change goes into both `docs/en` and `docs/fa`. English is the source; Persian is rewritten naturally, not translated word by word.
 - `mkdocs build --strict` must pass; anchors referenced from other pages must stay stable (use `{#id}` on Persian headings that are linked).
 - Screenshots: `docs/assets/img/<client>-<step>.webp`, `cwebp -q 90 -m 6`, width = 2× the display width set on the page (`{ width="720" }` → 1440 px). Shared by both languages via `../assets/img/`.

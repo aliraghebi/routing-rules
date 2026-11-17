@@ -27,18 +27,19 @@ icon: material/rocket-launch-outline
     ```
 
 2. Shadowrocket ← زبانه **Config** ← **+** ← نشانی را بچسبانید ← **Download**.
-
-    ![زبانه Config: روی + بزنید، نشانی پیکربندی را بچسبانید و Download را بزنید](../assets/img/shadowrocket-import.webp){ width="600" loading=lazy }
-
 3. روی پیکربندی جدید بزنید ← **Use Config**. تیک نشان‌دهنده پیکربندی در حال استفاده است.
+
+    ![زبانه Config: روی + بزنید، نشانی را بچسبانید، Download را بزنید، سپس روی پیکربندی بزنید و Use Config را انتخاب کنید](../assets/img/shadowrocket-import.webp){ width="720" loading=lazy }
+
 4. در زبانه **Home** سرور خود را اضافه کنید و **Global Routing** را روی **Config** بگذارید.
+
+    ![زبانه Home: گزینه Global Routing روی Config](../assets/img/shadowrocket-routing.webp){ width="480" loading=lazy }
 
 ### به‌روز نگه داشتن
 
 فهرست‌ها هر روز تغییر می‌کنند. پیکربندی `update-url` دارد و همه فهرست‌ها `RULE-SET` راه دور هستند، پس
-لازم نیست دوباره وارد کنید. برای به‌روزرسانی فوری، در زبانه **Config** پیکربندی را لمس کنید و نگه دارید ← **Update**.
-
-![پیکربندی را لمس کنید و نگه دارید و Update را بزنید](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
+لازم نیست دوباره وارد کنید. برای به‌روزرسانی فوری، در زبانه **Config** روی پیکربندی بزنید ← **Update** (همان منوی
+**Use Config** در تصویر بالا).
 
 ## پیکربندی خودتان را نگه دارید (ماژول) {#keep-your-own-config-module}
 

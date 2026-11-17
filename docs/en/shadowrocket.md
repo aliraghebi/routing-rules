@@ -27,18 +27,19 @@ Then, on the **Home** tab, add your server and set **Global Routing** to **Confi
     ```
 
 2. Shadowrocket → **Config** tab → **+** → paste the URL → **Download**.
-
-    ![Config tab: tap +, paste the config URL and tap Download](../assets/img/shadowrocket-import.webp){ width="600" loading=lazy }
-
 3. Tap the new config → **Use Config**. A checkmark marks the config in use.
+
+    ![Config tab: tap +, paste the config URL, tap Download, then tap the config and Use Config](../assets/img/shadowrocket-import.webp){ width="720" loading=lazy }
+
 4. On the **Home** tab, add your server and set **Global Routing** to **Config**.
+
+    ![Home tab: Global Routing set to Config](../assets/img/shadowrocket-routing.webp){ width="480" loading=lazy }
 
 ### Keep it updated
 
 The lists change daily. The config includes `update-url` and every rule list is a remote `RULE-SET`, so you
-don't need to re-import. To refresh now, long-press the config in the **Config** tab → **Update**.
-
-![Long-press the config and tap Update](../assets/img/shadowrocket-update.webp){ width="300" loading=lazy }
+don't need to re-import. To refresh now, tap the config in the **Config** tab → **Update** (same menu as
+**Use Config** in the screenshot above).
 
 ## Keep your own config (module)
 

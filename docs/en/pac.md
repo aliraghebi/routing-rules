@@ -10,6 +10,23 @@ local proxy (v2rayN, Clash, sing-box and similar).
 
 [:material-download: Download proxy.pac](https://github.com/aliraghebi/routing-rules/releases/latest/download/proxy.pac){ .md-button .md-button--primary }
 
+## PAC URL
+
+macOS, Windows and Firefox take a PAC **URL**. Copy this one:
+
+```
+https://github.com/aliraghebi/routing-rules/releases/latest/download/proxy.pac
+```
+
+It always serves the newest file, so the lists stay current without re-downloading. It uses the default
+proxy address below; if your client listens on a different port, download the file, edit it, and point the
+setting at your copy instead.
+
+!!! warning "If the URL can't be reached"
+    GitHub redirects the download to `release-assets.githubusercontent.com`, which is filtered on some
+    Iranian networks. If the system can't fetch the PAC file, it connects directly, so nothing goes through
+    the proxy. If sites suddenly open without the proxy, use a downloaded copy instead.
+
 ## Set the proxy address
 
 Open the file and set the first line to your client's local proxy:
@@ -27,9 +44,12 @@ The defaults match v2rayN (SOCKS on `10808`; HTTP is `10809`, written as `PROXY 
 ## Use it
 
 - **SwitchyOmega / ZeroOmega**: new profile → **PAC Profile** → paste the file's content.
-- **Firefox**: Settings → Network Settings → **Automatic proxy configuration URL** → a `file://` path to the
-  saved file.
-- **Windows / macOS system proxy**: set the automatic configuration (PAC) to the saved file.
+- **macOS**: System Settings → **Network** → your connection (Wi-Fi or Ethernet) → **Details** → **Proxies** →
+  turn on **Automatic proxy configuration** → paste the [PAC URL](#pac-url) → **OK**.
+- **Windows**: Settings → **Network & internet** → **Proxy** → **Use setup script** → paste the
+  [PAC URL](#pac-url) → **Save**.
+- **Firefox**: Settings → Network Settings → **Automatic proxy configuration URL** → paste the
+  [PAC URL](#pac-url), or a `file://` path to an edited copy.
 
 A PAC file can't block ads, and it only matches domain names: Iranian sites opened by IP address go through
 the proxy.
